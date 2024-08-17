@@ -34,6 +34,8 @@ const fakeStories = [
 ];
 
 const StoriesScreen = () => {
+
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [newStory, setNewStory] = useState({ photo: '', caption: '' });
   const [image, setImage] = useState(null);

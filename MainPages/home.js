@@ -62,29 +62,42 @@ const ChatScreen = () => {
     </View>
   );
 
+  // Footer Component for the FlatList
+  const renderEncryptionMessage = () => (
+    <View style={styles.encryptionMessageContainer}>
+      <Text style={styles.encryptionMessage}>
+        <Ionicons name="lock-closed" size={12} color="#BBBBBB" /> Your messages are <Text style={{ color: 'tomato' }}>end-to-end encrypted</Text>.
+      </Text>
+    </View>
+  );
+
+  // Component to render when no chats are found
+  const renderEmptyListMessage = () => (
+    <View style={styles.emptyMessageContainer}>
+      <Text style={styles.emptyMessage}>No chats found by this name.</Text>
+    </View>
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
       <View style={styles.searchBarContainer}>
-        <Ionicons name="search" size={20} color="#AAAAAA" style={styles.searchIcon} />
         <TextInput
           style={styles.searchBar}
-          placeholder="Flirt chats by name"
+          placeholder="Search chats by name"
           placeholderTextColor="#AAAAAA"
           value={searchQuery}
           onChangeText={handleSearch}
         />
+        <Ionicons name="search" size={20} color="#AAAAAA" style={styles.searchIcon} />
       </View>
       <FlatList
         data={filteredChats}
         renderItem={renderChatItem}
         keyExtractor={(item) => item.id}
         style={styles.chatList}
+        ListEmptyComponent={renderEmptyListMessage} // Add the empty list component here
+        ListFooterComponent={renderEncryptionMessage} // Add the footer component here
       />
-      <View style={styles.encryptionMessageContainer}>
-        <Text style={styles.encryptionMessage}>
-          Messages are <Text style={{color:"tomato"}}>end-to-end </Text>encrypted.
-        </Text>
-      </View>
     </View>
   );
 };
@@ -99,7 +112,7 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
   },
   searchIcon: {
-    marginRight: 10,
+    marginRight: 20,
   },
   searchBar: {
     flex: 1,
@@ -146,8 +159,8 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   statusIcon: {
-    position:"absolute",
-    right:10
+    position: 'absolute',
+    right: 10,
   },
   chatList: {
     backgroundColor: '#121212',
@@ -160,6 +173,16 @@ const styles = StyleSheet.create({
   encryptionMessage: {
     color: '#BBBBBB',
     fontSize: 12,
+  },
+  emptyMessageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 20,
+  },
+  emptyMessage: {
+    color: '#BBBBBB',
+    fontSize: 16,
   },
 });
 

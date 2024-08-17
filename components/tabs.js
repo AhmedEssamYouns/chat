@@ -1,16 +1,16 @@
 import * as React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { TouchableOpacity, Keyboard, View } from 'react-native';
+import { Feather,MaterialIcons } from '@expo/vector-icons';
+import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
 import ChatScreen from '../MainPages/home';
 import StoriesScreen from '../MainPages/stories';
 import ProfileScreen from '../MainPages/profile';
 
-const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
-function TabNavigator({ navigation }) {
+function TabNavigator() {
     const [keyboardVisible, setKeyboardVisible] = React.useState(false);
 
     React.useEffect(() => {
@@ -35,64 +35,37 @@ function TabNavigator({ navigation }) {
 
     return (
         <Tab.Navigator
-            screenOptions={({ route }) => ({
+            screenOptions={({ route, navigation }) => ({
                 tabBarActiveTintColor: "white",
                 tabBarInactiveTintColor: "gray",
-                headerStyle: {
-                    backgroundColor: '#121212',
-                },
-                headerRight: () => (
-                    <View style={{ flexDirection: 'row', marginRight: 10 }}>
-                        <TouchableOpacity onPress={() => console.log('Add user pressed')} style={{ marginRight: 15 }}>
-                            <Feather name="user-plus" size={24} color="white" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => console.log('Search pressed')} style={{ marginRight: 15 }}>
-                            <Feather name="search" size={24} color="white" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => console.log('More options pressed')}>
-                            <Feather name="more-vertical" size={24} color="white" />
-                        </TouchableOpacity>
-                    </View>
-                ),
-                headerTitleStyle: {
-                    color: 'white',
-                },
                 tabBarLabelStyle: {
-                    fontSize: 16,
-                    fontWeight: "bold",
-                    display: "none"
+                    fontSize: 15,
+                    textTransform: 'capitalize',
                 },
                 tabBarStyle: {
-                    backgroundColor: '#121212', // Dark mode background color
-                    borderTopWidth: 1,
-                    borderTopColor: '#333', // Dark border color
-                    display: keyboardVisible ? 'none' : 'flex'  // Hide tab bar when keyboard is visible
+                    backgroundColor: '#121212',
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#333',
                 },
-                tabBarIcon: ({ focused, color, size }) => {
-                    if (route.name === 'SnapTalk') {
-                        return <MaterialCommunityIcons name="comment-multiple-outline" size={size} color={color} />;
-
-                    } else if (route.name === 'thoughts') {
-                        return <MaterialCommunityIcons name="motion" size={size} color={color} />;
-                    } else if (route.name === 'profile') {
-                        return <MaterialCommunityIcons name="account" size={size} color={color} />;
-                    }
-                    
-                    return <Feather name={iconName} size={size} color={color} />;
+                tabBarIndicatorStyle: {
+                    backgroundColor: 'white',
+                    height: 3, // Adjust height of the indicator
+                    borderRadius: 5, // Optional: Make the indicator rounded
+                },
+                tabBarOnPress: (e) => {
+                    const tabName = route.name;
+                    navigation.navigate(tabName, { scrollToTop: true });
                 },
             })}
         >
-
             <Tab.Screen
-                name="SnapTalk"
+                name="chats"
                 component={ChatScreen}
             />
-
             <Tab.Screen
                 name="thoughts"
                 component={StoriesScreen}
             />
-
             <Tab.Screen
                 name="profile"
                 component={ProfileScreen}
@@ -101,6 +74,7 @@ function TabNavigator({ navigation }) {
     );
 }
 
+
 export default function MainTabNavigator() {
     return (
         <Stack.Navigator>
@@ -108,10 +82,50 @@ export default function MainTabNavigator() {
                 name="Tabs"
                 component={TabNavigator}
                 options={{
-                    headerShown: false,
+                    headerTitle: () => (
+                        <Text style={styles.headerTitle}>Snap <Text style={{color:"tomato"}}>Talk</Text></Text>
+                    ),
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation: 0, // Remove shadow on Android
+                        shadowOpacity: 0, // Remove shadow on iOS
+                        shadowOffset: { height: 0 }, // Remove shadow on iOS
+                    },
+                    headerTitleStyle: {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerRight: () => (
+                        <View style={styles.headerRight}>
+                            <TouchableOpacity onPress={() => console.log('Add user pressed')} style={styles.headerButton}>
+                                <Feather name="user-plus" size={24} color="white" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => console.log('Search pressed')} style={styles.headerButton}>
+                                <Feather name="search" size={24} color="white" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => console.log('More options pressed')}>
+                                <Feather name="more-vertical" size={24} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                    ),
                 }}
             />
-
         </Stack.Navigator>
     );
 }
+
+const styles = StyleSheet.create({
+    headerTitle: {
+        color: 'white',
+        fontFamily: 'title',
+        fontSize: 18,
+    },
+    headerRight: {
+        flexDirection: 'row',
+        marginRight: 10,
+    },
+    headerButton: {
+        marginRight: 15,
+    },
+});
