@@ -5,6 +5,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { TouchableOpacity, Keyboard, View } from 'react-native';
 import ChatScreen from '../MainPages/home';
 import StoriesScreen from '../MainPages/stories';
+import ProfileScreen from '../MainPages/profile';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -37,6 +38,25 @@ function TabNavigator({ navigation }) {
             screenOptions={({ route }) => ({
                 tabBarActiveTintColor: "white",
                 tabBarInactiveTintColor: "gray",
+                headerStyle: {
+                    backgroundColor: '#121212',
+                },
+                headerRight: () => (
+                    <View style={{ flexDirection: 'row', marginRight: 10 }}>
+                        <TouchableOpacity onPress={() => console.log('Add user pressed')} style={{ marginRight: 15 }}>
+                            <Feather name="user-plus" size={24} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => console.log('Search pressed')} style={{ marginRight: 15 }}>
+                            <Feather name="search" size={24} color="white" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => console.log('More options pressed')}>
+                            <Feather name="more-vertical" size={24} color="white" />
+                        </TouchableOpacity>
+                    </View>
+                ),
+                headerTitleStyle: {
+                    color: 'white',
+                },
                 tabBarLabelStyle: {
                     fontSize: 16,
                     fontWeight: "bold",
@@ -54,64 +74,29 @@ function TabNavigator({ navigation }) {
 
                     } else if (route.name === 'thoughts') {
                         return <MaterialCommunityIcons name="motion" size={size} color={color} />;
+                    } else if (route.name === 'profile') {
+                        return <MaterialCommunityIcons name="account" size={size} color={color} />;
                     }
+                    
                     return <Feather name={iconName} size={size} color={color} />;
                 },
             })}
         >
-          
-          <Tab.Screen 
-                name="SnapTalk" 
+
+            <Tab.Screen
+                name="SnapTalk"
                 component={ChatScreen}
-                options={{
-                    headerStyle: {
-                        backgroundColor: '#121212', 
-                    },
-                    headerTitleStyle: {
-                        color: 'white', 
-                    },
-                    headerRight: () => (
-                        <View style={{ flexDirection: 'row', marginRight: 10 }}>
-                            <TouchableOpacity onPress={() => console.log('Add user pressed')} style={{ marginRight: 15 }}>
-                                <Feather name="user-plus" size={24} color="white" /> 
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('Search pressed')} style={{ marginRight: 15 }}>
-                                <Feather name="search" size={24} color="white" /> 
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('More options pressed')}>
-                                <Feather name="more-vertical" size={24} color="white" />
-                            </TouchableOpacity>
-                        </View>
-                    ),
-                }}
             />
-            
-          <Tab.Screen 
-                name="thoughts" 
+
+            <Tab.Screen
+                name="thoughts"
                 component={StoriesScreen}
-                options={{
-                    headerStyle: {
-                        backgroundColor: '#121212', 
-                    },
-                    headerTitleStyle: {
-                        color: 'white', 
-                    },
-                    headerRight: () => (
-                        <View style={{ flexDirection: 'row', marginRight: 10 }}>
-                            <TouchableOpacity onPress={() => console.log('Add user pressed')} style={{ marginRight: 15 }}>
-                                <Feather name="user-plus" size={24} color="white" /> 
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('Search pressed')} style={{ marginRight: 15 }}>
-                                <Feather name="search" size={24} color="white" /> 
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('More options pressed')}>
-                                <Feather name="more-vertical" size={24} color="white" />
-                            </TouchableOpacity>
-                        </View>
-                    ),
-                }}
             />
-            
+
+            <Tab.Screen
+                name="profile"
+                component={ProfileScreen}
+            />
         </Tab.Navigator>
     );
 }
