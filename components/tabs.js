@@ -1,16 +1,18 @@
 import * as React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Feather,MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
 import ChatScreen from '../MainPages/home';
 import StoriesScreen from '../MainPages/stories';
 import ProfileScreen from '../MainPages/profile';
+import FloatingButton from './FloatingButton';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
 function TabNavigator() {
+
     const [keyboardVisible, setKeyboardVisible] = React.useState(false);
 
     React.useEffect(() => {
@@ -34,46 +36,37 @@ function TabNavigator() {
     }, []);
 
     return (
-        <Tab.Navigator
-            screenOptions={({ route, navigation }) => ({
-                tabBarActiveTintColor: "white",
-                tabBarInactiveTintColor: "gray",
-                tabBarLabelStyle: {
-                    fontSize: 15,
-                    textTransform: 'capitalize',
-                },
-                tabBarStyle: {
-                    backgroundColor: '#121212',
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#333',
-                },
-                tabBarIndicatorStyle: {
-                    backgroundColor: 'white',
-                    height: 3, // Adjust height of the indicator
-                    borderRadius: 5, // Optional: Make the indicator rounded
-                },
-                tabBarOnPress: (e) => {
-                    const tabName = route.name;
-                    navigation.navigate(tabName, { scrollToTop: true });
-                },
-            })}
-        >
-            <Tab.Screen
-                name="chats"
-                component={ChatScreen}
-            />
-            <Tab.Screen
-                name="thoughts"
-                component={StoriesScreen}
-            />
-            <Tab.Screen
-                name="profile"
-                component={ProfileScreen}
-            />
-        </Tab.Navigator>
+        <View style={{ flex: 1 }}>
+            <Tab.Navigator
+                screenOptions={({ route, navigation }) => ({
+                    
+                    tabBarActiveTintColor: "white",
+                    tabBarInactiveTintColor: "gray",
+                    tabBarLabelStyle: {
+                        fontSize: 15,
+                        textTransform: 'capitalize',
+                    },
+                    tabBarStyle: {
+                        backgroundColor: '#121212',
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#333',
+                    },
+                    tabBarIndicatorStyle: {
+                        backgroundColor: 'white',
+                        height: 3,
+                        borderRadius: 5,
+                    },
+                })}
+            >
+                <Tab.Screen name="chats" component={ChatScreen} />
+                <Tab.Screen name="thoughts" component={StoriesScreen} />
+                <Tab.Screen name="profile" component={ProfileScreen} />
+            </Tab.Navigator>
+
+                <FloatingButton onPress={() => console.log('Floating button pressed')} />
+        </View>
     );
 }
-
 
 export default function MainTabNavigator() {
     return (
@@ -83,13 +76,13 @@ export default function MainTabNavigator() {
                 component={TabNavigator}
                 options={{
                     headerTitle: () => (
-                        <Text style={styles.headerTitle}>Snap <Text style={{color:"tomato"}}>Talk</Text></Text>
+                        <Text style={styles.headerTitle}>Snap <Text style={{ color: "tomato" }}>Talk</Text></Text>
                     ),
                     headerStyle: {
                         backgroundColor: '#121212',
-                        elevation: 0, // Remove shadow on Android
-                        shadowOpacity: 0, // Remove shadow on iOS
-                        shadowOffset: { height: 0 }, // Remove shadow on iOS
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        shadowOffset: { height: 0 },
                     },
                     headerTitleStyle: {
                         color: 'white',
@@ -98,9 +91,6 @@ export default function MainTabNavigator() {
                     },
                     headerRight: () => (
                         <View style={styles.headerRight}>
-                            <TouchableOpacity onPress={() => console.log('Add user pressed')} style={styles.headerButton}>
-                                <Feather name="user-plus" size={24} color="white" />
-                            </TouchableOpacity>
                             <TouchableOpacity onPress={() => console.log('Search pressed')} style={styles.headerButton}>
                                 <Feather name="search" size={24} color="white" />
                             </TouchableOpacity>

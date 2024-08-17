@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Import icons
-
 const fakeChats = [
   {
     id: '1',
@@ -31,6 +30,7 @@ const fakeChats = [
 ];
 
 const ChatScreen = () => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredChats, setFilteredChats] = useState(fakeChats);
 

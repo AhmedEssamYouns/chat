@@ -99,12 +99,12 @@ const StoriesScreen = () => {
       />
 
       {/* Floating Action Button */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}
       >
         <Feather name="plus" size={24} color="white" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Modal for adding a new post */}
       <Modal
