@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import MainTabNavigator from './Routes/tabs';
+import MainTabNavigator from './Routes/stack.nav';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 

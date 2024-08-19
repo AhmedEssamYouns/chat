@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Import icons
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import SearchBar from '../../Components/Search';
+
+
 const fakeChats = [
   {
     id: '1',
@@ -35,6 +38,7 @@ const ChatScreen = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredChats, setFilteredChats] = useState(fakeChats);
 
+  
   const handleSearch = (text) => {
     setSearchQuery(text);
     const filtered = fakeChats.filter((chat) =>
@@ -81,16 +85,11 @@ const ChatScreen = ({navigation}) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
-      <View style={styles.searchBarContainer}>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search chats by name"
-          placeholderTextColor="#AAAAAA"
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
-        <Ionicons name="search" size={20} color="#AAAAAA" style={styles.searchIcon} />
-      </View>
+     <SearchBar
+        searchQuery={searchQuery}
+        onChangeSearch={handleSearch}
+        placeholder="Search chats by name"
+      />
       <FlatList
         data={filteredChats}
         renderItem={renderChatItem}
@@ -104,22 +103,6 @@ const ChatScreen = ({navigation}) => {
 };
 
 const styles = StyleSheet.create({
-  searchBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#222',
-    borderRadius: 25,
-    margin: 15,
-    paddingLeft: 15,
-  },
-  searchIcon: {
-    marginRight: 20,
-  },
-  searchBar: {
-    flex: 1,
-    padding: 10,
-    color: '#FFFFFF',
-  },
   chatItem: {
     flexDirection: 'row',
     padding: 10,
