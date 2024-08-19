@@ -6,8 +6,7 @@ import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native
 import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/stories';
 import ProfileScreen from '../Pages/Main/profile';
-import FloatingButton from '../Components/FloatingButton';
-import ChatConversationScreen from '../Pages/Screens/ChatScreen';
+import FloatingButton from '../Components/Floating-Button';
 
 const Tab = createMaterialTopTabNavigator();
 

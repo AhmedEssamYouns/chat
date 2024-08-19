@@ -1,54 +1,59 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Image , BackHandler } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  BackHandler,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import SearchBar from '../../Components/Search';
+
+import MessageInput from '../../Components/Messege-Input';
+import MessageItem from '../../Components/Messege-item';
 
 const ChatConversationScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
-    {
-      id: '1',
-      text: 'Hey, how are you?',
-      time: '12:34 PM',
-      isSentByMe: false,
-    },
-    {
-      id: '2',
-      text: 'I’m good! How about you?',
-      time: '12:36 PM',
-      isSentByMe: true,
-    },
-    {
-      id: '3',
-      text: 'Doing well, thanks!',
-      time: '12:37 PM',
-      isSentByMe: false,
-    },
-    {
-      id: '4',
-      text: 'Doing well, thanks!Doing well, thanks!Doing well, thanks!Doing well, thanks!Doing well, thanks!Doing well, thanks!',
-      time: '12:37 PM',
-      isSentByMe: false,
-    }, {
-      id: '5',
-      text: 'Doing well, thanks!',
-      time: '12:37 PM',
-      isSentByMe: false,
-    },
-    {
-      id: '6',
-      text: 'Doing well, thanks!',
-      time: '12:37 PM',
-      isSentByMe: false,
-    },
-    {
-      id: '7',
-      text: 'hey',
-      time: '12:37 PM',
-      isSentByMe: true,
-    },
-    // More messages here...
+    { id: '1', text: 'Hey, how are you?', time: '12:34 PM', isSentByMe: false },
+    { id: '2', text: 'I’m good! How about you?', time: '12:36 PM', isSentByMe: true },
+    { id: '3', text: 'Doing well, thanks! Just finished a workout. 😅', time: '12:37 PM', isSentByMe: false },
+    { id: '4', text: 'Nice! What did you do today?', time: '12:38 PM', isSentByMe: true },
+    { id: '5', text: 'I did a full-body workout. Squats, bench press, deadlifts... you know the drill. 💪', time: '12:40 PM', isSentByMe: false },
+    { id: '6', text: 'Sounds intense! I just did some cardio today. Running is always a challenge. 🏃‍♂️', time: '12:42 PM', isSentByMe: true },
+    { id: '7', text: 'Cardio is great too! What’s your favorite running route?', time: '12:43 PM', isSentByMe: false },
+    { id: '8', text: 'I usually run along the river. It’s peaceful and scenic. What about you?', time: '12:45 PM', isSentByMe: true },
+    { id: '9', text: 'I like to run in the park near my place. It’s nice to be surrounded by nature.', time: '12:46 PM', isSentByMe: false },
+    { id: '10', text: 'Sounds lovely. Do you usually listen to music while running?', time: '12:48 PM', isSentByMe: true },
+    { id: '11', text: 'Definitely! I can’t run without my playlist. What do you listen to?', time: '12:50 PM', isSentByMe: false },
+    { id: '12', text: 'I’m into podcasts lately. It’s a great way to stay entertained while exercising.', time: '12:52 PM', isSentByMe: true },
+    { id: '13', text: 'Podcasts are awesome! Any recommendations?', time: '12:53 PM', isSentByMe: false },
+    { id: '14', text: 'I’d recommend “The Daily” for news and “How I Built This” for inspiring stories.', time: '12:55 PM', isSentByMe: true },
+    { id: '15', text: 'Great suggestions, thanks! I’ll check them out.', time: '12:56 PM', isSentByMe: false },
+    { id: '16', text: 'No problem! Let me know what you think once you’ve listened.', time: '12:58 PM', isSentByMe: true },
+    { id: '17', text: 'Will do. By the way, do you have any plans for the weekend?', time: '01:00 PM', isSentByMe: false },
+    { id: '18', text: 'I’m thinking of going hiking if the weather’s good. How about you?', time: '01:02 PM', isSentByMe: true },
+    { id: '19', text: 'That sounds like a lot of fun. I might just relax at home and catch up on some reading.', time: '01:04 PM', isSentByMe: false },
+    { id: '20', text: 'Relaxing sounds perfect too. Any books you’re excited about?', time: '01:06 PM', isSentByMe: true },
+    { id: '21', text: 'I just got “Project Hail Mary” by Andy Weir. Heard it’s a great read!', time: '01:08 PM', isSentByMe: false },
+    { id: '22', text: 'Nice choice! I loved “The Martian.” I’m sure it’ll be good.', time: '01:10 PM', isSentByMe: true },
+    { id: '23', text: 'Me too! I’ll let you know how it goes.', time: '01:12 PM', isSentByMe: false },
+    { id: '24', text: 'Looking forward to it. Alright, I need to get back to work. Catch you later?', time: '01:14 PM', isSentByMe: true },
+    { id: '25', text: 'Sure thing! Have a great day at work!', time: '01:16 PM', isSentByMe: false },
+    { id: '26', text: 'Thanks, you too! Bye for now!', time: '01:18 PM', isSentByMe: true },
+    { id: '27', text: 'Bye!', time: '01:20 PM', isSentByMe: false },
   ]);
 
+  // ... rest of your component logic
+  const handleSearchSubmit = () => {
+    if (searchResults.length > 0) {
+      scrollToSearchedMessage(currentSearchIndex);
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef(null);
@@ -74,14 +79,14 @@ const ChatConversationScreen = ({ navigation }) => {
       const results = messages
         .map((message, index) => ({ ...message, index }))
         .filter((message) => message.text.toLowerCase().includes(searchQuery.toLowerCase()))
-        .reverse(); // Reverse the filtered results
+        .reverse(); // Reverse results to match inverted FlatList
 
       setSearchResults(results);
       if (results.length > 0) {
         setCurrentSearchIndex(0);
         setTimeout(() => {
           scrollToSearchedMessage(0);
-        }, 100); // Adjust timeout if needed
+        }, 100);
       }
     } else {
       setSearchResults([]);
@@ -93,9 +98,9 @@ const ChatConversationScreen = ({ navigation }) => {
     const handleBackPress = () => {
       if (isSearchMode) {
         setIsSearchMode(false);
-        return true; // Prevent default back button behavior
+        return true;
       }
-      return false; // Allow default back button behavior
+      return false;
     };
 
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -105,9 +110,17 @@ const ChatConversationScreen = ({ navigation }) => {
     };
   }, [isSearchMode]);
 
+  useEffect(() => {
+    if (!isSearchMode) {
+      setSearchQuery('');
+    }
+  }, [isSearchMode]);
+
   const scrollToSearchedMessage = (index) => {
     if (searchResults.length > 0 && flatListRef.current) {
-      flatListRef.current.scrollToIndex({ index: searchResults[index].index, animated: true });
+      // Adjust index for inverted FlatList
+      const adjustedIndex = messages.length - searchResults[index].index - 1;
+      flatListRef.current.scrollToIndex({ index: adjustedIndex, animated: true });
     }
   };
 
@@ -127,46 +140,9 @@ const ChatConversationScreen = ({ navigation }) => {
     }
   };
 
-  const renderMessageItem = ({ item }) => {
-    const lowerCaseText = item.text.toLowerCase();
-    const lowerCaseSearchQuery = searchQuery.toLowerCase();
-
-    const matchIndex = lowerCaseText.indexOf(lowerCaseSearchQuery);
-
-    if (matchIndex !== -1 && searchQuery !== '') {
-      const beforeMatch = item.text.substring(0, matchIndex);
-      const matchText = item.text.substring(matchIndex, matchIndex + searchQuery.length);
-      const afterMatch = item.text.substring(matchIndex + searchQuery.length);
-
-      return (
-        <View
-          style={[
-            styles.messageContainer,
-            item.isSentByMe ? styles.sentMessage : styles.receivedMessage,
-          ]}
-        >
-          <Text style={styles.messageText}>
-            {beforeMatch}
-            <Text style={styles.highlightedText}>{matchText}</Text>
-            {afterMatch}
-          </Text>
-          <Text style={styles.messageTime}>{item.time}</Text>
-        </View>
-      );
-    }
-
-    return (
-      <View
-        style={[
-          styles.messageContainer,
-          item.isSentByMe ? styles.sentMessage : styles.receivedMessage,
-        ]}
-      >
-        <Text style={styles.messageText}>{item.text}</Text>
-        <Text style={styles.messageTime}>{item.time}</Text>
-      </View>
-    );
-  };
+  const renderMessageItem = ({ item }) => (
+    <MessageItem item={item} searchQuery={searchQuery} />
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
@@ -195,17 +171,19 @@ const ChatConversationScreen = ({ navigation }) => {
                 style={{ width: 180, padding: 15, color: 'white' }}
                 placeholderTextColor="#AAAAAA"
                 value={searchQuery}
+                returnKeyType='search'
+                onSubmitEditing={handleSearchSubmit}
                 onChangeText={setSearchQuery}
               />
             </View>
             <View style={styles.navigationButtons}>
-              <TouchableOpacity onPress={handlePreviousResult}>
+              <TouchableOpacity onPress={handleNextResult}>
                 <Ionicons name="arrow-up" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               <Text style={styles.navigationText}>
                 {currentSearchIndex + 1} / {searchResults.length}
               </Text>
-              <TouchableOpacity onPress={handleNextResult}>
+              <TouchableOpacity onPress={handlePreviousResult}>
                 <Ionicons name="arrow-down" size={24} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
@@ -224,29 +202,16 @@ const ChatConversationScreen = ({ navigation }) => {
           )}
         </View>
       </View>
-
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={[...messages].reverse()}
         renderItem={renderMessageItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 10, paddingTop: 20, paddingBottom: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 }}
         style={styles.messageList}
+        inverted
       />
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          multiline
-          style={styles.input}
-          placeholder="Type a message"
-          placeholderTextColor="#AAAAAA"
-          value={newMessage}
-          onChangeText={setNewMessage}
-        />
-        <TouchableOpacity onPress={handleSend}>
-          <Ionicons name="send" size={24} color="tomato" style={styles.sendIcon} />
-        </TouchableOpacity>
-      </View>
+      <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
     </View>
   );
 };
@@ -279,32 +244,6 @@ const styles = StyleSheet.create({
   icon: {
     marginLeft: 20,
   },
-  messageList: {
-    backgroundColor: '#121212',
-    paddingHorizontal: 10,
-  },
-  messageContainer: {
-    marginVertical: 5,
-    padding: 10,
-    borderRadius: 10,
-    maxWidth: '80%',
-  },
-  sentMessage: {
-    backgroundColor: '#A8342A',
-    alignSelf: 'flex-end',
-  },
-  receivedMessage: {
-    backgroundColor: '#333333',
-    alignSelf: 'flex-start',
-  },
-  messageText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  highlightedText: {
-    color: 'tomato',
-    fontWeight: 'bold',
-  },
   messageTime: {
     color: '#BBBBBB',
     fontSize: 10,
@@ -320,25 +259,6 @@ const styles = StyleSheet.create({
   navigationText: {
     color: '#FFFFFF',
     marginHorizontal: 10,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#222',
-    padding: 10,
-    paddingHorizontal: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-  },
-  input: {
-    flex: 1,
-    color: '#FFFFFF',
-    padding: 10,
-    borderRadius: 25,
-    backgroundColor: '#333',
-  },
-  sendIcon: {
-    marginLeft: 10,
   },
 });
 
