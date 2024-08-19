@@ -16,7 +16,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import FloatingButton from '../../Components/Floating-Button';
 import MessageInput from '../../Components/Messege-Input';
-import MessageItem from '../../Components/Messege-Item';
+import Navbar from '../../Components/chat-navbar';
+import MessageList from '../../Components/Messege-list';
 
 const ChatConversationScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -49,42 +50,20 @@ const ChatConversationScreen = ({ navigation }) => {
     { id: '27', text: 'Bye!', time: '01:20 PM', isSentByMe: false },
   ]);
 
-
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef(null);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [showButton, setShowButton] = useState(false);
-  const lastScrollY = useRef(new Animated.Value(0)).current;
-
-
-
-  const handleSearchSubmit = () => {
-    if (searchResults.length > 0) {
-      scrollToSearchedMessage(currentSearchIndex);
-    }
-  };
-  const handleSend = () => {
-    if (newMessage.trim() !== '') {
-      const newMsg = {
-        id: (messages.length + 1).toString(),
-        text: newMessage,
-        time: 'Now',
-        isSentByMe: true,
-      };
-      setMessages((prevMessages) => [...prevMessages, newMsg]);
-      setNewMessage('');
-    }
-  };
+  const [isButtonVisible, setIsButtonVisible] = useState(false);
 
   useEffect(() => {
     if (searchQuery) {
       const results = messages
         .map((message, index) => ({ ...message, index }))
         .filter((message) => message.text.toLowerCase().includes(searchQuery.toLowerCase()))
-        .reverse(); // Reverse results to match inverted FlatList
+        .reverse();
 
       setSearchResults(results);
       if (results.length > 0) {
@@ -123,175 +102,75 @@ const ChatConversationScreen = ({ navigation }) => {
 
   const scrollToSearchedMessage = (index) => {
     if (searchResults.length > 0 && flatListRef.current) {
-      // Adjust index for inverted FlatList
       const adjustedIndex = messages.length - searchResults[index].index - 1;
       flatListRef.current.scrollToIndex({ index: adjustedIndex, animated: true });
     }
   };
 
-  const handleNextResult = () => {
-    if (searchResults.length > 1) {
-      const nextIndex = (currentSearchIndex + 1) % searchResults.length;
-      setCurrentSearchIndex(nextIndex);
-      scrollToSearchedMessage(nextIndex);
+  const handleSend = () => {
+    if (newMessage.trim() !== '') {
+      const newMsg = {
+        id: (messages.length + 1).toString(),
+        text: newMessage,
+        time: 'Now',
+        isSentByMe: true,
+      };
+      setMessages((prevMessages) => [...prevMessages, newMsg]);
+      setNewMessage('');
+      scrollToEnd()
     }
   };
-
-  const handlePreviousResult = () => {
-    if (searchResults.length > 1) {
-      const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
-      setCurrentSearchIndex(prevIndex);
-      scrollToSearchedMessage(prevIndex);
-    }
-  };
-
-  const renderMessageItem = ({ item }) => (
-    <MessageItem item={item} searchQuery={searchQuery} />
-  );
-
-  const [isButtonVisible, setIsButtonVisible] = useState(true);
 
   const handleScroll = (event) => {
     const { contentOffset } = event.nativeEvent;
-    const isAtBottom = contentOffset.y <= 20; // 20px buffer for precision
+    const isAtBottom = contentOffset.y <= 20;
     setIsButtonVisible(!isAtBottom);
   };
-
 
   const scrollToEnd = () => {
     flatListRef.current.scrollToOffset({ offset: 0, animated: true });
   };
+
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
-      <View style={styles.navbar}>
-        {!isSearchMode ? (
-          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-            <Image
-              style={styles.Image}
-              source={{
-                uri: 'https://cdn3.iconfinder.com/data/icons/avatars-9/145/Avatar_Cat-512.png',
-              }}
-            />
-            <Text style={styles.navbarTitle}>Chat</Text>
-          </View>
-        ) : (
-          <View style={{ width: '100%', flexDirection: 'row', backgroundColor: '#333', borderRadius: 30, paddingHorizontal: 10 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TouchableOpacity onPress={() => setIsSearchMode(false)}>
-                <Ionicons name="arrow-back" size={25} color="#FFFFFF" />
-              </TouchableOpacity>
-              <TextInput
-                placeholder="Search messages..."
-                style={{ width: 180, padding: 15, color: 'white' }}
-                placeholderTextColor="#AAAAAA"
-                value={searchQuery}
-                returnKeyType='search'
-                onSubmitEditing={handleSearchSubmit}
-                onChangeText={setSearchQuery}
-              />
-            </View>
-            <View style={styles.navigationButtons}>
-              <TouchableOpacity onPress={handleNextResult}>
-                <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-              <View style={{ width: 60, alignItems: 'center' }}>
-                <Text style={styles.navigationText}>
-                  {currentSearchIndex + 1} / {searchResults.length}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={handlePreviousResult}>
-                <Ionicons name="arrow-down" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        <View style={styles.navbarIcons}>
-          {!isSearchMode && (
-            <>
-              <TouchableOpacity style={styles.icon} onPress={() => setIsSearchMode(true)}>
-                <Ionicons name="search" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.icon}>
-                <Ionicons name="ellipsis-horizontal" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </View>
-
-      <FlatList
+      <Navbar
+        isSearchMode={isSearchMode}
+        setIsSearchMode={setIsSearchMode}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        currentSearchIndex={currentSearchIndex}
+        searchResults={searchResults}
+        handleSearchSubmit={() => searchResults.length > 0 && scrollToSearchedMessage(currentSearchIndex)}
+        handleNextResult={() => {
+          if (searchResults.length > 1) {
+            const nextIndex = (currentSearchIndex + 1) % searchResults.length;
+            setCurrentSearchIndex(nextIndex);
+            scrollToSearchedMessage(nextIndex);
+          }
+        }}
+        handlePreviousResult={() => {
+          if (searchResults.length > 1) {
+            const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+            setCurrentSearchIndex(prevIndex);
+            scrollToSearchedMessage(prevIndex);
+          }
+        }}
+        navigation={navigation}
+      />
+      <MessageList
         ref={flatListRef}
-        data={[...messages].reverse()}
-        renderItem={renderMessageItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 }}
-        style={styles.messageList}
-        inverted
-        onScroll={handleScroll}
+        messages={[...messages].reverse()}
+        handleScroll={handleScroll}
+        searchQuery={searchQuery}
       />
 
       {isButtonVisible && (
         <FloatingButton icon={'arrow-down'} up={80} onPress={scrollToEnd} />
       )}
+      <View style={{ height: 10 }}></View>
       <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
     </View>
-
   );
 };
-
-const styles = StyleSheet.create({
-  navbar: {
-    paddingTop: '12%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#1E1E1E',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  navbarTitle: {
-    fontSize: 18,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  navbarIcons: {
-    flexDirection: 'row',
-  },
-  Image: {
-    width: 32,
-    height: 32,
-    borderRadius: 40,
-  },
-  icon: {
-    marginLeft: 20,
-  },
-  messageTime: {
-    color: '#BBBBBB',
-    fontSize: 10,
-    marginTop: 5,
-    textAlign: 'right',
-  },
-  navigationButtons: {
-    right: 10,
-    borderRadius: 20,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    alignContent: 'center',
-    alignItems: 'center',
-  },
-  navigationText: {
-    alignSelf: 'center',
-    justifyContent: 'center',
-    color: '#FFFFFF',
-    fontSize: 12,
-    marginHorizontal: 10,
-  },
-});
 
 export default ChatConversationScreen;

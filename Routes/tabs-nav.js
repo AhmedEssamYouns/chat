@@ -15,8 +15,7 @@ export default function TabNavigator({ navigation }) {
     return (
         <View style={{ flex: 1 }}>
             <Tab.Navigator
-                screenOptions={({ route, navigation }) => ({
-
+                screenOptions={{
                     tabBarActiveTintColor: "white",
                     tabBarInactiveTintColor: "gray",
                     tabBarLabelStyle: {
@@ -33,8 +32,9 @@ export default function TabNavigator({ navigation }) {
                         height: 3,
                         borderRadius: 5,
                     },
-                })}
+                }}
             >
+
                 <Tab.Screen name="chats" component={ChatScreen} />
                 <Tab.Screen name="thoughts" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />

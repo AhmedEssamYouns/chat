@@ -1,18 +1,30 @@
 import * as React from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Feather } from '@expo/vector-icons';
-import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import TabNavigator from './tabs-nav';
-import ChatConversationScreen from '../Pages/Screens/ChatScreen';
+import ChatConversationScreen from '../Pages/Screens/chat-room';
 
 const Stack = createStackNavigator();
 
-
 export default function MainTabNavigator() {
     return (
-        <Stack.Navigator>
-
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: '#121212',
+                    elevation: 0,
+                    shadowOpacity: 0,
+                    shadowOffset: { height: 0 },
+                },
+                headerTitleStyle: {
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                },
+                cardStyle: { backgroundColor: '#121212' }
+            }}
+        >
             <Stack.Screen
                 name="Tabs"
                 component={TabNavigator}
@@ -20,17 +32,6 @@ export default function MainTabNavigator() {
                     headerTitle: () => (
                         <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
                     ),
-                    headerStyle: {
-                        backgroundColor: '#121212',
-                        elevation: 0,
-                        shadowOpacity: 0,
-                        shadowOffset: { height: 0 },
-                    },
-                    headerTitleStyle: {
-                        color: 'white',
-                        fontWeight: 'bold',
-                        fontSize: 18,
-                    },
                     headerRight: () => (
                         <View style={styles.headerRight}>
                             <TouchableOpacity onPress={() => console.log('Search pressed')} style={styles.headerButton}>
@@ -48,7 +49,7 @@ export default function MainTabNavigator() {
                 name='chat'
                 component={ChatConversationScreen}
                 options={{
-                  headerShown:false
+                    headerShown: false
                 }}
             />
         </Stack.Navigator>
