@@ -25,18 +25,16 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#222',
+    backgroundColor: 'transparent',
     padding: 10,
     paddingHorizontal: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
   },
   input: {
     flex: 1,
     color: '#FFFFFF',
     padding: 10,
     borderRadius: 25,
-    backgroundColor: '#333',
+    backgroundColor: '#222',
   },
   sendIcon: {
     marginLeft: 10,

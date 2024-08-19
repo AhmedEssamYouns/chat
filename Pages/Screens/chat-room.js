@@ -11,7 +11,8 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Animated
+  Animated,
+  ImageBackground
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FloatingButton from '../../Components/Floating-Button';
@@ -132,7 +133,7 @@ const ChatConversationScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#121212' }}>
+    <View style={{ flex: 1 }}>
       <Navbar
         isSearchMode={isSearchMode}
         setIsSearchMode={setIsSearchMode}
@@ -157,18 +158,26 @@ const ChatConversationScreen = ({ navigation }) => {
         }}
         navigation={navigation}
       />
-      <MessageList
-        ref={flatListRef}
-        messages={[...messages].reverse()}
-        handleScroll={handleScroll}
-        searchQuery={searchQuery}
-      />
+      <ImageBackground
+        source={{ uri: 'https://i.pinimg.com/736x/a6/a8/b6/a6a8b6eca9c2f1063ca457b143c2ac4f.jpg' }}
+        style={{
+          flex: 1,
+          resizeMode: 'cover', 
+        }}
+      >
+        <MessageList
+          ref={flatListRef}
+          messages={[...messages].reverse()}
+          handleScroll={handleScroll}
+          searchQuery={searchQuery}
+        />
 
-      {isButtonVisible && (
-        <FloatingButton icon={'arrow-down'} up={80} onPress={scrollToEnd} />
-      )}
-      <View style={{ height: 10 }}></View>
-      <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
+        {isButtonVisible && (
+          <FloatingButton icon={'arrow-down'} up={80} onPress={scrollToEnd} />
+        )}
+        <View style={{ height: 10 }}></View>
+        <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
+      </ImageBackground>
     </View>
   );
 };

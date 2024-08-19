@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10,
     paddingHorizontal: 20,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#121212',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
