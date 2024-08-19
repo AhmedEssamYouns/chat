@@ -11,11 +11,12 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Animated
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
+import FloatingButton from '../../Components/Floating-Button';
 import MessageInput from '../../Components/Messege-Input';
-import MessageItem from '../../Components/Messege-item';
+import MessageItem from '../../Components/Messege-Item';
 
 const ChatConversationScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -48,19 +49,23 @@ const ChatConversationScreen = ({ navigation }) => {
     { id: '27', text: 'Bye!', time: '01:20 PM', isSentByMe: false },
   ]);
 
-  // ... rest of your component logic
-  const handleSearchSubmit = () => {
-    if (searchResults.length > 0) {
-      scrollToSearchedMessage(currentSearchIndex);
-    }
-  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const flatListRef = useRef(null);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  const lastScrollY = useRef(new Animated.Value(0)).current;
 
+
+
+  const handleSearchSubmit = () => {
+    if (searchResults.length > 0) {
+      scrollToSearchedMessage(currentSearchIndex);
+    }
+  };
   const handleSend = () => {
     if (newMessage.trim() !== '') {
       const newMsg = {
@@ -144,6 +149,18 @@ const ChatConversationScreen = ({ navigation }) => {
     <MessageItem item={item} searchQuery={searchQuery} />
   );
 
+  const [isButtonVisible, setIsButtonVisible] = useState(true);
+
+  const handleScroll = (event) => {
+    const { contentOffset } = event.nativeEvent;
+    const isAtBottom = contentOffset.y <= 20; // 20px buffer for precision
+    setIsButtonVisible(!isAtBottom);
+  };
+
+
+  const scrollToEnd = () => {
+    flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+  };
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
       <View style={styles.navbar}>
@@ -178,13 +195,15 @@ const ChatConversationScreen = ({ navigation }) => {
             </View>
             <View style={styles.navigationButtons}>
               <TouchableOpacity onPress={handleNextResult}>
-                <Ionicons name="arrow-up" size={24} color="#FFFFFF" />
+                <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
               </TouchableOpacity>
-              <Text style={styles.navigationText}>
-                {currentSearchIndex + 1} / {searchResults.length}
-              </Text>
+              <View style={{ width: 60, alignItems: 'center' }}>
+                <Text style={styles.navigationText}>
+                  {currentSearchIndex + 1} / {searchResults.length}
+                </Text>
+              </View>
               <TouchableOpacity onPress={handlePreviousResult}>
-                <Ionicons name="arrow-down" size={24} color="#FFFFFF" />
+                <Ionicons name="arrow-down" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -202,6 +221,7 @@ const ChatConversationScreen = ({ navigation }) => {
           )}
         </View>
       </View>
+
       <FlatList
         ref={flatListRef}
         data={[...messages].reverse()}
@@ -210,9 +230,15 @@ const ChatConversationScreen = ({ navigation }) => {
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 }}
         style={styles.messageList}
         inverted
+        onScroll={handleScroll}
       />
+
+      {isButtonVisible && (
+        <FloatingButton icon={'arrow-down'} up={80} onPress={scrollToEnd} />
+      )}
       <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
     </View>
+
   );
 };
 
@@ -251,13 +277,19 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   navigationButtons: {
+    right: 10,
     borderRadius: 20,
     flexDirection: 'row',
     justifyContent: 'center',
+    alignSelf: 'center',
+    alignContent: 'center',
     alignItems: 'center',
   },
   navigationText: {
+    alignSelf: 'center',
+    justifyContent: 'center',
     color: '#FFFFFF',
+    fontSize: 12,
     marginHorizontal: 10,
   },
 });

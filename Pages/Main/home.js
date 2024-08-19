@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Import icons
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import SearchBar from '../../Components/Search';
+import SearchBar from '../../Components/Search-Bar';
 
 
 const fakeChats = [

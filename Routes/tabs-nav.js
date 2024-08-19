@@ -39,7 +39,7 @@ export default function TabNavigator({ navigation }) {
                 <Tab.Screen name="thoughts" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
-            <FloatingButton onPress={() => console.log('Floating button pressed')} />
+            <FloatingButton icon={'plus'} up={30} onPress={() => console.log('Floating button pressed')} />
         </View>
     );
 }

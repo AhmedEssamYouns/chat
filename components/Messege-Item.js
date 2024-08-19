@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   highlightedText: {
-    color: 'blue',
+    color: 'yellow',
     fontWeight: 'bold',
   },
   messageTime: {

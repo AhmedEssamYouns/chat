@@ -3,10 +3,10 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-const FloatingButton = ({ onPress }) => (
-    <View style={styles.container}>
+const FloatingButton = ({ onPress, icon, up }) => (
+    <View style={[styles.container, { bottom: up }]}>
         <TouchableOpacity style={styles.button} onPress={onPress}>
-            <Feather name="plus" size={24} color="white" />
+            <Feather name={icon} size={24} color="white" />
         </TouchableOpacity>
     </View>
 );
@@ -14,7 +14,6 @@ const FloatingButton = ({ onPress }) => (
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: 20,
         right: 20,
         zIndex: 100,
     },
