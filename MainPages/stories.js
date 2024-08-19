@@ -96,46 +96,11 @@ const StoriesScreen = () => {
         renderItem={renderStoryItem}
         keyExtractor={(item) => item.id}
         style={styles.storyList}
-      />
-
-      {/* Floating Action Button */}
-      {/* <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setModalVisible(true)}
-      >
-        <Feather name="plus" size={24} color="white" />
-      </TouchableOpacity> */}
-
-      {/* Modal for adding a new post */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={handleOutsidePress}
-      >
-        <Pressable style={styles.modalContainer} onPress={handleOutsidePress}>
-          <View style={styles.modalContent} onTouchStart={(e) => e.stopPropagation()}>
-            <TouchableOpacity style={styles.closeButton} onPress={handleOutsidePress}>
-              <Feather name="x" size={24} color="white" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Add a New Post</Text>
-            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-              <Text style={styles.imagePickerButtonText}>Choose Image</Text>
-            </TouchableOpacity>
-            {image && <Image source={{ uri: image }} style={styles.previewImage} />}
-            <TextInput
-              style={styles.input}
-              placeholder="Caption (optional)"
-              placeholderTextColor="#AAAAAA"
-              value={newStory.caption}
-              onChangeText={(text) => setNewStory((prev) => ({ ...prev, caption: text }))}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={handleAddPost}>
-              <Text style={styles.addButtonText}>Add Post</Text>
-            </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
+        contentContainerStyle={{paddingBottom:30}}
+        ListFooterComponent={
+              <Text style={styles.endOfPostsText}>No More Posts</Text>
+      }
+  />
     </View>
   );
 };
@@ -175,7 +140,9 @@ const styles = StyleSheet.create({
   },
   storyPhoto: {
     width: '100%',
+    resizeMode:'contain',
     height: 200,
+    borderWidth:10,
     marginVertical: 10,
     borderRadius: 10,
   },
@@ -192,7 +159,6 @@ const styles = StyleSheet.create({
   },
   storyList: {
     backgroundColor: '#121212',
-    paddingBottom: 100,
   },
   fab: {
     position: 'absolute',
@@ -271,6 +237,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 10,
   },
+  endOfPostsText: {
+    textAlign: 'center',
+    padding: 20,
+    fontSize: 16,
+    color: 'gray',
+},
 });
 
 export default StoriesScreen;

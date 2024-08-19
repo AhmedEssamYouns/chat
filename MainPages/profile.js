@@ -48,7 +48,7 @@ const ProfileScreen = () => {
                     <AntDesign name="heart" size={20} color="#FF6347" />
                     <Text style={styles.likesText}>{item.likes}</Text>
                 </View>
-                <View style={{flexDirection:"row"}}>
+                <View style={{ flexDirection: "row" }}>
                     <TouchableOpacity>
                         <AntDesign name="edit" size={20} color="#aaaa" style={styles.actionIcon} />
                     </TouchableOpacity>
@@ -69,6 +69,9 @@ const ProfileScreen = () => {
                     <Text style={styles.profileBio}>{userProfile.bio}</Text>
                 </View>
                 <Feather name="edit" size={18} color="tomato" style={styles.editButton} />
+                <TouchableOpacity style={{ position: "absolute", right: 20, bottom: 12, }}>
+                    <Text style={{ color: '#ccc', fontSize: 18 }}>Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>17</Text><View ></View></Text>
+                </TouchableOpacity>
             </View>
 
             <Text style={styles.sectionTitle}>Recent Posts</Text>
@@ -77,6 +80,11 @@ const ProfileScreen = () => {
                 renderItem={renderPostItem}
                 keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.postsList}
+                ListFooterComponent={
+                    userProfile.posts.length > 0 ? (
+                        <Text style={styles.endOfPostsText}>End of Posts</Text>
+                    ) : null
+                }
             />
 
         </View>
@@ -114,7 +122,6 @@ const styles = StyleSheet.create({
         right: 20,
         top: 40,
     },
-
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -123,6 +130,7 @@ const styles = StyleSheet.create({
     },
     postsList: {
         paddingHorizontal: 15,
+        paddingBottom: 20
     },
     postItem: {
         marginBottom: 15,
@@ -140,8 +148,9 @@ const styles = StyleSheet.create({
     },
     postPhoto: {
         width: '100%',
+        resizeMode:'contain',
         height: 200,
-        borderRadius: 10,
+        borderRadius: 20,
         marginBottom: 10,
     },
     postTime: {
@@ -171,6 +180,12 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         marginLeft: 5,
         fontSize: 14,
+    },
+    endOfPostsText: {
+        textAlign: 'center',
+        padding: 20,
+        fontSize: 16,
+        color: 'gray',
     },
 });
 

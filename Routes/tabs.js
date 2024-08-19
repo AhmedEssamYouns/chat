@@ -6,40 +6,19 @@ import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native
 import ChatScreen from '../MainPages/home';
 import StoriesScreen from '../MainPages/stories';
 import ProfileScreen from '../MainPages/profile';
-import FloatingButton from './FloatingButton';
+import FloatingButton from '../Components/FloatingButton';
+import ChatConversationScreen from '../Screens/ChatScreen';
 
 const Tab = createMaterialTopTabNavigator();
 const Stack = createStackNavigator();
 
-function TabNavigator() {
-
-    const [keyboardVisible, setKeyboardVisible] = React.useState(false);
-
-    React.useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            () => {
-                setKeyboardVisible(true);
-            }
-        );
-        const keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                setKeyboardVisible(false);
-            }
-        );
-
-        return () => {
-            keyboardDidHideListener.remove();
-            keyboardDidShowListener.remove();
-        };
-    }, []);
+function TabNavigator({ navigation }) {
 
     return (
         <View style={{ flex: 1 }}>
             <Tab.Navigator
                 screenOptions={({ route, navigation }) => ({
-                    
+
                     tabBarActiveTintColor: "white",
                     tabBarInactiveTintColor: "gray",
                     tabBarLabelStyle: {
@@ -62,8 +41,7 @@ function TabNavigator() {
                 <Tab.Screen name="thoughts" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
-
-                <FloatingButton onPress={() => console.log('Floating button pressed')} />
+            <FloatingButton onPress={() => console.log('Floating button pressed')} />
         </View>
     );
 }
@@ -71,12 +49,13 @@ function TabNavigator() {
 export default function MainTabNavigator() {
     return (
         <Stack.Navigator>
+
             <Stack.Screen
                 name="Tabs"
                 component={TabNavigator}
                 options={{
                     headerTitle: () => (
-                        <Text style={styles.headerTitle}>Snap <Text style={{ color: "tomato" }}>Talk</Text></Text>
+                        <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
                     ),
                     headerStyle: {
                         backgroundColor: '#121212',
@@ -99,6 +78,24 @@ export default function MainTabNavigator() {
                             </TouchableOpacity>
                         </View>
                     ),
+                }}
+            />
+
+            <Stack.Screen
+                name='chat'
+                component={ChatConversationScreen}
+                options={{
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation:1
+                    },
+                    headerTitleStyle: {
+                        right:20,
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerTintColor: 'white'
                 }}
             />
         </Stack.Navigator>

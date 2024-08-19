@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Import icons
+import { TouchableOpacity } from 'react-native-gesture-handler';
 const fakeChats = [
   {
     id: '1',
@@ -29,7 +30,7 @@ const fakeChats = [
   // Add more fake data as needed
 ];
 
-const ChatScreen = () => {
+const ChatScreen = ({navigation}) => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredChats, setFilteredChats] = useState(fakeChats);
@@ -43,7 +44,7 @@ const ChatScreen = () => {
   };
 
   const renderChatItem = ({ item }) => (
-    <View style={styles.chatItem}>
+    <TouchableOpacity style={styles.chatItem} onPress={() => navigation.navigate('chat')}>
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
@@ -59,7 +60,7 @@ const ChatScreen = () => {
           )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   // Footer Component for the FlatList
