@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TextInput, TouchableOpacity, Image , BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search';
 
@@ -89,6 +89,22 @@ const ChatConversationScreen = ({ navigation }) => {
     }
   }, [searchQuery]);
 
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (isSearchMode) {
+        setIsSearchMode(false);
+        return true; // Prevent default back button behavior
+      }
+      return false; // Allow default back button behavior
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    };
+  }, [isSearchMode]);
+
   const scrollToSearchedMessage = (index) => {
     if (searchResults.length > 0 && flatListRef.current) {
       flatListRef.current.scrollToIndex({ index: searchResults[index].index, animated: true });
@@ -169,10 +185,10 @@ const ChatConversationScreen = ({ navigation }) => {
             <Text style={styles.navbarTitle}>Chat</Text>
           </View>
         ) : (
-          <View style={{width:'100%',flexDirection:"row",backgroundColor:"#333",borderRadius:30,paddingHorizontal:10,}}>
+          <View style={{ width: '100%', flexDirection: 'row', backgroundColor: '#333', borderRadius: 30, paddingHorizontal: 10 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TouchableOpacity onPress={() => setIsSearchMode(false)}>
-                <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
+                <Ionicons name="arrow-back" size={25} color="#FFFFFF" />
               </TouchableOpacity>
               <TextInput
                 placeholder="Search messages..."
@@ -206,11 +222,8 @@ const ChatConversationScreen = ({ navigation }) => {
               </TouchableOpacity>
             </>
           )}
-
         </View>
-
       </View>
-
 
       <FlatList
         ref={flatListRef}
