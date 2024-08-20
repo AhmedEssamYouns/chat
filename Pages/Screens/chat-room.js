@@ -2,12 +2,12 @@
 import React, { useState, useRef, useEffect, } from 'react';
 import { View, Text, StyleSheet, Modal, Button, BackHandler, ImageBackground, TouchableOpacity } from 'react-native';
 import { BlurView } from 'expo-blur';
-import FloatingButton from '../../Components/Floating-Button';
+import {FloatingButton} from '../../Components/Floating-Button';
 import MessageInput from '../../Components/Messege-Input';
 import Navbar from '../../Components/chat-navbar';
 import MessageList from '../../Components/Messege-list';
 import { Keyboard } from 'react-native';
-import DropdownMenu from '../../Components/menu-model';
+import DropdownMenu from '../../Components/chat-menu-model';
 
 const ChatConversationScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([

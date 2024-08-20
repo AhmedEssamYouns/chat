@@ -1,16 +1,93 @@
-// FloatingButton.js
-import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TouchableOpacity, StyleSheet, View, Animated, Pressable, BackHandler } from 'react-native';
+import { Feather, MaterialCommunityIcons, AntDesign } from '@expo/vector-icons';
 
-const FloatingButton = ({ onPress, icon, up }) => (
-    <View style={[styles.container, { bottom: up }]}>
-        <TouchableOpacity style={styles.button} onPress={onPress}>
-            <Feather name={icon} size={24} color="white" />
-        </TouchableOpacity>
-    </View>
-);
+// Regular FloatingButton component
+export function FloatingButton({ onPress, icon, up }) {
+    return (
+        <View style={[styles.container, { bottom: up }]}>
+            <TouchableOpacity style={styles.button} onPress={onPress}>
+                <Feather name={icon} size={24} color="white" />
+            </TouchableOpacity>
+        </View>
+    );
+}
 
+export function AnimatedFloatingButton({ up }) {
+    const [expanded, setExpanded] = useState(false);
+    const [animation] = useState(new Animated.Value(0));
+    const [rotate] = useState(new Animated.Value(0));
+
+    useEffect(() => {
+        Animated.parallel([
+            Animated.timing(animation, {
+                toValue: expanded ? 1 : 0,
+                duration: 300,
+                useNativeDriver: false,
+            }),
+            Animated.timing(rotate, {
+                toValue: expanded ? 1 : 0,
+                duration: 300,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    }, [expanded]);
+
+    useEffect(() => {
+        const handleBackPress = () => {
+            if (expanded) {
+                setExpanded(false); // Close the bar if it's open
+                return true; // Prevent the default back action
+            }
+            return false; // Allow the default back action
+        };
+
+        // Add back button event listener
+        BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+        // Cleanup the event listener
+        return () => {
+            BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+        };
+    }, [expanded]);
+
+    const animatedHeight = animation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 180], // Adjust as needed
+    });
+
+    const rotation = rotate.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '180deg'], // Rotate by 180 degrees
+    });
+
+    const toggleBar = () => {
+        setExpanded(prev => !prev);
+    };
+
+    return (
+        <View style={[styles.container, { bottom: up }]}>
+            <Pressable style={styles.button} onPress={toggleBar}>
+                <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+                    <Feather name={expanded ? 'chevron-up' : 'plus'} size={24} color="white" />
+                </Animated.View>
+            </Pressable>
+            <Animated.View style={[styles.bar, { height: animatedHeight }]}>
+                <TouchableOpacity style={styles.item}>
+                    <Feather name="share" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.item}>
+                    <MaterialCommunityIcons name="message-plus-outline" size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.item}>
+                    <AntDesign name="adduser" size={24} color="white" />
+                </TouchableOpacity>
+            </Animated.View>
+        </View>
+    );
+}
+
+// Styles for both components
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
@@ -22,9 +99,29 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
+        zIndex: 3,
         alignItems: 'center',
         justifyContent: 'center',
     },
+    bar: {
+        position: 'absolute',
+        width: 60,
+        bottom: 30,
+        backgroundColor: '#333',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        overflow: 'hidden',
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    item: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 10,
+    },
+    label: {
+        color: 'white',
+        marginLeft: 10,
+    },
 });
-
-export default FloatingButton;
