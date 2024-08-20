@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Pressable } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const userProfile = {
     id: '1',
@@ -27,6 +28,7 @@ const userProfile = {
 };
 
 const ProfileScreen = () => {
+    const navigation = useNavigation()
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [updatedBio, setUpdatedBio] = useState(userProfile.bio);
 
@@ -69,7 +71,7 @@ const ProfileScreen = () => {
                     <Text style={styles.profileBio}>{userProfile.bio}</Text>
                 </View>
                 <Feather name="edit" size={18} color="tomato" style={styles.editButton} />
-                <TouchableOpacity style={{ position: "absolute", right: 20, bottom: 12, }}>
+                <TouchableOpacity style={{ position: "absolute", right: 20, bottom: 12, }} onPress={() => navigation.navigate("Friends")}>
                     <Text style={{ color: '#ccc', fontSize: 18 }}>Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>17</Text><View ></View></Text>
                 </TouchableOpacity>
             </View>
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
     },
     postPhoto: {
         width: '100%',
-        resizeMode:'contain',
+        resizeMode: 'contain',
         height: 200,
         borderRadius: 20,
         marginBottom: 10,

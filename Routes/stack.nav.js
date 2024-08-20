@@ -5,11 +5,15 @@ import { Feather } from '@expo/vector-icons';
 import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
 import TabNavigator from './tabs-nav';
 import ChatConversationScreen from '../Pages/Screens/chat-room'
+import SearchScreen from '../Pages/Screens/Search-screen';
+import { useNavigation } from '@react-navigation/native';
+import FriendsScreen from '../Pages/Screens/Frineds-screen';
 
 const Stack = createStackNavigator();
 
 
 export default function MainTabNavigator() {
+    const navigation = useNavigation()
     return (
         <Stack.Navigator
             screenOptions={{
@@ -38,7 +42,7 @@ export default function MainTabNavigator() {
 
                     headerRight: () => (
                         <View style={styles.headerRight}>
-                            <TouchableOpacity onPress={() => console.log('Search pressed')} style={styles.headerButton}>
+                            <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
                                 <Feather name="search" size={24} color="white" />
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => console.log('More options pressed')}>
@@ -52,6 +56,20 @@ export default function MainTabNavigator() {
             <Stack.Screen
                 name='chat'
                 component={ChatConversationScreen}
+                options={{
+                    headerShown: false
+                }}
+            />
+
+            <Stack.Screen
+                name='search'
+                component={SearchScreen}
+                options={{ headerShown: false }}
+            />
+
+            <Stack.Screen
+                name='Friends'
+                component={FriendsScreen}
                 options={{
                     headerShown: false
                 }}

@@ -1,16 +1,14 @@
-
-import * as React from 'react';
+import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/stories';
 import ProfileScreen from '../Pages/Main/profile';
-import { AnimatedFloatingButton, FloatingButton } from '../Components/Floating-Button';
+import { AnimatedFloatingButton } from '../Components/Floating-Button';
 
 const Tab = createMaterialTopTabNavigator();
 
-export default function TabNavigator({ navigation }) {
-
+export default function TabNavigator() {
     return (
         <View style={{ flex: 1 }}>
             <Tab.Navigator
@@ -33,12 +31,11 @@ export default function TabNavigator({ navigation }) {
                     },
                 }}
             >
-
                 <Tab.Screen name="chats" component={ChatScreen} />
                 <Tab.Screen name="thoughts" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
-            <AnimatedFloatingButton up={50}/>
+            <AnimatedFloatingButton up={50} />
         </View>
     );
 }
