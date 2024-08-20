@@ -1,9 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Modal } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const searchAnim = useRef(new Animated.Value(-300)).current; // Start from off-screen left
+  const searchInputRef = useRef(null); // Reference for the search input
+
+  useEffect(() => {
+    Animated.timing(searchAnim, {
+      toValue: isSearchMode ? 0 : -300,
+      duration: 300,
+      easing: Easing.ease,
+      useNativeDriver: true,
+    }).start();
+
+    if (isSearchMode) {
+      // Focus the search input and show the keyboard
+      setTimeout(() => {
+        searchInputRef.current.focus();
+      }, 300); // Delay slightly to ensure animation completes
+    }
+  }, [isSearchMode]);
 
   const handleMenuToggle = () => {
     setIsMenuVisible(!isMenuVisible);
@@ -17,7 +35,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   return (
     <View style={styles.navbar}>
       {!isSearchMode ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', height: 40 }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -28,12 +46,13 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
           <Text style={styles.navbarTitle}>Chat</Text>
         </View>
       ) : (
-        <View style={styles.searchBar}>
+        <Animated.View style={[styles.searchBar, { transform: [{ translateX: searchAnim }] }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity onPress={() => setIsSearchMode(false)}>
               <Ionicons name="arrow-back" size={25} color="#FFFFFF" />
             </TouchableOpacity>
             <TextInput
+              ref={searchInputRef}
               placeholder="Search messages..."
               style={styles.searchInput}
               placeholderTextColor="#AAAAAA"
@@ -56,7 +75,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
               <Ionicons name="arrow-down" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
       )}
       <View style={styles.navbarIcons}>
         {!isSearchMode && (
@@ -134,11 +153,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#333',
     borderRadius: 30,
+    height: 40,
     paddingHorizontal: 10,
+    zIndex: 1,
   },
   searchInput: {
     width: 180,
-    padding: 15,
+    paddingHorizontal: 10,
     color: 'white',
   },
   navigationButtons: {

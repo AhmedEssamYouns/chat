@@ -16,6 +16,7 @@ const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, hand
 
     return (
         <Modal
+            animationType='slide'
             transparent
             visible={isMenuVisible}
             onRequestClose={handleMenuToggle}

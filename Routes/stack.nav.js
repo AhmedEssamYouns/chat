@@ -11,8 +11,12 @@ const Stack = createStackNavigator();
 
 export default function MainTabNavigator() {
     return (
-        <Stack.Navigator>
-
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: { backgroundColor: '#121212' },
+                contentStyle: { backgroundColor: '#121212' }, // This affects the background color of the screen content
+                cardStyle: { backgroundColor: '#121212' }, // This affects the background color of the cards
+            }}>
             <Stack.Screen
                 name="Tabs"
                 component={TabNavigator}
@@ -31,6 +35,7 @@ export default function MainTabNavigator() {
                         fontWeight: 'bold',
                         fontSize: 18,
                     },
+
                     headerRight: () => (
                         <View style={styles.headerRight}>
                             <TouchableOpacity onPress={() => console.log('Search pressed')} style={styles.headerButton}>
@@ -48,7 +53,7 @@ export default function MainTabNavigator() {
                 name='chat'
                 component={ChatConversationScreen}
                 options={{
-                  headerShown:false
+                    headerShown: false
                 }}
             />
         </Stack.Navigator>

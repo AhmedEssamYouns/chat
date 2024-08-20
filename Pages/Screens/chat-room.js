@@ -38,7 +38,10 @@ const ChatConversationScreen = ({ navigation }) => {
     { id: '25', text: 'Sure thing! Have a great day at work!', time: '01:16 PM', isSentByMe: false },
     { id: '26', text: 'Thanks, you too! Bye for now!', time: '01:18 PM', isSentByMe: true },
     { id: '27', text: 'Bye!', time: '01:20 PM', isSentByMe: false },
-  ]); const [searchQuery, setSearchQuery] = useState('');
+  ]);
+
+
+  const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState(null);
@@ -122,7 +125,7 @@ const ChatConversationScreen = ({ navigation }) => {
       if (isEditing) {
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
-            msg.id === editingMessageId ? { ...msg, text: newMessage, isEdited:true } : msg
+            msg.id === editingMessageId ? { ...msg, text: newMessage, isEdited: true } : msg
           )
         );
         setIsEditing(false);
@@ -137,9 +140,10 @@ const ChatConversationScreen = ({ navigation }) => {
           isSentByMe: true,
         };
         setMessages((prevMessages) => [...prevMessages, newMsg]);
+      scrollToEnd();
+
       }
       setNewMessage('');
-      scrollToEnd();
     }
   };
 
@@ -225,20 +229,21 @@ const ChatConversationScreen = ({ navigation }) => {
             </View>
           </View>
         )}
-        {isButtonVisible && (
+        {(isButtonVisible && !isEditing) && (
           <FloatingButton icon={'arrow-down'} up={20} onPress={scrollToEnd} />
         )}
       </ImageBackground>
-
-      <MessageInput
-        ref={inputRef}
-        newMessage={newMessage}
-        setNewMessage={setNewMessage}
-        handleSend={handleSend}
-        isEditing={isEditing}
-        style={styles.messageInput}
-      />
-     <DropdownMenu
+      {!isSearchMode &&
+        <MessageInput
+          ref={inputRef}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          handleSend={handleSend}
+          isEditing={isEditing}
+          style={styles.messageInput}
+        />
+      }
+      <DropdownMenu
         isMenuVisible={isModalVisible}
         handleMenuToggle={() => setIsModalVisible(!isModalVisible)}
         handleEditMessage={handleEditMessage}
