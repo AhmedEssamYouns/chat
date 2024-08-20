@@ -27,7 +27,6 @@ const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, hand
             >
                 <View style={styles.modalContainer} onStartShouldSetResponder={() => true}>
                     <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-                        <Text style={styles.modalTitle}>Select an action</Text>
                         <TouchableOpacity
                             onPress={handleEditMessage}
                             style={styles.optionButton}
@@ -75,8 +74,6 @@ const styles = StyleSheet.create({
     },
     optionButton: {
         padding: 10,
-        backgroundColor: '#222',
-        borderRadius: 20,
     },
     marginTop: {
         marginTop: 10,
