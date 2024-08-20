@@ -1,31 +1,36 @@
-// components/MessageInput.js
-import React from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
-const MessageInput = ({ newMessage, setNewMessage, handleSend }) => {
+import React, { forwardRef } from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+
+const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEditing }, ref) => {
   return (
     <View style={styles.inputContainer}>
       <TextInput
-        multiline
+        ref={ref}
         style={styles.input}
-        placeholder="Type a message"
-        placeholderTextColor="#AAAAAA"
         value={newMessage}
         onChangeText={setNewMessage}
+        placeholder={isEditing ? 'Edit your message' : 'Type a message'}
+        placeholderTextColor="#999"
       />
       <TouchableOpacity onPress={handleSend}>
-        <Ionicons name="send" size={24} color="tomato" style={styles.sendIcon} />
+        <Ionicons
+          name={isEditing ? 'checkmark-circle' : 'send'}
+          size={isEditing ? 30 : 20}
+          style={styles.sendIcon}
+          color="tomato"
+        />
       </TouchableOpacity>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#121212',
     padding: 10,
     paddingHorizontal: 15,
   },

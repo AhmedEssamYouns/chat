@@ -2,13 +2,15 @@ import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import MessageItem from './Messege-Item';
 
-const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery }, ref) => (
+const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onLongPressMessage }, ref) => (
     <FlatList
         ref={ref}
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-            <MessageItem item={item} searchQuery={searchQuery} />
+            <MessageItem item={item} searchQuery={searchQuery}
+                onLongPressMessage={onLongPressMessage}
+            />
         )}
         contentContainerStyle={styles.listContainer}
         onScroll={handleScroll}
@@ -19,7 +21,7 @@ const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery }, r
 const styles = StyleSheet.create({
     listContainer: {
         paddingBottom: 20,
-        paddingHorizontal:20,
+        paddingHorizontal: 20,
     },
 });
 

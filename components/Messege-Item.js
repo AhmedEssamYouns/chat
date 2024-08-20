@@ -1,8 +1,7 @@
-// components/MessageItem.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-const MessageItem = ({ item, searchQuery }) => {
+const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const lowerCaseText = item.text.toLowerCase();
   const lowerCaseSearchQuery = searchQuery.toLowerCase();
 
@@ -10,36 +9,53 @@ const MessageItem = ({ item, searchQuery }) => {
 
   if (matchIndex !== -1 && searchQuery !== '') {
     const beforeMatch = item.text.substring(0, matchIndex);
-    const matchText = item.text.substring(matchIndex, matchIndex + searchQuery.length);
+    const matchText = item.text.substring(
+      matchIndex,
+      matchIndex + searchQuery.length
+    );
     const afterMatch = item.text.substring(matchIndex + searchQuery.length);
 
     return (
-      <View
+      <TouchableOpacity
+        onLongPress={() => onLongPressMessage(item)}
         style={[
           styles.messageContainer,
           item.isSentByMe ? styles.sentMessage : styles.receivedMessage,
         ]}
       >
-        <Text style={styles.messageText}>
-          {beforeMatch}
-          <Text style={styles.highlightedText}>{matchText}</Text>
-          {afterMatch}
-        </Text>
-        <Text style={styles.messageTime}>{item.time}</Text>
-      </View>
+        <View>
+          <Text style={styles.messageText}>
+            {beforeMatch}
+            <Text style={styles.highlightedText}>{matchText}</Text>
+            {afterMatch}
+          </Text>
+          <Text style={styles.messageTime}>{item.time}</Text>
+          {item.isEdited && (
+            <Text style={styles.editedTag}>Edited</Text>
+          )}
+        </View>
+      </TouchableOpacity>
     );
   }
 
   return (
-    <View
+    <TouchableOpacity
+      onLongPress={() => onLongPressMessage(item)}
       style={[
         styles.messageContainer,
         item.isSentByMe ? styles.sentMessage : styles.receivedMessage,
       ]}
     >
-      <Text style={styles.messageText}>{item.text}</Text>
-      <Text style={styles.messageTime}>{item.time}</Text>
-    </View>
+      <View>
+        <Text style={styles.messageText}>{item.text}</Text>
+        <View style={{ flexDirection: 'row',gap:10,justifyContent:'space-between' }}>
+          <Text style={styles.messageTime}>{item.time}</Text>
+          {item.isEdited && (
+            <Text style={styles.editedTag}>Edited</Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -70,6 +86,12 @@ const styles = StyleSheet.create({
     color: '#BBBBBB',
     fontSize: 10,
     marginTop: 5,
+    textAlign: 'right',
+  },
+  editedTag: {
+    color: '#BBBBBB',
+    fontSize: 12,
+    marginTop: 2,
     textAlign: 'right',
   },
 });

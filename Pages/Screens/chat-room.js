@@ -1,24 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  BackHandler,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Animated,
-  ImageBackground
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+
+import React, { useState, useRef, useEffect, } from 'react';
+import { View, Text, StyleSheet, Modal, Button, BackHandler, ImageBackground, TouchableOpacity } from 'react-native';
+import { BlurView } from 'expo-blur';
 import FloatingButton from '../../Components/Floating-Button';
 import MessageInput from '../../Components/Messege-Input';
 import Navbar from '../../Components/chat-navbar';
 import MessageList from '../../Components/Messege-list';
+import { Keyboard } from 'react-native';
+import DropdownMenu from '../../Components/menu-model';
 
 const ChatConversationScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([
@@ -49,21 +38,26 @@ const ChatConversationScreen = ({ navigation }) => {
     { id: '25', text: 'Sure thing! Have a great day at work!', time: '01:16 PM', isSentByMe: false },
     { id: '26', text: 'Thanks, you too! Bye for now!', time: '01:18 PM', isSentByMe: true },
     { id: '27', text: 'Bye!', time: '01:20 PM', isSentByMe: false },
-  ]);
-
-  const [searchQuery, setSearchQuery] = useState('');
+  ]); const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
-  const flatListRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [isButtonVisible, setIsButtonVisible] = useState(false);
+  const inputRef = useRef(null);
+  const flatListRef = useRef(null);
 
   useEffect(() => {
     if (searchQuery) {
       const results = messages
         .map((message, index) => ({ ...message, index }))
-        .filter((message) => message.text.toLowerCase().includes(searchQuery.toLowerCase()))
+        .filter((message) =>
+          message.text.toLowerCase().includes(searchQuery.toLowerCase())
+        )
         .reverse();
 
       setSearchResults(results);
@@ -79,12 +73,21 @@ const ChatConversationScreen = ({ navigation }) => {
     }
   }, [searchQuery]);
 
+
   useEffect(() => {
     const handleBackPress = () => {
       if (isSearchMode) {
         setIsSearchMode(false);
-        return true;
+        return true; // Indicates that the back press event has been handled
       }
+
+      if (isEditing) {
+        setIsEditing(false);
+        setNewMessage('')
+        return true; // Indicates that the back press event has been handled
+      }
+
+      // If neither search mode nor editing mode is active, allow the default back action
       return false;
     };
 
@@ -93,13 +96,19 @@ const ChatConversationScreen = ({ navigation }) => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     };
-  }, [isSearchMode]);
+  }, [isSearchMode, isEditing]);
 
   useEffect(() => {
     if (!isSearchMode) {
       setSearchQuery('');
     }
   }, [isSearchMode]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setTimeout(() => inputRef.current.focus(), 100); // Ensure the input is focused
+    }
+  }, [isEditing]);
 
   const scrollToSearchedMessage = (index) => {
     if (searchResults.length > 0 && flatListRef.current) {
@@ -110,15 +119,27 @@ const ChatConversationScreen = ({ navigation }) => {
 
   const handleSend = () => {
     if (newMessage.trim() !== '') {
-      const newMsg = {
-        id: (messages.length + 1).toString(),
-        text: newMessage,
-        time: 'Now',
-        isSentByMe: true,
-      };
-      setMessages((prevMessages) => [...prevMessages, newMsg]);
+      if (isEditing) {
+        setMessages((prevMessages) =>
+          prevMessages.map((msg) =>
+            msg.id === editingMessageId ? { ...msg, text: newMessage, isEdited:true } : msg
+          )
+        );
+        setIsEditing(false);
+        setEditingMessageId(null);
+        Keyboard.dismiss(); // Hide the keyboard after sending
+
+      } else {
+        const newMsg = {
+          id: (messages.length + 1).toString(),
+          text: newMessage,
+          time: 'Now',
+          isSentByMe: true,
+        };
+        setMessages((prevMessages) => [...prevMessages, newMsg]);
+      }
       setNewMessage('');
-      scrollToEnd()
+      scrollToEnd();
     }
   };
 
@@ -132,6 +153,25 @@ const ChatConversationScreen = ({ navigation }) => {
     flatListRef.current.scrollToOffset({ offset: 0, animated: true });
   };
 
+  const handleLongPressMessage = (message) => {
+    setSelectedMessage(message);
+    setIsModalVisible(true);
+  };
+
+  const handleDeleteMessage = () => {
+    setMessages((prevMessages) =>
+      prevMessages.filter((msg) => msg.id !== selectedMessage.id)
+    );
+    setIsModalVisible(false);
+  };
+
+  const handleEditMessage = () => {
+    setNewMessage(selectedMessage.text);
+    setIsEditing(true);
+    setEditingMessageId(selectedMessage.id);
+    setIsModalVisible(false);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <Navbar
@@ -141,7 +181,9 @@ const ChatConversationScreen = ({ navigation }) => {
         setSearchQuery={setSearchQuery}
         currentSearchIndex={currentSearchIndex}
         searchResults={searchResults}
-        handleSearchSubmit={() => searchResults.length > 0 && scrollToSearchedMessage(currentSearchIndex)}
+        handleSearchSubmit={() =>
+          searchResults.length > 0 && scrollToSearchedMessage(currentSearchIndex)
+        }
         handleNextResult={() => {
           if (searchResults.length > 1) {
             const nextIndex = (currentSearchIndex + 1) % searchResults.length;
@@ -151,7 +193,9 @@ const ChatConversationScreen = ({ navigation }) => {
         }}
         handlePreviousResult={() => {
           if (searchResults.length > 1) {
-            const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+            const prevIndex =
+              (currentSearchIndex - 1 + searchResults.length) %
+              searchResults.length;
             setCurrentSearchIndex(prevIndex);
             scrollToSearchedMessage(prevIndex);
           }
@@ -159,10 +203,12 @@ const ChatConversationScreen = ({ navigation }) => {
         navigation={navigation}
       />
       <ImageBackground
-        source={{ uri: 'https://i.pinimg.com/736x/a6/a8/b6/a6a8b6eca9c2f1063ca457b143c2ac4f.jpg' }}
+        source={{
+          uri: 'https://i.pinimg.com/736x/a6/a8/b6/a6a8b6eca9c2f1063ca457b143c2ac4f.jpg',
+        }}
         style={{
           flex: 1,
-          resizeMode: 'cover', 
+          resizeMode: 'cover',
         }}
       >
         <MessageList
@@ -170,16 +216,112 @@ const ChatConversationScreen = ({ navigation }) => {
           messages={[...messages].reverse()}
           handleScroll={handleScroll}
           searchQuery={searchQuery}
+          onLongPressMessage={handleLongPressMessage}
         />
-
-        {isButtonVisible && (
-          <FloatingButton icon={'arrow-down'} up={80} onPress={scrollToEnd} />
+        {isEditing && (
+          <View style={styles.overlayContainer}>
+            <View style={styles.editingMessageContainer}>
+              <Text style={styles.editingMessageText}>Editing: {newMessage}</Text>
+            </View>
+          </View>
         )}
-        <View style={{ height: 10 }}></View>
-        <MessageInput newMessage={newMessage} setNewMessage={setNewMessage} handleSend={handleSend} />
+        {isButtonVisible && (
+          <FloatingButton icon={'arrow-down'} up={20} onPress={scrollToEnd} />
+        )}
       </ImageBackground>
+
+      <MessageInput
+        ref={inputRef}
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        handleSend={handleSend}
+        isEditing={isEditing}
+        style={styles.messageInput}
+      />
+     <DropdownMenu
+        isMenuVisible={isModalVisible}
+        handleMenuToggle={() => setIsModalVisible(!isModalVisible)}
+        handleEditMessage={handleEditMessage}
+        handleDeleteMessage={handleDeleteMessage}
+      />
     </View>
   );
 };
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#222',
+    padding: 20,
+    borderRadius: 10,
+    width: 250,
+  },
+  option: {
+    color: "white",
+    marginTop: 5,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  modalTitle: {
+    paddingVertical: 13,
+    color: '#fff',
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  close: {
+    paddingVertical: 13,
+    color: '#999',
+    fontSize: 15,
+    right: 0,
+    bottom: -20,
+    position: "absolute"
+  },
+  absoluteBlur: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 99,
+  },
+  editingMessageContainer: {
+    backgroundColor: '#A8342A',
+    padding: 8,
+    bottom: 10,
+    right: 10,
+    position: 'absolute',
+    marginHorizontal: 20,
+    borderRadius: 10,
+    marginBottom: 5,
+    maxWidth: '70%',
+  },
+  editingMessageText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  overlayContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark transparent overlay
+    zIndex: 1, // Ensure it appears above other components but below the input
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  messageInput: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 2, // Ensure the input is above the overlay
+  },
+});
+
 
 export default ChatConversationScreen;
