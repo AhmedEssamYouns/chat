@@ -14,131 +14,150 @@ import SignInScreen from '../Pages/Screens/auth/sign-in';
 import SignUpScreen from '../Pages/Screens/auth/sign-up';
 import ForgetPasswordScreen from '../Pages/Screens/auth/forget-password';
 import ChangePasswordScreen from '../Pages/Screens/auth/change-password';
+import EditProfileScreen from '../Pages/Screens/auth/edit-profile';
 
 const Stack = createStackNavigator();
 
 export default function MainTabNavigator() {
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
-  const handleMenuToggle = () => {
-    setMenuVisible(!menuVisible);
-    setExpanded(!expanded);
-  };
+    const handleMenuToggle = () => {
+        setMenuVisible(!menuVisible);
+        setExpanded(!expanded);
+    };
 
-  const navigation = useNavigation();
+    const navigation = useNavigation();
 
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#121212' },
-        contentStyle: { backgroundColor: '#121212' },
-        cardStyle: { backgroundColor: '#121212' },
-      }}>
-      <Stack.Screen
-        name="SignIn"
-        component={SignInScreen} 
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="SignUp"
-        component={SignUpScreen} 
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ForgetPassword"
-        component={ForgetPasswordScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ChangePassword"
-        component={ChangePasswordScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Tabs"
-        component={TabNavigator}
-        options={{
-          headerTitle: () => (
-            <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
-          ),
-          headerStyle: {
-            backgroundColor: '#121212',
-            elevation: 0,
-            shadowOpacity: 0,
-            shadowOffset: { height: 0 },
-          },
-          headerTitleStyle: {
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 18,
-          },
-          headerRight: () => (
-            <View style={styles.headerRight}>
-              <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
-                <Feather name="search" size={24} color="white" />
-              </TouchableOpacity>
-              <RotatingButton
-                size={60}
-                backgroundColor={'#121212'}
-                onPress={handleMenuToggle}
-                icon={expanded ? 'x' : 'more-vertical'}
-                expanded={expanded}
-              />
-              <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
-            </View>
-          ),
-        }}
-      />
-      <Stack.Screen
-        name='chat'
-        component={ChatConversationScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name='search'
-        component={SearchScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name='Friends'
-        component={FriendsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name='account'
-        component={UserAccountScreen}
-        options={{
-          headerStyle: {
-            backgroundColor: '#121212',
-            elevation: 1,
-            shadowOpacity: 0,
-            shadowOffset: { height: 0 },
-          },
-          headerTitleStyle: {
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 18,
-          },
-          headerTintColor: "white"
-        }}
-      />
-    </Stack.Navigator>
-  );
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerStyle: { backgroundColor: '#121212' },
+                contentStyle: { backgroundColor: '#121212' },
+                cardStyle: { backgroundColor: '#121212' },
+            }}>
+            <Stack.Screen
+                name="SignIn"
+                component={SignInScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="SignUp"
+                component={SignUpScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="ForgetPassword"
+                component={ForgetPasswordScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="ChangePassword"
+                component={ChangePasswordScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name="Tabs"
+                component={TabNavigator}
+                options={{
+                    headerTitle: () => (
+                        <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
+                    ),
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation: 0,
+                        shadowOpacity: 0,
+                        shadowOffset: { height: 0 },
+                    },
+                    headerTitleStyle: {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerRight: () => (
+                        <View style={styles.headerRight}>
+                            <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
+                                <Feather name="search" size={24} color="white" />
+                            </TouchableOpacity>
+                            <RotatingButton
+                                size={60}
+                                backgroundColor={'#121212'}
+                                onPress={handleMenuToggle}
+                                icon={expanded ? 'x' : 'more-vertical'}
+                                expanded={expanded}
+                            />
+                            <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
+                        </View>
+                    ),
+                }}
+            />
+            <Stack.Screen
+                name='chat'
+                component={ChatConversationScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='search'
+                component={SearchScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='Friends'
+                component={FriendsScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='account'
+                component={UserAccountScreen}
+                options={{
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation: 1,
+                        shadowOpacity: 0,
+                        shadowOffset: { height: 0 },
+                    },
+                    headerTitleStyle: {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerTintColor: "white"
+                }}
+            />
+            <Stack.Screen
+                name='edit profile'
+                component={EditProfileScreen}
+                options={{
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation: 1,
+                        shadowOpacity: 0,
+                        shadowOffset: { height: 0 },
+                    },
+                    headerTitleStyle: {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerTintColor: "white"
+                }}
+            />
+        </Stack.Navigator>
+    );
 }
 
 const styles = StyleSheet.create({
-  headerTitle: {
-    color: 'white',
-    fontFamily: 'title',
-    fontSize: 18,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    marginRight: 10,
-  },
-  headerButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    headerTitle: {
+        color: 'white',
+        fontFamily: 'title',
+        fontSize: 18,
+    },
+    headerRight: {
+        flexDirection: 'row',
+        marginRight: 10,
+    },
+    headerButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });

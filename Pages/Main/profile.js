@@ -50,7 +50,7 @@ const ProfileScreen = () => {
                     <Text style={styles.profileName}>{userProfile.name}</Text>
                     <Text style={styles.profileBio}>{userProfile.bio}</Text>
                 </View>
-                <Feather name="edit" size={18} color="tomato" style={styles.editButton} />
+                <Feather name="edit" size={18} color="tomato" style={styles.editButton} onPress={()=>navigation.navigate('edit profile')} />
                 <TouchableOpacity style={styles.friendsButton} onPress={() => navigation.navigate("Friends")}>
                     <Text style={{ color: '#ccc', fontSize: 15 }}>Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>17</Text></Text>
                 </TouchableOpacity>
