@@ -60,7 +60,6 @@ const FriendsScreen = () => {
                 style={styles.friendList}
                 contentContainerStyle={styles.friendListContainer}
             />
-
             {selectedFriend && (
                 <Modal
                     visible={modalVisible}
@@ -68,14 +67,29 @@ const FriendsScreen = () => {
                     animationType="slide"
                     onRequestClose={closeModal}
                 >
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
+                    <TouchableOpacity
+                        style={styles.modalContainer}
+                        activeOpacity={1} // Prevents the background from registering taps when clicking inside the modal content
+                        onPress={closeModal} // Close the modal when clicking outside
+                    >
+                        <TouchableOpacity style={styles.modalContent} activeOpacity={1}>
                             <Image source={{ uri: selectedFriend.image }} style={styles.modalImage} />
                             <Text style={styles.modalTitle}>{selectedFriend.name}</Text>
-                            <TouchableOpacity style={styles.modalButton} onPress={() => { navigation.navigate('Tabs', { screen: 'thoughts' }); }}>
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={() => {
+                                    closeModal();
+                                    navigation.navigate('chat');
+                                }}
+                            >
                                 <Text style={styles.modalButtonText}>Send Message</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.modalButton} onPress={() => { /* Implement View Account action */ }}>
+                            <TouchableOpacity style={styles.modalButton}
+                                onPress={() => {
+                                    closeModal();
+                                    navigation.navigate('account');
+                                }}
+                            >
                                 <Text style={styles.modalButtonText}>View Account</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.modalButton} onPress={() => { /* Implement Remove Friend action */ }}>
@@ -84,10 +98,11 @@ const FriendsScreen = () => {
                             <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                                 <Text style={styles.closeButtonText}>Close</Text>
                             </TouchableOpacity>
-                        </View>
-                    </View>
+                        </TouchableOpacity>
+                    </TouchableOpacity>
                 </Modal>
             )}
+
         </View>
     );
 };
@@ -160,7 +175,7 @@ const styles = StyleSheet.create({
         width: 130,
         height: 130,
         borderWidth: 10,
-        elevation:0,
+        elevation: 0,
         borderColor: '#333',
         borderRadius: 100,
         marginBottom: 20,

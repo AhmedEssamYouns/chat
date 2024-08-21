@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, Modal, TextInput, Pressable } from 'react-native';
-import { Feather, AntDesign } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-
+import PostsList from '../../Components/posts-list';
 const fakeStories = [
   {
-    id: '1',
+    id: 1,
     name: 'John Doe',
     storyTitle: 'A Day in the Life',
     time: '2 hours ago',
@@ -35,72 +33,32 @@ const fakeStories = [
 
 const StoriesScreen = () => {
 
-  
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newStory, setNewStory] = useState({ photo: '', caption: '' });
-  const [image, setImage] = useState(null);
+  const currentUserId = 1;
 
-  const handleLovePress = (storyId) => {
-    console.log(`Story ${storyId} loved!`);
+  const handleLovePress = (postId) => {
+    // Handle like logic here
+    console.log('Loved post with ID:', postId);
   };
 
-  const handleAddPost = () => {
-    console.log('New post added:', newStory);
-    setModalVisible(false);
-    setNewStory({ photo: '', caption: '' });
-    setImage(null);
+  const handleEditPost = (postId) => {
+    // Handle post editing logic here
+    console.log('Edit post with ID:', postId);
   };
 
-  const handleOutsidePress = () => {
-    setModalVisible(false);
+  const handleDeletePost = (postId) => {
+    // Handle post deletion logic here
+    setPosts(posts.filter(post => post.id !== postId));
   };
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.uri);
-      setNewStory((prev) => ({ ...prev, photo: result.uri }));
-    }
-  };
-
-  const renderStoryItem = ({ item }) => (
-    <View style={styles.storyItem}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 15 }}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        <Text style={styles.storyName}>{item.name}</Text>
-      </View>
-      <Text style={styles.storyTime}>{item.time}</Text>
-      <View style={styles.storyContent}>
-        <Text style={styles.storyTitle}>{item.storyTitle}</Text>
-        <Image source={{ uri: item.photo }} style={styles.storyPhoto} />
-        <View style={styles.loveSection}>
-          <TouchableOpacity onPress={() => handleLovePress(item.id)} style={styles.loveIcon}>
-            <AntDesign name="hearto" size={20} color="tomato" />
-          </TouchableOpacity>
-          <Text style={styles.likesCount}>{item.likes}</Text>
-        </View>
-      </View>
-    </View>
-  );
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList
-        data={fakeStories}
-        renderItem={renderStoryItem}
-        keyExtractor={(item) => item.id}
-        style={styles.storyList}
-        contentContainerStyle={{paddingBottom:30}}
-        ListFooterComponent={
-              <Text style={styles.endOfPostsText}>No More Posts</Text>
-      }
-  />
+      <PostsList
+        posts={fakeStories}
+        currentUserId={currentUserId}
+        handleLovePress={handleLovePress}
+        onEditPost={handleEditPost}
+        onDeletePost={handleDeletePost}
+      />
     </View>
   );
 };
@@ -140,9 +98,9 @@ const styles = StyleSheet.create({
   },
   storyPhoto: {
     width: '100%',
-    resizeMode:'contain',
+    resizeMode: 'contain',
     height: 200,
-    borderWidth:10,
+    borderWidth: 10,
     marginVertical: 10,
     borderRadius: 10,
   },
@@ -242,7 +200,7 @@ const styles = StyleSheet.create({
     padding: 20,
     fontSize: 16,
     color: 'gray',
-},
+  },
 });
 
 export default StoriesScreen;

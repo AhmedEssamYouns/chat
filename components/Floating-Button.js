@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { TouchableOpacity, StyleSheet, View, Animated, Pressable, BackHandler } from 'react-native';
 import { Feather, MaterialCommunityIcons, AntDesign, Octicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import RotatingButton from './animated-rotate-button';
 
 // Regular FloatingButton component
 export function FloatingButton({ onPress, icon, up }) {
@@ -69,19 +70,33 @@ export function AnimatedFloatingButton({ up }) {
 
     return (
         <View style={[styles.container, { bottom: up }]}>
-            <Pressable style={styles.button} onPress={toggleBar}>
-                <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-                    <Feather name={expanded ? 'chevron-up' : 'plus'} size={24} color="white" />
-                </Animated.View>
-            </Pressable>
+            <RotatingButton
+                size={60}
+                backgroundColor={'#f44336'}
+                onPress={toggleBar}
+                icon={expanded ? 'arrow-up' : 'more-vertical'}
+                expanded={expanded}
+            />
             <Animated.View style={[styles.bar, { height: animatedHeight }]}>
                 <TouchableOpacity style={styles.item}>
                     <Feather name="share" size={24} color="white" />
                 </TouchableOpacity >
-                <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Friends')}>
+                <TouchableOpacity
+                    style={styles.item}
+                    onPress={() => {
+                        setExpanded(false);
+                        navigation.navigate('Friends');
+                    }}
+                >
                     <Octicons name="people" size={24} color="white" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('search')}>
+                <TouchableOpacity
+                    style={styles.item}
+                    onPress={() => {
+                        setExpanded(false);
+                        navigation.navigate('search');
+                    }}
+                >
                     <AntDesign name="adduser" size={24} color="white" />
                 </TouchableOpacity>
             </Animated.View>

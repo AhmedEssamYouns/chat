@@ -1,25 +1,33 @@
-import * as React from 'react';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Feather } from '@expo/vector-icons';
-import { TouchableOpacity, Keyboard, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import TabNavigator from './tabs-nav';
-import ChatConversationScreen from '../Pages/Screens/chat-room'
+import ChatConversationScreen from '../Pages/Screens/chat-room';
 import SearchScreen from '../Pages/Screens/Search-screen';
-import { useNavigation } from '@react-navigation/native';
 import FriendsScreen from '../Pages/Screens/Frineds-screen';
-
+import UserAccountScreen from '../Pages/Screens/user-account-screen';
+import SettingMenu from '../Components/setting-menu';
+import RotatingButton from '../Components/animated-rotate-button';
+import { useNavigation } from '@react-navigation/native';
 const Stack = createStackNavigator();
 
-
 export default function MainTabNavigator() {
-    const navigation = useNavigation()
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [expanded, setExpanded] = useState(false);
+
+    const handleMenuToggle = () => {
+        setMenuVisible(!menuVisible);
+        setExpanded(!expanded);
+    };
+    const navigation=useNavigation()
+
     return (
         <Stack.Navigator
             screenOptions={{
                 headerStyle: { backgroundColor: '#121212' },
-                contentStyle: { backgroundColor: '#121212' }, // This affects the background color of the screen content
-                cardStyle: { backgroundColor: '#121212' }, // This affects the background color of the cards
+                contentStyle: { backgroundColor: '#121212' },
+                cardStyle: { backgroundColor: '#121212' },
             }}>
             <Stack.Screen
                 name="Tabs"
@@ -39,39 +47,54 @@ export default function MainTabNavigator() {
                         fontWeight: 'bold',
                         fontSize: 18,
                     },
-
                     headerRight: () => (
                         <View style={styles.headerRight}>
                             <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
                                 <Feather name="search" size={24} color="white" />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => console.log('More options pressed')}>
-                                <Feather name="more-vertical" size={24} color="white" />
-                            </TouchableOpacity>
+                            <RotatingButton
+                                size={60}
+                                backgroundColor={'#121212'}
+                                onPress={handleMenuToggle}
+                                icon={expanded ? 'x' : 'more-vertical'}
+                                expanded={expanded}
+                            />
+                            <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
                         </View>
                     ),
                 }}
             />
-
             <Stack.Screen
                 name='chat'
                 component={ChatConversationScreen}
-                options={{
-                    headerShown: false
-                }}
+                options={{ headerShown: false }}
             />
-
             <Stack.Screen
                 name='search'
                 component={SearchScreen}
                 options={{ headerShown: false }}
             />
-
             <Stack.Screen
                 name='Friends'
                 component={FriendsScreen}
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                name='account'
+                component={UserAccountScreen}
                 options={{
-                    headerShown: false
+                    headerStyle: {
+                        backgroundColor: '#121212',
+                        elevation: 1,
+                        shadowOpacity: 0,
+                        shadowOffset: { height: 0 },
+                    },
+                    headerTitleStyle: {
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: 18,
+                    },
+                    headerTintColor: "white"
                 }}
             />
         </Stack.Navigator>
@@ -89,6 +112,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     headerButton: {
-        marginRight: 15,
+        alignItems:'center',
+        justifyContent:'center',
     },
 });
