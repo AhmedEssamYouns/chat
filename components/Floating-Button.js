@@ -74,7 +74,7 @@ export function AnimatedFloatingButton({ up }) {
                 size={60}
                 backgroundColor={'#f44336'}
                 onPress={toggleBar}
-                icon={expanded ? 'arrow-up' : 'more-vertical'}
+                icon={expanded ? 'arrow-up' : 'plus'}
                 expanded={expanded}
             />
             <Animated.View style={[styles.bar, { height: animatedHeight }]}>

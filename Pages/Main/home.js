@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TextInput } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // Import icons
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import SearchBar from '../../Components/Search-Bar';
-
 
 const fakeChats = [
   {
@@ -34,11 +33,9 @@ const fakeChats = [
 ];
 
 const ChatScreen = ({navigation}) => {
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredChats, setFilteredChats] = useState(fakeChats);
 
-  
   const handleSearch = (text) => {
     setSearchQuery(text);
     const filtered = fakeChats.filter((chat) =>
@@ -47,8 +44,33 @@ const ChatScreen = ({navigation}) => {
     setFilteredChats(filtered);
   };
 
+  const handleDeleteChat = (chatId) => {
+    Alert.alert(
+      "Delete Chat",
+      "Are you sure you want to delete this chat?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: () => {
+            // Here you would usually remove the chat from the state or database
+            setFilteredChats(filteredChats.filter(chat => chat.id !== chatId));
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   const renderChatItem = ({ item }) => (
-    <TouchableOpacity style={styles.chatItem} onPress={() => navigation.navigate('chat')}>
+    <TouchableOpacity 
+      style={styles.chatItem} 
+      onPress={() => navigation.navigate('chat')} 
+      onLongPress={() => handleDeleteChat(item.id)} // Add long press handler here
+    >
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
@@ -85,7 +107,7 @@ const ChatScreen = ({navigation}) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
-     <SearchBar
+      <SearchBar
         searchQuery={searchQuery}
         onChangeSearch={handleSearch}
         placeholder="Search chats by name"

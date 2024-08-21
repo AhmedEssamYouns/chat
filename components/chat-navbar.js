@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import RotatingButton from './animated-rotate-button';
 
 const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false); // Add this state
   const searchAnim = useRef(new Animated.Value(-300)).current; // Start from off-screen left
   const searchInputRef = useRef(null); // Reference for the search input
 
@@ -25,6 +27,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
 
   const handleMenuToggle = () => {
     setIsMenuVisible(!isMenuVisible);
+    setExpanded(!expanded); // Toggle expanded state
   };
 
   const handleSearchMenuClick = () => {
@@ -35,7 +38,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   return (
     <View style={styles.navbar}>
       {!isSearchMode ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', height: 40 }}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center',}}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
@@ -83,9 +86,13 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
             <TouchableOpacity style={styles.icon} onPress={() => setIsSearchMode(true)}>
               <Ionicons name="search" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.icon} onPress={handleMenuToggle}>
-              <Ionicons name="ellipsis-horizontal" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+            <RotatingButton
+              size={40}
+              backgroundColor={'#121212'}
+              onPress={handleMenuToggle}
+              icon={expanded ? 'arrow-up' : 'more-horizontal'}
+              expanded={expanded} // Pass expanded state to RotatingButton
+            />
           </>
         )}
       </View>
@@ -100,14 +107,14 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
         >
           <TouchableOpacity style={styles.modalOverlay} onPress={handleMenuToggle}>
             <View style={styles.menuContainer}>
-              <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Option 1')}>
+              <TouchableOpacity style={styles.menuItem} onPress={() => {
+                handleMenuToggle();
+                navigation.navigate('Friends');
+              }}>
                 <Text style={styles.menuItemText}>View Account</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={handleSearchMenuClick}>
                 <Text style={styles.menuItemText}>Search</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Option 3')}>
-                <Text style={styles.menuItemText}>Media</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Option 4')}>
                 <Text style={styles.menuItemText}>Clear Chat</Text>
@@ -146,7 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   icon: {
-    marginLeft: 20,
+    marginRight:10,
+    alignSelf: 'center'
   },
   searchBar: {
     width: '100%',
