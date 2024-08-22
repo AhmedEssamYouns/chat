@@ -94,7 +94,7 @@ export default function MainTabNavigator() {
                                     icon={expanded ? 'x' : 'more-vertical'}
                                     expanded={expanded}
                                 />
-                                <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
+
                             </View>
                         ),
                     }}
@@ -158,10 +158,10 @@ export default function MainTabNavigator() {
                     <View style={styles.overlay} />
                 </TouchableWithoutFeedback>
             )}
+            <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     headerTitle: {
         color: 'white',
@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     headerRight: {
         flexDirection: 'row',
         marginRight: 10,
+        position: 'relative',
     },
     headerButton: {
         alignItems: 'center',
@@ -178,7 +179,9 @@ const styles = StyleSheet.create({
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'transparent',
-        zIndex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    },
+    menuContainer: {
+        zIndex: 3000, // Ensure the menu is above the overlay
     },
 });

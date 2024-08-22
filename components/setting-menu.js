@@ -1,8 +1,11 @@
-// components/SettingMenu.js
-import React,{useEffect} from 'react';
-import { View, Text, StyleSheet, TouchableOpacity ,BackHandler} from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+
 const SettingMenu = ({ visible, onClose }) => {
+    const navigation = useNavigation();
+
     useEffect(() => {
         const handleBackPress = () => {
             if (visible) {
@@ -17,19 +20,20 @@ const SettingMenu = ({ visible, onClose }) => {
         return () => backHandler.remove();
     }, [visible, onClose]);
 
+    // Return null if the menu is not visible
     if (!visible) return null;
 
     return (
         <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Edit Profile')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => {onClose(),navigation.navigate('edit profile')}}>
                 <Feather name="edit" size={24} color="white" />
                 <Text style={styles.menuText}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Change Password')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() =>{onClose(), navigation.navigate('ChangePassword')}}>
                 <Feather name="key" size={24} color="white" />
                 <Text style={styles.menuText}>Change Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Forgot Password')}>
+            <TouchableOpacity style={styles.menuItem} onPress={() =>{onClose(), navigation.navigate('ForgetPassword')}}>
                 <Feather name="help-circle" size={24} color="white" />
                 <Text style={styles.menuText}>Forgot Password</Text>
             </TouchableOpacity>
@@ -44,13 +48,13 @@ const SettingMenu = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
     menuContainer: {
         position: 'absolute',
-        top: 50,
-        right: 10,
+        top: 90,
+        right: 30,
         backgroundColor: '#1F1F1F',
         borderRadius: 8,
         padding: 10,
         width: 200,
-        zIndex: 1000,
+        zIndex: 3000,
     },
     menuItem: {
         flexDirection: 'row',

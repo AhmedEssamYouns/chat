@@ -51,25 +51,16 @@ export default function TabNavigator() {
                 </TouchableWithoutFeedback>
             )}
 
-            {/* Floating Button */}
-            <View style={styles.floatingButtonContainer}>
                 <AnimatedFloatingButton
                     up={50}
                     expanded={isButtonExpanded}
                     setExpanded={setIsButtonExpanded}
                 />
-            </View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    floatingButtonContainer: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        left: 0,
-    },
     overlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'transparent',
