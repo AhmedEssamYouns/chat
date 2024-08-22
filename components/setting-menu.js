@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
+import { FIREBASE_AUTH } from '../firebase/config';
+import { CommonActions } from '@react-navigation/native';
 
 const SettingMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
@@ -11,7 +12,7 @@ const SettingMenu = ({ visible, onClose }) => {
         const handleBackPress = () => {
             if (visible) {
                 onClose();
-                return true; 
+                return true;
             }
             return false;
         };
@@ -21,23 +22,39 @@ const SettingMenu = ({ visible, onClose }) => {
         return () => backHandler.remove();
     }, [visible, onClose]);
 
+    const handleLogout = async () => {
+        try {
+            onClose()
+            await FIREBASE_AUTH.signOut();
+            // Reset the navigation stack and navigate to the SignIn screen
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'SignIn' }],
+                })
+            );
+        } catch (error) {
+            console.log('Error signing out:', error.message);
+        }
+    };
+
     if (!visible) return null;
 
     return (
         <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => {onClose(),navigation.navigate('edit profile')}}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(), navigation.navigate('edit profile') }}>
                 <Feather name="edit" size={24} color="white" />
                 <Text style={styles.menuText}>Edit Profile</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() =>{onClose(), navigation.navigate('ChangePassword')}}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(), navigation.navigate('ChangePassword') }}>
                 <Feather name="key" size={24} color="white" />
                 <Text style={styles.menuText}>Change Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() =>{onClose(), navigation.navigate('ForgetPassword')}}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(), navigation.navigate('ForgetPassword') }}>
                 <Feather name="help-circle" size={24} color="white" />
                 <Text style={styles.menuText}>Forgot Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutItem} onPress={() => console.log('Logout')}>
+            <TouchableOpacity style={styles.logoutItem} onPress={handleLogout}>
                 <Feather name="log-out" size={24} color="white" />
                 <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>

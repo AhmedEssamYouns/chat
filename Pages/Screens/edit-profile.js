@@ -1,22 +1,70 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { FIREBASE_AUTH, db, storage } from '../../firebase/config';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
+import { checkUsernameAvailability } from '../../firebase/auth';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 const EditProfileScreen = () => {
     const navigation = useNavigation();
-    const [username, setUsername] = useState('John Doe');
-    const [bio, setBio] = useState('Fitness enthusiast, Gym lover, and aspiring bodybuilder.');
-    const [profileImage, setProfileImage] = useState('https://randomuser.me/api/portraits/men/1.jpg');
+    const [username, setUsername] = useState('');
+    const [bio, setBio] = useState('');
+    const [profileImage, setProfileImage] = useState(null);
+    const [initialUsername, setInitialUsername] = useState('');
+    const [initialBio, setInitialBio] = useState('');
+    const [initialProfileImage, setInitialProfileImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [usernameStatus, setUsernameStatus] = useState(null);
+    const [usernameError, setUsernameError] = useState('');
 
-    const handleSaveProfile = () => {
-        // Handle profile update logic here
-        console.log('Profile updated:', { username, bio, profileImage });
-        Alert.alert('Success', 'Profile updated successfully!');
-        navigation.goBack(); // Go back to the previous screen after saving
+    const currentUser = FIREBASE_AUTH.currentUser;
+
+    useEffect(() => {
+        checkUsernameAvailability(username, setUsernameStatus, setUsernameError);
+    }, [username]);
+
+    useEffect(() => {
+        const loadUserProfile = async () => {
+            try {
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setUsername(userData.username || '');
+                    setBio(userData.bio || '');
+                    setProfileImage(userData.profileImage || null); // Default to null if no image is set
+
+                    // Set initial values
+                    setInitialUsername(userData.username || '');
+                    setInitialBio(userData.bio || '');
+                    setInitialProfileImage(userData.profileImage || null);
+                }
+            } catch (error) {
+                Alert.alert('Error', 'Failed to load profile data.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadUserProfile();
+    }, []);
+
+    const compressImage = async (uri) => {
+        const manipResult = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 800 } }], // Resize to a smaller width
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Adjust quality
+        );
+        return manipResult.uri;
     };
-
+    
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -24,17 +72,83 @@ const EditProfileScreen = () => {
             aspect: [1, 1],
             quality: 1,
         });
-
+    
         if (!result.canceled) {
-            setProfileImage(result.assets[0].uri);
+            const compressedUri = await compressImage(result.assets[0].uri);
+            setProfileImage(compressedUri);
         }
     };
+    const handleSaveProfile = async () => {
+        const usernameRegex = /^[a-zA-Z0-9_]+$/;
+        if (username.includes(' ')) {
+            setUsernameError('Username should not contain spaces.');
+            return;
+        }
+        if (username.length < 3) {
+            setUsernameError('Username must be at least 3 characters long.');
+            return;
+        }
+        if (!usernameRegex.test(username)) {
+            setUsernameError('Username can only contain letters, numbers, and underscores.');
+            return;
+        }
+
+        setIsUpdating(true);
+
+        try {
+            const userDocRef = doc(db, 'users', currentUser.uid);
+
+            let updatedProfileImageUrl = profileImage;
+
+            if (profileImage && !profileImage.startsWith('http')) {
+                const imageRef = ref(storage, `profileImages/${currentUser.uid}`);
+                const img = await fetch(profileImage);
+                const bytes = await img.blob();
+
+                await uploadBytes(imageRef, bytes);
+                updatedProfileImageUrl = await getDownloadURL(imageRef);
+            }
+
+            await updateDoc(userDocRef, {
+                username,
+                bio,
+                profileImage: updatedProfileImageUrl,
+            });
+
+            await updateProfile(currentUser, {
+                displayName: username,
+                photoURL: updatedProfileImageUrl,
+            });
+
+            Alert.alert('Success', 'Profile updated successfully!');
+            navigation.goBack();
+        } catch (error) {
+            console.log('Error updating profile:', error.message);
+            Alert.alert('Error', 'Failed to update profile. Please try again later.');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Determine if the save button should be enabled
+    const isSaveButtonDisabled = 
+        username === initialUsername && 
+        bio === initialBio && 
+        profileImage === initialProfileImage;
+
+    if (isLoading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#f44336" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.profileImageContainer} onPress={pickImage}>
                 <Image
-                    source={{ uri: profileImage }}
+                    source={{ uri: profileImage || 'https://th.bing.com/th/id/OIP.iUYZm2KUP1mKVQ2qtXbnbQHaH_?rs=1&pid=ImgDetMain' }}
                     style={styles.profileImage}
                 />
                 <View style={styles.addIconContainer}>
@@ -42,25 +156,43 @@ const EditProfileScreen = () => {
                 </View>
             </TouchableOpacity>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Username"
-                placeholderTextColor={'white'}
-                value={username}
-                onChangeText={setUsername}
-            />
-
+            <View style={styles.usernameContainer}>
+                <TextInput
+                    maxLength={12}
+                    style={[styles.input, { marginBottom: 10 }]}
+                    placeholder="Username"
+                    placeholderTextColor={'white'}
+                    value={username}
+                    onChangeText={(text) => setUsername(text.replace(/\s/g, ''))}
+                />
+                {usernameStatus === 'available' && username !== '' && (
+                    <Feather name="check-circle" size={24} color="green" style={styles.statusIcon} />
+                )}
+                {usernameStatus === 'taken' && username !== currentUser.displayName && (
+                    <Feather name="x-circle" size={24} color="red" style={styles.statusIcon} />
+                )}
+            </View>
+            {username !== currentUser.displayName && (
+                <Text style={usernameError ? styles.errorText : styles.validationText}>
+                    {usernameError || 'Username can only contain letters, numbers, and underscores.'}
+                </Text>
+            )}
             <TextInput
                 style={[styles.input, { height: 100 }]}
                 placeholder="Bio"
                 placeholderTextColor={'white'}
                 value={bio}
+                maxLength={80}
                 onChangeText={setBio}
                 multiline
             />
 
-            <TouchableOpacity style={styles.button} onPress={handleSaveProfile}>
-                <Text style={styles.buttonText}>Save</Text>
+            <TouchableOpacity style={styles.button} onPress={handleSaveProfile} disabled={isSaveButtonDisabled || isUpdating}>
+                {isUpdating ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                    <Text style={styles.buttonText}>Save</Text>
+                )}
             </TouchableOpacity>
         </View>
     );
@@ -86,7 +218,7 @@ const styles = StyleSheet.create({
     addIconContainer: {
         position: 'absolute',
         bottom: 0,
-        right: 0,
+        right: 110,
         backgroundColor: '#f44336',
         width: 30,
         height: 30,
@@ -97,6 +229,7 @@ const styles = StyleSheet.create({
     input: {
         backgroundColor: '#333',
         height: 50,
+        width: '100%',
         color: '#fff',
         padding: 10,
         marginBottom: 10,
@@ -114,6 +247,36 @@ const styles = StyleSheet.create({
     buttonText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
+    },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#121212',
+    },
+    usernameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    statusIcon: {
+        position: 'absolute',
+        right: 20,
+        top: 14,
+        marginLeft: 10,
+    },
+    validationText: {
+        color: '#BBBBBB',
+        fontSize: 10,
+        marginBottom: 5,
+        height: 15,
+        marginLeft: 10,
+    },
+    errorText: {
+        color: 'red',
+        fontSize: 10,
+        marginBottom: 5,
+        height: 15,
+        marginLeft: 10,
     },
 });
 

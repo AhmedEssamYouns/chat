@@ -1,7 +1,7 @@
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { FIREBASE_AUTH,db } from '../config';
-
+import { FIREBASE_AUTH, db } from './config';
+import { CommonActions } from '@react-navigation/native';
 // Function to check username availability
 export const checkUsernameAvailability = async (username, setUsernameStatus, setUsernameError) => {
     if (username.length >= 3) {
@@ -34,6 +34,10 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/;
 
+    if (username.includes(' ')) {
+        setUsernameError('Username should not contain spaces.');
+        return;
+    }
     if (username === '' || email === '' || password === '' || confirmPassword === '') {
         setFill('Please fill in all fields.');
         return;
@@ -93,5 +97,40 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         }
     } finally {
         setLoading(false);
+    }
+};
+
+export const handleSignIn = async (email, password, navigation, setEmailError, setPasswordError, setIsLoading) => {
+    setEmailError('');
+    setPasswordError('');
+    setIsLoading(true); // Show the loading indicator
+
+    if (email === '' || password === '') {
+        setEmailError('Please fill in all fields.');
+        setIsLoading(false); // Hide the loading indicator
+        return;
+    }
+
+    try {
+        await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Tabs' }],
+            })
+        );
+    } catch (error) {
+        if (error.code.includes('auth/invalid-email')) {
+            setEmailError('Invalid email address.');
+        } else if (error.code.includes('auth/wrong-password')) {
+            setPasswordError('Incorrect password.');
+        } else if (error.code.includes('auth/user-not-found')) {
+            setEmailError('User not found.');
+        } else {
+            const generalError = error.code.replace('auth/', '').replace(/-/g, ' ');
+            setEmailError(`Sign in failed, ${generalError}`);
+        }
+    } finally {
+        setIsLoading(false); // Hide the loading indicator
     }
 };

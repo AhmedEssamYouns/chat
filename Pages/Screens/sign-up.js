@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { checkUsernameAvailability,handleSignUp } from '../../firebase/auth/signup';
+import { checkUsernameAvailability,handleSignUp} from '../../firebase/auth';
 
 const SignUpScreen = () => {
     const navigation = useNavigation();
@@ -50,7 +50,7 @@ const SignUpScreen = () => {
                     placeholder="Username"
                     placeholderTextColor={'white'}
                     value={username}
-                    onChangeText={setUsername}
+                    onChangeText={(text) => setUsername(text.replace(/\s/g, ''))}
                 />
                 {usernameStatus === 'available' && username !== '' && (
                     <Feather name="check-circle" size={24} color="green" style={styles.statusIcon} />
@@ -85,6 +85,7 @@ const SignUpScreen = () => {
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!isPasswordVisible}
+                    
                 />
                 <TouchableOpacity
                     style={styles.eyeIcon}

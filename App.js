@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from './Routes/stack.nav';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-
+import { FIREBASE_AUTH } from './firebase/config';
 SplashScreen.preventAutoHideAsync();
 
 const fetchFonts = () => {
