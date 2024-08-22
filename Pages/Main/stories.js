@@ -51,14 +51,14 @@ const StoriesScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <PostsList
+    <View style={{ flex: 1,backgroundColor:'#121212' }}>
+      {/* <PostsList
         posts={fakeStories}
         currentUserId={currentUserId}
         handleLovePress={handleLovePress}
         onEditPost={handleEditPost}
         onDeletePost={handleDeletePost}
-      />
+      /> */}
     </View>
   );
 };

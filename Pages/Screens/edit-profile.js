@@ -78,6 +78,7 @@ const EditProfileScreen = () => {
             setProfileImage(compressedUri);
         }
     };
+    
     const handleSaveProfile = async () => {
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         if (username.includes(' ')) {

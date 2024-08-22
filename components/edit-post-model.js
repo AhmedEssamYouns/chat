@@ -1,44 +1,43 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { storage, db } from '../firebase/config';
-import { FIREBASE_AUTH } from '../firebase/config';
-import { addDoc, doc, setDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection } from 'firebase/firestore';
-import { getUserById } from '../firebase/getUser';
+import { db } from '../firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
+import { ref, deleteObject, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../firebase/config';
+import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-const CreatePostModal = ({ visible, onClose }) => {
-    useEffect(() => {
-        const fetchUserDetails = async () => {
-            const userData = await getUserById(FIREBASE_AUTH.currentUser.uid);
-            setuser(userData)
-        }
-        fetchUserDetails();
-    }, [FIREBASE_AUTH.currentUser.uid]);
-
-
+const EditPostModal = ({ visible, onClose, postId, existingText, existingImage }) => {
     const navigation = useNavigation();
-    const [user, setuser] = useState('');
-    const [postText, setPostText] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [postText, setPostText] = useState(existingText || '');
+    const [selectedImage, setSelectedImage] = useState(existingImage || null);
     const [uploading, setUploading] = useState(false);
 
-    const handlePost = async () => {
+    useEffect(() => {
+        setPostText(existingText);
+        setSelectedImage(existingImage);
+    }, [existingText, existingImage]);
+
+    const handleUpdate = async () => {
         if (!postText && !selectedImage) {
-            alert('Please enter text or upload an image to post.');
+            alert('Please enter text or upload an image to update the post.');
             return;
         }
 
         setUploading(true);
         try {
-            let imageUrl = '';
+            let imageUrl = selectedImage;
 
             // Handle image upload
-            if (selectedImage) {
+            if (selectedImage && selectedImage !== existingImage) {
+                // If the image has changed, delete the old image
+                if (existingImage) {
+                    const oldImageRef = ref(storage, existingImage);
+                    await deleteObject(oldImageRef);
+                }
+                // Upload new image
                 const imageRef = ref(storage, `posts/${Date.now()}`);
                 const response = await fetch(selectedImage);
                 const blob = await response.blob();
@@ -46,36 +45,22 @@ const CreatePostModal = ({ visible, onClose }) => {
                 imageUrl = await getDownloadURL(imageRef);
             }
 
-            // Create a new document in Firestore to get the auto-generated ID
-            const postRef = await addDoc(collection(db, 'posts'), {
+            // Update post in Firestore
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
                 text: postText,
                 imageUrl,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time:new Date().toISOString()
-            });
-
-            // Update the document with the auto-generated ID as postId
-            await setDoc(doc(db, 'posts', postRef.id), {
-                postId: postRef.id,
-                text: postText,
-                imageUrl,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString(),
             });
             setPostText(null)
             setSelectedImage(null)
-            // Navigate to the Stories tab screen
-            navigation.navigate("Tabs", { screen: "profile" });
             onClose(); // Close the modal
         } catch (error) {
-            console.error('Error creating post:', error);
-            alert('Failed to create post.');
+            console.error('Error updating post:', error);
+            alert('Failed to update post.');
         } finally {
             setUploading(false);
         }
     };
-
-
 
     const compressImage = async (uri) => {
         const manipResult = await ImageManipulator.manipulateAsync(
@@ -101,7 +86,6 @@ const CreatePostModal = ({ visible, onClose }) => {
             setSelectedImage(compressedUri);
         }
     };
-  
 
     const cancelImage = () => {
         setSelectedImage(null); // Clear the selected image
@@ -112,21 +96,15 @@ const CreatePostModal = ({ visible, onClose }) => {
             <View style={styles.modalContainer}>
                 {/* Top Bar */}
                 <View style={styles.topBar}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <TouchableOpacity style={{ padding: 10 }} onPress={onClose}>
+                    <View style={{ flexDirection: 'row', justifyContent: "space-between", gap: 20 }}>
+                        <TouchableOpacity onPress={onClose}>
                             <Feather name="x" size={24} color="white" />
                         </TouchableOpacity>
-                        <View style={styles.userInfo}>
-                            <Image
-                                source={{ uri: user.profileImage }}
-                                style={styles.profileImage}
-                            />
-                            <Text style={styles.username}>{user.username}</Text>
-                        </View>
+                        <Text style={styles.title}>Edit Post</Text>
                     </View>
-                    <TouchableOpacity onPress={handlePost} disabled={uploading || (!postText && !selectedImage)}>
+                    <TouchableOpacity onPress={handleUpdate} disabled={uploading || (!postText && !selectedImage)}>
                         <Text style={[styles.postButton, { opacity: uploading || postText || selectedImage ? 1 : 0.5 }]}>
-                            {uploading ? 'Posting...' : 'Post'}
+                            {uploading ? 'Updating...' : 'Update'}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -134,7 +112,7 @@ const CreatePostModal = ({ visible, onClose }) => {
                 {/* Text Input */}
                 <TextInput
                     style={styles.textInput}
-                    placeholder="Share your thoughts..."
+                    placeholder="Update your thoughts..."
                     placeholderTextColor="#aaa"
                     multiline
                     value={postText}
@@ -166,7 +144,7 @@ const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
         backgroundColor: '#121212',
-        paddingTop: 20,
+        paddingTop: 40,
     },
     topBar: {
         flexDirection: 'row',
@@ -177,17 +155,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#333',
     },
-    userInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    profileImage: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        marginRight: 10,
-    },
-    username: {
+    title: {
         color: 'white',
         fontSize: 16,
     },
@@ -235,4 +203,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CreatePostModal;
+export default EditPostModal;

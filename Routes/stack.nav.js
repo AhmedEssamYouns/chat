@@ -67,16 +67,45 @@ export default function MainTabNavigator() {
                     cardStyle: { backgroundColor: '#121212' },
                 }}>
                 {isAuthenticated ? (
-                    <Stack.Screen
-                        name="Tabs"
-                        component={TabNavigator}
-                        options={{
-                            headerTitle: () => (
-                                <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
-                            ),
+                    <>
+                        <Stack.Screen
+                            name="Tabs"
+                            component={TabNavigator}
+                            options={{
+                                headerTitle: () => (
+                                    <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
+                                ),
+                                headerStyle: {
+                                    backgroundColor: '#121212',
+                                    elevation: 0,
+                                    shadowOpacity: 0,
+                                    shadowOffset: { height: 0 },
+                                },
+                                headerTitleStyle: {
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: 18,
+                                },
+                                headerRight: () => (
+                                    <View style={styles.headerRight}>
+                                        <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
+                                            <Feather name="search" size={24} color="white" />
+                                        </TouchableOpacity>
+                                        <RotatingButton
+                                            size={60}
+                                            backgroundColor={'#121212'}
+                                            onPress={handleMenuToggle}
+                                            icon={expanded ? 'x' : 'more-vertical'}
+                                            expanded={expanded}
+                                        />
+                                    </View>
+                                ),
+                            }}
+                        />
+                        <Stack.Screen name='edit profile' component={EditProfileScreen} options={{
                             headerStyle: {
                                 backgroundColor: '#121212',
-                                elevation: 0,
+                                elevation: 1,
                                 shadowOpacity: 0,
                                 shadowOffset: { height: 0 },
                             },
@@ -85,26 +114,8 @@ export default function MainTabNavigator() {
                                 fontWeight: 'bold',
                                 fontSize: 18,
                             },
-                            headerRight: () => (
-                                <View style={styles.headerRight}>
-                                    <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
-                                        <Feather name="search" size={24} color="white" />
-                                    </TouchableOpacity>
-                                    <RotatingButton
-                                        size={60}
-                                        backgroundColor={'#121212'}
-                                        onPress={handleMenuToggle}
-                                        icon={expanded ? 'x' : 'more-vertical'}
-                                        expanded={expanded}
-                                    />
-                                </View>
-                            ),
-                        }}
-                    />
-                ) : (
-                    <>
-                        <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
-                        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+                            headerTintColor: "white"
+                        }} />
                         <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='chat' component={ChatConversationScreen} options={{ headerShown: false }} />
@@ -124,20 +135,14 @@ export default function MainTabNavigator() {
                             },
                             headerTintColor: "white"
                         }} />
-                        <Stack.Screen name='edit profile' component={EditProfileScreen} options={{
-                            headerStyle: {
-                                backgroundColor: '#121212',
-                                elevation: 1,
-                                shadowOpacity: 0,
-                                shadowOffset: { height: 0 },
-                            },
-                            headerTitleStyle: {
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: 18,
-                            },
-                            headerTintColor: "white"
-                        }} />
+                    </>
+                ) : (
+                    <>
+                        <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }} />
+
                     </>
                 )}
             </Stack.Navigator>
