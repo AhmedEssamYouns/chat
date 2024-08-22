@@ -10,11 +10,11 @@ import UserAccountScreen from '../Pages/Screens/user-account-screen';
 import SettingMenu from '../Components/setting-menu';
 import RotatingButton from '../Components/animated-rotate-button';
 import { useNavigation } from '@react-navigation/native';
-import SignInScreen from '../Pages/Screens/auth/sign-in';
-import SignUpScreen from '../Pages/Screens/auth/sign-up';
-import ForgetPasswordScreen from '../Pages/Screens/auth/forget-password';
-import ChangePasswordScreen from '../Pages/Screens/auth/change-password';
-import EditProfileScreen from '../Pages/Screens/auth/edit-profile';
+import SignUpScreen from '../Pages/Screens/sign-up';
+import ForgetPasswordScreen from '../Pages/Screens/forget-password';
+import ChangePasswordScreen from '../Pages/Screens/change-password';
+import EditProfileScreen from '../Pages/Screens/edit-profile';
+import SignInScreen from '../Pages/Screens/sign-in';
 
 const Stack = createStackNavigator();
 

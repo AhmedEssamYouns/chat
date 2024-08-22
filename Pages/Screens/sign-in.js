@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons'; // Import Feather icons
-
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { handleSignIn } from '../../firebase/auth/signin';
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false); // State to control password visibility
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignIn = () => {
-    if (email === '' || password === '') {
-      Alert.alert('Error', 'Please fill in all fields.');
-      return;
-    }
-
-    // Here you would typically handle authentication
-    // For example, by making a request to your authentication API
-
-    Alert.alert('Success', 'Signed in successfully!');
-    navigation.navigate('Tabs'); // Navigate to the main screen after sign-in
+  const handleSignInClick = () => {
+    handleSignIn(email, password, navigation, setEmailError, setPasswordError, setIsLoading);
   };
 
   return (
@@ -32,14 +26,15 @@ const SignInScreen = ({ navigation }) => {
           onChangeText={setEmail}
           keyboardType="email-address"
         />
+
         <View style={styles.passwordContainer}>
           <TextInput
-            style={{ color: 'white',width:'80%',paddingLeft:10 }}
+            style={{ color: 'white', width: '80%', paddingLeft: 10 }}
             placeholderTextColor={'white'}
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry={!isPasswordVisible} // Control visibility based on state
+            secureTextEntry={!isPasswordVisible}
           />
           <TouchableOpacity
             style={styles.eyeIcon}
@@ -48,6 +43,9 @@ const SignInScreen = ({ navigation }) => {
             <Feather name={isPasswordVisible ? 'eye-off' : 'eye'} size={20} color="white" />
           </TouchableOpacity>
         </View>
+        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
         <TouchableOpacity
           onPress={() => navigation.navigate('ForgetPassword')}
           style={styles.forgetPasswordLink}
@@ -55,9 +53,13 @@ const SignInScreen = ({ navigation }) => {
           <Text style={styles.forgetPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Text style={styles.buttonText}>Sign In</Text>
-      </TouchableOpacity>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#f44336" style={styles.loader} />
+      ) : (
+        <TouchableOpacity style={styles.button} onPress={handleSignInClick}>
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.signupContainer}>
         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
           <Text style={styles.link}>Don't have an account? Sign Up</Text>
@@ -86,7 +88,7 @@ const styles = StyleSheet.create({
     height: 60,
     color: '#fff',
     padding: 10,
-    paddingLeft:20,
+    paddingLeft: 20,
     marginBottom: 10,
     borderRadius: 25,
   },
@@ -133,6 +135,17 @@ const styles = StyleSheet.create({
   },
   signupContainer: {
     alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginLeft: 20,
+    marginBottom: 5,
+  },
+  loader: {
+    marginHorizontal: 20,
+    paddingBottom: 20,
+    alignSelf: 'center',
   },
 });
 

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-nat
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
+
 const SettingMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
 
@@ -10,9 +11,9 @@ const SettingMenu = ({ visible, onClose }) => {
         const handleBackPress = () => {
             if (visible) {
                 onClose();
-                return true; // Prevent the default behavior of going back
+                return true; 
             }
-            return false; // Allow default behavior if menu is not visible
+            return false;
         };
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -20,7 +21,6 @@ const SettingMenu = ({ visible, onClose }) => {
         return () => backHandler.remove();
     }, [visible, onClose]);
 
-    // Return null if the menu is not visible
     if (!visible) return null;
 
     return (
