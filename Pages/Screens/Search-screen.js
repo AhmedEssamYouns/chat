@@ -1,54 +1,63 @@
-// SearchScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-const mockData = [
-    { id: '1', name: 'John Doe', image: 'https://via.placeholder.com/50', status: 'Add Friend' },
-    { id: '2', name: 'Jane Smith', image: 'https://via.placeholder.com/50', status: 'Friend' },
-    { id: '3', name: 'Michael Johnson', image: 'https://via.placeholder.com/50', status: 'Cancel Request' },
-    { id: '4', name: 'Emily Davis', image: 'https://via.placeholder.com/50', status: 'Add Friend' },
-    { id: '5', name: 'Chris Wilson', image: 'https://via.placeholder.com/50', status: 'Friend' },
-];
+import { FIREBASE_AUTH, db } from '../../firebase/config';
+import { doc, collection, query, where, getDocs } from 'firebase/firestore';
+import { monitorFriendStatuses,handleStatusChange } from '../../firebase/frinend-state';
 
 const SearchScreen = () => {
     const [searchText, setSearchText] = useState('');
-    const [users, setUsers] = useState(mockData);
+    const [users, setUsers] = useState([]);
+    const [friendStatuses, setFriendStatuses] = useState({});
     const navigation = useNavigation();
+    const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
-    const handleSearch = (suggestion) => {
-        console.log(`Searching for ${suggestion}`);
-    };
+    useEffect(() => {
+        // Fetch all users except the current user
+        const fetchUsers = async () => {
+            const q = query(collection(db, 'users'), where('uid', '!=', currentUserId));
+            const querySnapshot = await getDocs(q);
+            const userList = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setUsers(userList);
+        };
 
-    const handleStatusChange = (id) => {
-        setUsers((prevUsers) =>
-            prevUsers.map((user) => {
-                if (user.id === id) {
-                    // Toggle the button state
-                    if (user.status === 'Add Friend') return { ...user, status: 'Cancel Request' };
-                    if (user.status === 'Cancel Request') return { ...user, status: 'Add Friend' };
-                }
-                return user;
-            })
+        fetchUsers();
+
+        // Monitor real-time friend status updates
+        const unsubscribe = monitorFriendStatuses(currentUserId, setFriendStatuses);
+
+        return () => {
+            unsubscribe(); // Clean up listener when the component unmounts
+        };
+    }, [currentUserId]);
+
+    const renderUserItem = ({ item }) => {
+        const friendStatus = friendStatuses[item.uid] || 'Add Friend';
+
+        return (
+            <View style={styles.userItem}>
+                <Image source={{ uri: item.profileImage || 'https://via.placeholder.com/50' }} style={styles.userImage} />
+                <Text style={styles.userName}>{item.username}</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.statusButton,
+                        friendStatus === 'Friend' && { backgroundColor: '#444' },
+                    ]}
+                    onPress={() => handleStatusChange(item.uid, currentUserId, friendStatuses, setFriendStatuses)}
+                    disabled={friendStatus === 'Friend'} // Disable button for friends
+                >
+                    <Text style={styles.statusButtonText}>{friendStatus}</Text>
+                </TouchableOpacity>
+            </View>
         );
     };
 
-    const renderUserItem = ({ item }) => (
-        <View style={styles.userItem}>
-            <Image source={{ uri: item.image }} style={styles.userImage} />
-            <Text style={styles.userName}>{item.name}</Text>
-            <TouchableOpacity
-                style={[
-                    styles.statusButton,
-                    item.status === 'Friend' && { backgroundColor: '#444' },
-                ]}
-                onPress={() => handleStatusChange(item.id)}
-                disabled={item.status === 'Friend'} // Disable button for friends
-            >
-                <Text style={styles.statusButtonText}>{item.status}</Text>
-            </TouchableOpacity>
-        </View>
+    const filteredUsers = users.filter((user) =>
+        user.username.toLowerCase().includes(searchText.toLowerCase())
     );
 
     return (
@@ -67,13 +76,12 @@ const SearchScreen = () => {
                         autoFocus
                     />
                 </View>
-             
             </View>
 
             <FlatList
-                data={users}
+                data={filteredUsers}
                 renderItem={renderUserItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.uid}
                 style={styles.userList}
                 contentContainerStyle={styles.userListContainer}
             />
@@ -84,7 +92,7 @@ const SearchScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 60,
+        paddingTop: 50,
         backgroundColor: '#121212',
     },
     searchSection: {
@@ -105,25 +113,6 @@ const styles = StyleSheet.create({
         flex: 1,
         elevation: 2,
     },
-    suggestionsContainer: {
-        marginTop: 20,
-    },
-    row: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    suggestionButton: {
-        backgroundColor: '#333',
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginHorizontal: 5,
-    },
-    suggestionText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-    },
     userList: {
         marginTop: 10,
     },
@@ -134,9 +123,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
-        paddingBottom:10,
-        borderBottomWidth:0.5,
-        borderBottomColor:'#222'
+        paddingBottom: 10,
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#222',
     },
     userImage: {
         width: 50,

@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import PostsList from '../../Components/posts-list';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
-
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [userProfile, setUserProfile] = useState({
@@ -14,6 +13,7 @@ const ProfileScreen = () => {
         bio: 'edit profile to add bio',
         posts: [],
     });
+    
 
     useEffect(() => {
         const userId = FIREBASE_AUTH.currentUser.uid;
@@ -27,7 +27,7 @@ const ProfileScreen = () => {
                     ...prevProfile,
                     id: userId,
                     name: userData.username,
-                    avatar: userData.profileImage || 'https://randomuser.me/api/portraits/men/1.jpg',
+                    avatar: userData.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0',
                     bio: userData.bio,
                 }));
             }

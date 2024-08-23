@@ -80,6 +80,7 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         // Save user data to Firestore
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
+            uid: user.uid,
             email: email,
             profileImage: '', // Empty profile image field since we're not handling images
         });

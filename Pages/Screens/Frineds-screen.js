@@ -1,23 +1,46 @@
-// FriendsScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-
-const mockData = [
-    { id: '1', name: 'John Doe', image: 'https://via.placeholder.com/150' },
-    { id: '2', name: 'Jane Smith', image: 'https://via.placeholder.com/150' },
-    { id: '3', name: 'Michael Johnson', image: 'https://via.placeholder.com/150' },
-    { id: '4', name: 'Emily Davis', image: 'https://via.placeholder.com/150' },
-    { id: '5', name: 'Chris Wilson', image: 'https://via.placeholder.com/150' },
-];
+import { FIREBASE_AUTH, db } from '../../firebase/config';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 
 const FriendsScreen = () => {
     const [searchText, setSearchText] = useState('');
-    const [friends, setFriends] = useState(mockData);
+    const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
+
+    useEffect(() => {
+        const fetchFriends = async () => {
+            try {
+                const userId = FIREBASE_AUTH.currentUser.uid;
+                const userDocRef = doc(db, 'users', userId);
+                const userDoc = await getDoc(userDocRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const friendsIds = userData.friends || [];
+
+                    if (friendsIds.length > 0) {
+                        const friendsQuery = query(
+                            collection(db, 'users'),
+                            where('uid', 'in', friendsIds)
+                        );
+
+                        const querySnapshot = await getDocs(friendsQuery);
+                        const friendsData = querySnapshot.docs.map(doc => doc.data());
+                        setFriends(friendsData);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching friends:', error);
+            }
+        };
+
+        fetchFriends();
+    }, []);
 
     const handleFriendClick = (friend) => {
         setSelectedFriend(friend);
@@ -31,8 +54,8 @@ const FriendsScreen = () => {
 
     const renderFriendItem = ({ item }) => (
         <TouchableOpacity style={styles.friendItem} onPress={() => handleFriendClick(item)}>
-            <Image source={{ uri: item.image }} style={styles.friendImage} />
-            <Text style={styles.friendName}>{item.name}</Text>
+            <Image source={{ uri: item.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0' }} style={styles.friendImage} />
+            <Text style={styles.friendName}>{item.username || 'Unknown'}</Text>
         </TouchableOpacity>
     );
 
@@ -54,9 +77,9 @@ const FriendsScreen = () => {
             </View>
 
             <FlatList
-                data={friends}
+                data={friends.filter(friend => friend.username.toLowerCase().includes(searchText.toLowerCase()))}
                 renderItem={renderFriendItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.uid}
                 style={styles.friendList}
                 contentContainerStyle={styles.friendListContainer}
             />
@@ -73,21 +96,22 @@ const FriendsScreen = () => {
                         onPress={closeModal} // Close the modal when clicking outside
                     >
                         <TouchableOpacity style={styles.modalContent} activeOpacity={1}>
-                            <Image source={{ uri: selectedFriend.image }} style={styles.modalImage} />
-                            <Text style={styles.modalTitle}>{selectedFriend.name}</Text>
+                            <Image source={{ uri: selectedFriend.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0' }} style={styles.modalImage} />
+                            <Text style={styles.modalTitle}>{selectedFriend.username || 'Unknown'}</Text>
                             <TouchableOpacity
                                 style={styles.modalButton}
                                 onPress={() => {
                                     closeModal();
-                                    navigation.navigate('chat');
+                                    navigation.navigate('chat', { friendId: selectedFriend.uid });
                                 }}
                             >
                                 <Text style={styles.modalButtonText}>Send Message</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.modalButton}
+                            <TouchableOpacity
+                                style={styles.modalButton}
                                 onPress={() => {
                                     closeModal();
-                                    navigation.navigate('account');
+                                    navigation.navigate('chat', { friendId: selectedFriend.uid });
                                 }}
                             >
                                 <Text style={styles.modalButtonText}>View Account</Text>
@@ -102,7 +126,6 @@ const FriendsScreen = () => {
                     </TouchableOpacity>
                 </Modal>
             )}
-
         </View>
     );
 };
@@ -110,7 +133,7 @@ const FriendsScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: 60,
+        paddingTop: 50,
         backgroundColor: '#121212',
     },
     searchSection: {
@@ -148,7 +171,7 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        marginRight: 15,
+        marginRight: 10,
     },
     friendName: {
         flex: 1,

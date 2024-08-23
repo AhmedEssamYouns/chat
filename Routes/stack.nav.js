@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Feather } from '@expo/vector-icons';
+import { onSnapshot,doc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import { TouchableOpacity, View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import TabNavigator from './tabs-nav';
 import ChatConversationScreen from '../Pages/Screens/chat-room';
@@ -9,7 +11,7 @@ import FriendsScreen from '../Pages/Screens/Frineds-screen';
 import UserAccountScreen from '../Pages/Screens/user-account-screen';
 import SettingMenu from '../Components/setting-menu';
 import RotatingButton from '../Components/animated-rotate-button';
-import { useNavigation } from '@react-navigation/native';
+import HeaderRightIcons from '../Components/header-right-icons'; // Updated import
 import SignUpScreen from '../Pages/Screens/sign-up';
 import ForgetPasswordScreen from '../Pages/Screens/forget-password';
 import ChangePasswordScreen from '../Pages/Screens/change-password';
@@ -17,16 +19,31 @@ import EditProfileScreen from '../Pages/Screens/edit-profile';
 import SignInScreen from '../Pages/Screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
 import { ActivityIndicator } from 'react-native';
+import FriendRequestModal from '../Components/friends-requist-mode';
 
 const Stack = createStackNavigator();
 
 export default function MainTabNavigator() {
-    const navigation = useNavigation();
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
     const [menuVisible, setMenuVisible] = useState(false);
     const [expanded, setExpanded] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
+
+    const [notificationCount, setNotificationCount] = useState(0);
+
+    useEffect(() => {
+        const unsubscribe = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
+            if (docSnapshot.exists()) {
+                const data = docSnapshot.data();
+                const newCount = data.friendRequestsReceived ? data.friendRequestsReceived.length : 0;
+                setNotificationCount(newCount);
+            }
+        });
+    
+        return unsubscribe;
+    }, []);
+
 
     const handleMenuToggle = () => {
         setMenuVisible(!menuVisible);
@@ -39,7 +56,6 @@ export default function MainTabNavigator() {
             setExpanded(false);
         }
     };
-
     useEffect(() => {
         const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'Authenticated' : 'Not authenticated');
@@ -87,18 +103,14 @@ export default function MainTabNavigator() {
                                     fontSize: 18,
                                 },
                                 headerRight: () => (
-                                    <View style={styles.headerRight}>
-                                        <TouchableOpacity onPress={() => navigation.navigate('search')} style={styles.headerButton}>
-                                            <Feather name="search" size={24} color="white" />
-                                        </TouchableOpacity>
-                                        <RotatingButton
-                                            size={60}
-                                            backgroundColor={'#121212'}
-                                            onPress={handleMenuToggle}
-                                            icon={expanded ? 'x' : 'more-vertical'}
-                                            expanded={expanded}
-                                        />
-                                    </View>
+                                    <HeaderRightIcons
+                                        notificationCount={notificationCount}
+                                        menuVisible={menuVisible}
+                                        expanded={expanded}
+                                        setMenuVisible={setMenuVisible}
+                                        setExpanded={setExpanded}
+                                        setModalVisible={setModalVisible} // Pass setModalVisible
+                                    />
                                 ),
                             }}
                         />
@@ -142,7 +154,6 @@ export default function MainTabNavigator() {
                         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }} />
-
                     </>
                 )}
             </Stack.Navigator>
@@ -153,7 +164,9 @@ export default function MainTabNavigator() {
                     <View style={styles.overlay} />
                 </TouchableWithoutFeedback>
             )}
+
             <SettingMenu visible={menuVisible} onClose={handleMenuToggle} />
+            <FriendRequestModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         </View>
     );
 }
@@ -172,6 +185,7 @@ const styles = StyleSheet.create({
     headerButton: {
         alignItems: 'center',
         justifyContent: 'center',
+        marginHorizontal: 10,
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,

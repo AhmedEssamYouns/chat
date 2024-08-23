@@ -118,7 +118,7 @@ const CreatePostModal = ({ visible, onClose }) => {
                         </TouchableOpacity>
                         <View style={styles.userInfo}>
                             <Image
-                                source={{ uri: user.profileImage }}
+                                source={{ uri: user.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0' }}
                                 style={styles.profileImage}
                             />
                             <Text style={styles.username}>{user.username}</Text>
