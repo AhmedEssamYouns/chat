@@ -30,7 +30,7 @@ const ProfileScreen = () => {
                     name: userData.username,
                     avatar: userData.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0',
                     bio: userData.bio,
-                    friends: userData.friends.length
+                    friends: userData.friends?.length
                 }));
             }
         });

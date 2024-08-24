@@ -81,9 +81,8 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
             uid: user.uid,
-            profileImage:'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0',
             email: email,
-            profileImage: '', // Empty profile image field since we're not handling images
+            profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
 
         navigation.navigate('SignIn');

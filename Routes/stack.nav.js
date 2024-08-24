@@ -55,7 +55,7 @@ export default function MainTabNavigator() {
 
         return unsubscribe;
     }, []);
-    
+
     useEffect(() => {
         if (isAuthenticated) {
             const unsubscribe = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
@@ -140,6 +140,8 @@ export default function MainTabNavigator() {
                         <Stack.Screen name='account' component={UserAccountScreen} options={{
                           headerShown:false
                         }} />
+                        <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+
                     </>
                 ) : (
                     <>
