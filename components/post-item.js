@@ -68,7 +68,7 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
             <View style={styles.header}>
                 <Pressable
                     style={{ flexDirection: 'row', alignItems: 'center' }}
-                    onPress={() => !isOwner && navigation.navigate('account')}
+                    onPress={() => !isOwner && navigation.navigate('account', { friendId: userDetails.uid })}
                 >
                     <View style={styles.avatarContainer}>
                         <Image
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     actionContainer: {
         flexDirection: 'row',
         alignItems:'center',
-        gap:10,
+        right:20,
         paddingTop: 10,
     },
     loveSection: {

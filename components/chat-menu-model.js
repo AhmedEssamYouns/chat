@@ -1,17 +1,22 @@
-import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
+import ConfirmationModal from './alert'; // Adjust the import path as needed
 
 const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, handleDeleteMessage }) => {
+    const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
 
     const handleDeleteConfirmation = () => {
-        Alert.alert(
-            "Confirm Delete",
-            "Are you sure you want to delete this message?",
-            [
-                { text: "Cancel", style: "cancel" },
-                { text: "Delete", onPress: handleDeleteMessage }
-            ]
-        );
+        setIsConfirmationVisible(true);
+    };
+
+    const handleConfirmDelete = () => {
+        handleDeleteMessage();
+        setIsConfirmationVisible(false);
+        handleMenuToggle(); // Optionally close the dropdown menu after deletion
+    };
+
+    const handleCancelDelete = () => {
+        setIsConfirmationVisible(false);
     };
 
     return (
@@ -46,6 +51,14 @@ const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, hand
                     </View>
                 </View>
             </TouchableOpacity>
+
+            <ConfirmationModal
+                visible={isConfirmationVisible}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+                message="Are you sure you want to delete this message?"
+                confirm="Delete"
+            />
         </Modal>
     );
 };

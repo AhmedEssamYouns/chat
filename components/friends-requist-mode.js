@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
     },
     requestInfo: {
+        left:5,
         flex: 1,
     },
     requestText: {

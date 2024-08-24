@@ -76,3 +76,29 @@ export const monitorFriendStatuses = (currentUserId, setFriendStatuses) => {
 
     return unsubscribe;
 };
+
+
+export const removeFriend = async (friendId, currentUserId) => {
+    try {
+        // Reference to the current user's document
+        const currentUserRef = doc(db, 'users', currentUserId);
+
+        // Reference to the friend's document
+        const friendRef = doc(db, 'users', friendId);
+
+        // Update the current user's document to remove the friend's ID
+        await updateDoc(currentUserRef, {
+            friends: arrayRemove(friendId),
+        });
+
+        // Update the friend's document to remove the current user's ID
+        await updateDoc(friendRef, {
+            friends: arrayRemove(currentUserId),
+        });
+
+        Alert.alert('Friend Removed', 'You have successfully removed this friend.');
+    } catch (error) {
+        console.error('Error removing friend:', error);
+        Alert.alert('Error', 'There was a problem removing the friend.');
+    }
+};

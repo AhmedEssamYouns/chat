@@ -12,8 +12,9 @@ const ProfileScreen = () => {
         name: FIREBASE_AUTH.currentUser.displayName,
         bio: 'edit profile to add bio',
         posts: [],
+        friends:0,
     });
-    
+
 
     useEffect(() => {
         const userId = FIREBASE_AUTH.currentUser.uid;
@@ -29,6 +30,7 @@ const ProfileScreen = () => {
                     name: userData.username,
                     avatar: userData.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0',
                     bio: userData.bio,
+                    friends: userData.friends.length
                 }));
             }
         });
@@ -69,7 +71,7 @@ const ProfileScreen = () => {
 
                 <TouchableOpacity style={styles.friendsButton} onPress={() => navigation.navigate('Friends')}>
                     <Text style={{ color: '#ccc', fontSize: 15 }}>
-                        Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>17</Text>
+                        Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>{userProfile.friends}</Text>
                     </Text>
                 </TouchableOpacity>
             </View>

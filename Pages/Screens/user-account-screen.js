@@ -1,111 +1,132 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { collection, doc, query, where, onSnapshot } from 'firebase/firestore';
+import { db, FIREBASE_AUTH } from '../../firebase/config';
 import PostsList from '../../Components/posts-list';
-const userAccount = {
-    id: '2',
-    name: 'Jane Smith',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    bio: 'Traveler, Foodie, and Fitness Lover.',
-    friendsCount: 10,
-    isFriend: true, // Set initial value to false
-    posts: [
-        {
-            id: '1',
-            name: 'Jane Smith',
-            avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-            storyTitle: 'New Recipe Try',
-            photo: 'https://via.placeholder.com/200',
-            time: '3 days ago',
-            likes: 22,
-        },
-        {
-            id: '2',
-            name: 'Jane Smith',
-            avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-            storyTitle: 'Weekend Hiking',
-            photo: 'https://via.placeholder.com/200',
-            time: '1 week ago',
-            likes: 18,
-        },
-    ],
-};
+import { handleStatusChange, removeFriend, monitorFriendStatuses } from '../../firebase/frinend-state';
+import { getUserById } from '../../firebase/getUser';
+import ConfirmationModal from '../../Components/alert';
+import { Feather } from '@expo/vector-icons';
 
 const UserAccountScreen = () => {
-    const [isFriend, setIsFriend] = useState(userAccount.isFriend);
-    const [friendRequestSent, setFriendRequestSent] = useState(false);
+    const route = useRoute();
+    const { friendId } = route.params;
+    const [user, setUser] = useState({ posts: [] });
+    const [friendStatuses, setFriendStatuses] = useState({});
+    const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
+    const [modalAction, setModalAction] = useState(null); // Track the action to be confirmed
     const navigation = useNavigation();
+    const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
-    const handleAddFriend = () => {
-        setFriendRequestSent(true);
-    };
+    useEffect(() => {
+        // Set up real-time listener for user data
+        const userRef = doc(db, 'users', friendId);
+        const unsubscribeUser = onSnapshot(userRef, (doc) => {
+            if (doc.exists()) {
+                const userData = doc.data();
+                setUser(prevUser => ({ ...userData, posts: prevUser.posts || [] }));
+            } else {
+                console.error('User document not found');
+            }
+        }, (error) => {
+            console.error('Error fetching user details:', error);
+        });
 
-    const handleCancelRequest = () => {
-        setFriendRequestSent(false);
-    };
+        // Set up real-time listener for posts
+  
+        const postsRef = collection(db, 'posts');
+        const postsQuery = query(postsRef, where('id', '==', friendId));
+        const unsubscribePosts = onSnapshot(postsQuery, (querySnapshot) => {
+            const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setUser(prevProfile => ({
+                ...prevProfile,
+                posts,
+            }));
+        });
 
-    const handleRemoveFriend = () => {
-        Alert.alert(
-            "Remove Friend",
-            "Are you sure you want to remove this friend?",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Remove",
-                    onPress: () => setIsFriend(false), // Update the state to remove the friend
-                    style: "destructive"
-                }
-            ],
-            { cancelable: true }
-        );
+
+        // Clean up listeners on unmount
+        return () => {
+            unsubscribeUser();
+            unsubscribePosts();
+        };
+    }, [friendId]);
+
+    useEffect(() => {
+        const unsubscribe = monitorFriendStatuses(currentUserId, setFriendStatuses);
+        return () => unsubscribe(); // Cleanup subscription on unmount
+    }, [currentUserId]);
+
+    const currentStatus = friendStatuses[friendId] || 'Add Friend';
+
+    const handleStatusAction = () => {
+        if (currentStatus === 'Friend') {
+            setModalAction(() => () => removeFriend(friendId, currentUserId, friendStatuses, setFriendStatuses));
+            setIsModalVisible(true);
+        } else {
+            handleStatusChange(friendId, currentUserId, friendStatuses, setFriendStatuses);
+        }
     };
 
     const handleSendMessage = () => {
-        navigation.navigate('Chat', { userId: userAccount.id, userName: userAccount.name });
+        navigation.navigate('chat', { friendId });
     };
 
+    const handleConfirmDelete = () => {
+        if (modalAction) modalAction();
+        setIsModalVisible(false);
+    };
+
+    const handleCancelDelete = () => {
+        setIsModalVisible(false);
+    };
+
+    if (!user) return <Text>Loading...</Text>;
+
     return (
-        <View style={{ flex: 1, backgroundColor: '#121212' }}>
+        <View style={{ flex: 1, backgroundColor: '#121212', paddingTop: '12%' }}>
+            <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
+                <Feather name='arrow-left' size={25} color={'#fff'} style={{ left: 15, padding: 10 }} onPress={() => navigation.goBack()} />
+                <Text style={styles.profileName}>{user.username}</Text>
+            </View>
             <View style={styles.profileHeader}>
-                <Image source={{ uri: userAccount.avatar }} style={styles.avatar} />
+                <Image source={{ uri: user.profileImage }} style={styles.avatar} />
                 <View style={{ padding: 15 }}>
-                    <Text style={styles.profileName}>{userAccount.name}</Text>
-                    <Text style={styles.profileBio}>{userAccount.bio}</Text>
-                    <Text style={styles.friendsCount}>Friends: {userAccount.friendsCount}</Text>
+                    <Text style={styles.profileBio}>{user.bio}</Text>
+                    <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
                 </View>
             </View>
 
-            <View style={styles.actionButtons}>
-                {isFriend ? (
-                    <TouchableOpacity style={styles.actionButton} onPress={handleRemoveFriend}>
-                        <Text style={styles.actionButtonText}>Friend</Text>
+            <View>
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleStatusAction}>
+                        <Text style={styles.actionButtonText}>
+                            {currentStatus === 'Friend' ? 'Unfriend' : currentStatus === 'Cancel Request' ? 'Cancel Request' : 'Add Friend'}
+                        </Text>
                     </TouchableOpacity>
-                ) : (
-                    friendRequestSent ? (
-                        <TouchableOpacity style={styles.actionButton2} onPress={handleCancelRequest}>
-                            <Text style={styles.actionButtonText}>Cancel Request</Text>
-                        </TouchableOpacity>
-                    ) : (
-                        <TouchableOpacity style={styles.actionButton} onPress={handleAddFriend}>
-                            <Text style={styles.actionButtonText}>Add Friend</Text>
-                        </TouchableOpacity>
-                    )
-                )}
-                <TouchableOpacity style={styles.actionButton} onPress={handleSendMessage}>
-                    <Text style={styles.actionButtonText}>Send Message</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleSendMessage}>
+                        <Text style={styles.actionButtonText}>Send Message</Text>
+                    </TouchableOpacity>
+                </View>
+                <Text style={styles.sectionTitle}>Posts</Text>
             </View>
 
-            <Text style={styles.sectionTitle}>Posts</Text>
             <PostsList
-                posts={userAccount.posts}
-                currentUserId={userAccount.id}
-                handleLovePress={() => {}}
-                onEditPost={() => {}}
-                onDeletePost={() => {}}
+                posts={user.posts || []}
+                currentUserId={currentUserId}
+                handleLovePress={() => { }}
+                onEditPost={() => { }}
+                onDeletePost={() => { }}
+            />
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                visible={isModalVisible}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+                message="Are you sure you want to unfriend this user?"
+                confirm="Unfriend"
             />
         </View>
     );
@@ -113,7 +134,8 @@ const UserAccountScreen = () => {
 
 const styles = StyleSheet.create({
     profileHeader: {
-        flexDirection: "row",
+        paddingTop: 15,
+        flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 15,
     },
@@ -146,8 +168,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         paddingVertical: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
     },
     actionButton: {
         width: 140,
@@ -157,23 +177,18 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderRadius: 5,
     },
-    actionButton2: {
-        width: 140,
-        alignItems: 'center',
-        backgroundColor: '#aaaa',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-    },
     actionButtonText: {
         color: '#FFFFFF',
         fontSize: 14,
     },
     sectionTitle: {
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
-        padding: 15,
+        paddingHorizontal: 25,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#333',
     },
 });
 

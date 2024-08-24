@@ -1,95 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Import icons
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search-Bar';
+import { subscribeToChats } from '../../firebase/getChatRooms';
 
-const fakeChats = [
-  {
-    id: '1',
-    name: 'John Doe',
-    message: 'Hey, how are you?',
-    time: '12:34 PM',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    status: 'seen', // 'delivered' or 'seen'
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    message: 'See you tomorrow!',
-    time: '11:15 AM',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    status: 'delivered',
-  },
-  {
-    id: '3',
-    name: 'Bob Johnson',
-    message: 'Thanks for the update.',
-    time: 'Yesterday',
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-    status: 'seen',
-  },
-  // Add more fake data as needed
-];
-
-const ChatScreen = ({navigation}) => {
+const ChatScreen = ({ navigation }) => {
+  const [chats, setChats] = useState([]);
+  const [filteredChats, setFilteredChats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredChats, setFilteredChats] = useState(fakeChats);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToChats((data, error) => {
+      if (error) {
+        setError(error);
+        setChats([]);
+        setFilteredChats([]);
+      } else {
+        setChats(data);
+        setFilteredChats(data);
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-    const filtered = fakeChats.filter((chat) =>
-      chat.name.toLowerCase().includes(text.toLowerCase())
+    const filtered = chats.filter(chat =>
+      chat.friendName.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredChats(filtered);
   };
 
-  const handleDeleteChat = (chatId) => {
-    Alert.alert(
-      "Delete Chat",
-      "Are you sure you want to delete this chat?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          onPress: () => {
-            // Here you would usually remove the chat from the state or database
-            setFilteredChats(filteredChats.filter(chat => chat.id !== chatId));
-          },
-          style: "destructive"
-        }
-      ]
-    );
-  };
-
   const renderChatItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.chatItem} 
-      onPress={() => navigation.navigate('chat')} 
-      onLongPress={() => handleDeleteChat(item.id)} // Add long press handler here
+    <TouchableOpacity
+      style={styles.chatItem}
+      onPress={() => navigation.navigate('chat', { friendId: item.friendId })}
     >
-      <Image source={{ uri: item.avatar }} style={styles.avatar} />
+      <Image source={{ uri: item.friendImage }} style={styles.avatar} />
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
-          <Text style={styles.chatName}>{item.name}</Text>
-          <Text style={styles.chatTime}>{item.time}</Text>
+          <Text style={styles.chatName}>{item.friendName}</Text>
+          <Text style={styles.chatTime}>{item.timestamp.toLocaleTimeString()}</Text>
         </View>
         <View style={styles.chatMessageContainer}>
-          <Text style={styles.chatMessage}>{item.message}</Text>
-          {item.status === 'seen' ? (
+          <Text style={styles.chatMessage}>{item.lastMessage}</Text>
+          {/* {item.status === 'seen' ? (
             <Ionicons name="checkmark-done" size={16} color="#1DA1F2" style={styles.statusIcon} />
           ) : (
             <Ionicons name="checkmark" size={16} color="#BBBBBB" style={styles.statusIcon} />
-          )}
+          )} */}
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  // Footer Component for the FlatList
   const renderEncryptionMessage = () => (
     <View style={styles.encryptionMessageContainer}>
       <Text style={styles.encryptionMessage}>
@@ -98,7 +66,6 @@ const ChatScreen = ({navigation}) => {
     </View>
   );
 
-  // Component to render when no chats are found
   const renderEmptyListMessage = () => (
     <View style={styles.emptyMessageContainer}>
       <Text style={styles.emptyMessage}>No chats found by this name.</Text>
@@ -112,14 +79,26 @@ const ChatScreen = ({navigation}) => {
         onChangeSearch={handleSearch}
         placeholder="Search chats by name"
       />
-      <FlatList
-        data={filteredChats}
-        renderItem={renderChatItem}
-        keyExtractor={(item) => item.id}
-        style={styles.chatList}
-        ListEmptyComponent={renderEmptyListMessage} // Add the empty list component here
-        ListFooterComponent={renderEncryptionMessage} // Add the footer component here
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="tomato" />
+          <Text style={styles.loadingText}>Loading chats...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredChats}
+          renderItem={renderChatItem}
+          keyExtractor={(item) => item.friendId}
+          style={styles.chatList}
+          ListEmptyComponent={renderEmptyListMessage}
+          ListFooterComponent={renderEncryptionMessage}
+          
+        />
+      )}
     </View>
   );
 };
@@ -188,6 +167,25 @@ const styles = StyleSheet.create({
   },
   emptyMessage: {
     color: '#BBBBBB',
+    fontSize: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
     fontSize: 16,
   },
 });

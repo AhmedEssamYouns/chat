@@ -18,15 +18,16 @@ const SignInScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Sign In</Text>
       <View>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor={'white'}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={{ color: 'white', width: '99%'}}
+            placeholder="Email"
+            placeholderTextColor={'white'}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+        </View>
         <View style={styles.passwordContainer}>
           <TextInput
             style={{ color: 'white', width: '80%', paddingLeft: 10 }}

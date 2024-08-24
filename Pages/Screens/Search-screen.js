@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, collection, query, where, getDocs } from 'firebase/firestore';
-import { monitorFriendStatuses,handleStatusChange } from '../../firebase/frinend-state';
+import { monitorFriendStatuses, handleStatusChange } from '../../firebase/frinend-state';
 
 const SearchScreen = () => {
     const [searchText, setSearchText] = useState('');
@@ -40,12 +40,14 @@ const SearchScreen = () => {
 
         return (
             <View style={styles.userItem}>
-                <Image source={{ uri: item.profileImage || 'https://via.placeholder.com/50' }} style={styles.userImage} />
-                <Text style={styles.userName}>{item.username}</Text>
+                <TouchableOpacity style={{ flexDirection: 'row', width: '70%', alignItems: 'center' }} onPress={() => navigation.navigate('account', { friendId: item.uid })}>
+                    <Image source={{ uri: item.profileImage || 'https://via.placeholder.com/50' }} style={styles.userImage} />
+                    <Text style={styles.userName}>{item.username}</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={[
                         styles.statusButton,
-                        friendStatus === 'Friend' && { backgroundColor: '#444' },
+                        friendStatus === 'Friend' && { backgroundColor: '#444', width: 90,alignItems:'center' },
                     ]}
                     onPress={() => handleStatusChange(item.uid, currentUserId, friendStatuses, setFriendStatuses)}
                     disabled={friendStatus === 'Friend'} // Disable button for friends
@@ -142,6 +144,8 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 15,
         borderRadius: 5,
+        width:90,
+        alignItems:'center',
         backgroundColor: '#333',
     },
     statusButtonText: {

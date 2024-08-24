@@ -32,17 +32,7 @@ export default function MainTabNavigator() {
 
     const [notificationCount, setNotificationCount] = useState(0);
 
-    useEffect(() => {
-        const unsubscribe = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
-            if (docSnapshot.exists()) {
-                const data = docSnapshot.data();
-                const newCount = data.friendRequestsReceived ? data.friendRequestsReceived.length : 0;
-                setNotificationCount(newCount);
-            }
-        });
-    
-        return unsubscribe;
-    }, []);
+
 
 
     const handleMenuToggle = () => {
@@ -65,7 +55,20 @@ export default function MainTabNavigator() {
 
         return unsubscribe;
     }, []);
+    
+    useEffect(() => {
+        if (isAuthenticated) {
+            const unsubscribe = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const data = docSnapshot.data();
+                    const newCount = data.friendRequestsReceived ? data.friendRequestsReceived.length : 0;
+                    setNotificationCount(newCount);
+                }
+            });
 
+            return unsubscribe;
+        }
+    }, [isAuthenticated]);
     if (isLoading) {
         return (
             <View style={styles.loaderContainer}>
@@ -84,6 +87,7 @@ export default function MainTabNavigator() {
                 }}>
                 {isAuthenticated ? (
                     <>
+
                         <Stack.Screen
                             name="Tabs"
                             component={TabNavigator}
@@ -134,18 +138,7 @@ export default function MainTabNavigator() {
                         <Stack.Screen name='search' component={SearchScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='Friends' component={FriendsScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='account' component={UserAccountScreen} options={{
-                            headerStyle: {
-                                backgroundColor: '#121212',
-                                elevation: 1,
-                                shadowOpacity: 0,
-                                shadowOffset: { height: 0 },
-                            },
-                            headerTitleStyle: {
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: 18,
-                            },
-                            headerTintColor: "white"
+                          headerShown:false
                         }} />
                     </>
                 ) : (

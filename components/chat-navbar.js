@@ -2,13 +2,22 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from './animated-rotate-button';
+import { getUserById } from '../firebase/getUser';
 
-const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation }) => {
+const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [expanded, setExpanded] = useState(false); // Add this state
   const searchAnim = useRef(new Animated.Value(-300)).current; // Start from off-screen left
   const searchInputRef = useRef(null); // Reference for the search input
+  const [user, setuser] = useState('')
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const userData = await getUserById(frindID);
+      setuser(userData)
+    }
+    fetchUserDetails();
+  }, [frindID]);
   useEffect(() => {
     Animated.timing(searchAnim, {
       toValue: isSearchMode ? 0 : -300,
@@ -34,19 +43,22 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
     setIsSearchMode(true);
     setIsMenuVisible(false); // Close the dropdown menu
   };
-
   return (
     <View style={styles.navbar}>
       {!isSearchMode ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center',}}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <Image
-            style={styles.Image}
-            source={{ uri: 'https://cdn3.iconfinder.com/data/icons/avatars-9/145/Avatar_Cat-512.png' }}
-          />
-          <Text style={styles.navbarTitle}>Chat</Text>
+          <TouchableOpacity style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }} onPress={() =>
+           navigation.navigate('account', { friendId: user.uid })
+          }>
+            <Image
+              style={styles.Image}
+              source={{ uri: user.profileImage }}
+            />
+            <Text style={styles.navbarTitle}>{user.username}</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <Animated.View style={[styles.searchBar, { transform: [{ translateX: searchAnim }] }]}>
@@ -109,7 +121,8 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
             <View style={styles.menuContainer}>
               <TouchableOpacity style={styles.menuItem} onPress={() => {
                 handleMenuToggle();
-                navigation.navigate('Friends');
+                navigation.navigate('account', { friendId: user.uid })
+
               }}>
                 <Text style={styles.menuItemText}>View Account</Text>
               </TouchableOpacity>
@@ -153,7 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   icon: {
-    marginRight:10,
+    marginRight: 10,
     alignSelf: 'center'
   },
   searchBar: {

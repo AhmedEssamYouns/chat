@@ -20,8 +20,8 @@ const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onL
 
 const styles = StyleSheet.create({
     listContainer: {
-        paddingBottom: 20,
         paddingHorizontal: 20,
+        paddingTop:10
     },
 });
 
