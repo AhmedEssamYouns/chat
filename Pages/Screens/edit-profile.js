@@ -159,8 +159,8 @@ const EditProfileScreen = () => {
 
             <View style={styles.usernameContainer}>
                 <TextInput
-                    maxLength={12}
-                    style={[styles.input, { marginBottom: 10 }]}
+                    maxLength={20}
+                    style={{color:"white",width:'85%'}}
                     placeholder="Username"
                     placeholderTextColor={'white'}
                     value={username}
@@ -258,6 +258,12 @@ const styles = StyleSheet.create({
     usernameContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: '#333',
+        height: 50,
+        width: '100%',
+        borderRadius:20,
+        marginBottom:10,
+        padding:10,
     },
     statusIcon: {
         position: 'absolute',

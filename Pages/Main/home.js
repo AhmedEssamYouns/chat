@@ -1,8 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
+
+const formatTimestamp = (timestamp) => {
+  const now = new Date();
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp.toDate());
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString([], timeOptions);
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else {
+    return date.toLocaleDateString([], options);
+  }
+};
 
 const ChatScreen = ({ navigation }) => {
   const [chats, setChats] = useState([]);
@@ -18,8 +35,10 @@ const ChatScreen = ({ navigation }) => {
         setChats([]);
         setFilteredChats([]);
       } else {
-        setChats(data);
-        setFilteredChats(data);
+        // Sort chats by timestamp in descending order
+        const sortedChats = data.sort((a, b) => b.timestamp - a.timestamp);
+        setChats(sortedChats);
+        setFilteredChats(sortedChats);
         setLoading(false);
       }
     });
@@ -44,7 +63,7 @@ const ChatScreen = ({ navigation }) => {
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
           <Text style={styles.chatName}>{item.friendName}</Text>
-          <Text style={styles.chatTime}>{item.timestamp.toLocaleTimeString()}</Text>
+          <Text style={styles.chatTime}>{formatTimestamp(item.timestamp)}</Text>
         </View>
         <View style={styles.chatMessageContainer}>
           <Text style={styles.chatMessage}>{item.lastMessage}</Text>
@@ -92,11 +111,10 @@ const ChatScreen = ({ navigation }) => {
         <FlatList
           data={filteredChats}
           renderItem={renderChatItem}
-          keyExtractor={(item) => item.friendId}
+          keyExtractor={(item) => item.id}
           style={styles.chatList}
           ListEmptyComponent={renderEmptyListMessage}
           ListFooterComponent={renderEncryptionMessage}
-          
         />
       )}
     </View>
