@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Image, ActivityIndicator } from 'react-native';
 import PostsList from '../../Components/posts-list';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
@@ -9,6 +9,7 @@ const StoriesScreen = () => {
   const [posts, setPosts] = useState([]);
   const [hasFriends, setHasFriends] = useState(false);
   const [friendsHavePosts, setFriendsHavePosts] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -34,14 +35,29 @@ const StoriesScreen = () => {
             const friendsPosts = posts.filter(post => friends.includes(post.id));
             setFriendsHavePosts(friendsPosts.length > 0);
 
+            // Update loading state
+            setLoading(false); // Set loading to false after fetching posts
+
             return () => unsubscribePosts();
           });
+        } else {
+          // If no friends, set loading to false
+          setLoading(false);
         }
       }
     });
 
     return () => unsubscribeUser();
   }, []);
+
+  if (loading) {
+    // Show loading indicator while data is being fetched
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#f44336" />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
@@ -85,6 +101,12 @@ const StoriesScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#121212',
+  },
   noFriendsContainer: {
     flex: 1,
     justifyContent: 'center',

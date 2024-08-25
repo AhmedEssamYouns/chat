@@ -27,12 +27,12 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
             Animated.timing(animation, {
                 toValue: expanded ? 1 : 0,
                 duration: 300,
-                useNativeDriver: false,
+                useNativeDriver: false, // Height animations
             }),
             Animated.timing(rotate, {
                 toValue: expanded ? 1 : 0,
                 duration: 300,
-                useNativeDriver: true,
+                useNativeDriver: true, // Rotation animations
             }),
         ]).start();
     }, [expanded]);

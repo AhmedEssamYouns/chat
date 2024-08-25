@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -51,7 +51,7 @@ const CreatePostModal = ({ visible, onClose }) => {
                 text: postText,
                 imageUrl,
                 id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString()
+                time:new Date().toISOString()
             });
 
             // Update the document with the auto-generated ID as postId
@@ -101,7 +101,7 @@ const CreatePostModal = ({ visible, onClose }) => {
             setSelectedImage(compressedUri);
         }
     };
-
+  
 
     const cancelImage = () => {
         setSelectedImage(null); // Clear the selected image

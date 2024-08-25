@@ -30,7 +30,7 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
       keyExtractor={(item) => item.postId} // Ensure item.postId is unique
       contentContainerStyle={{ paddingBottom: 30, backgroundColor: "#121212" }}
       ListFooterComponent={
-        <Text style={styles.endOfPostsText}>No More Posts</Text>
+        <Text style={styles.endOfPostsText}>No Posts</Text>
       }
     />
   );
