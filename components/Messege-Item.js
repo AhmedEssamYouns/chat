@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { FIREBASE_AUTH } from '../firebase/config';
+import { Feather, Ionicons } from '@expo/vector-icons';
+
 
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
-  return date.toLocaleTimeString([], { 
-    hour: '2-digit', 
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
     minute: '2-digit',
     hour12: true, // 12-hour format
   });
@@ -48,11 +50,22 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         ) : (
           <Text style={styles.messageText}>{item.text}</Text>
         )}
-        <View style={{ flexDirection: 'row', gap: 10, justifyContent: 'space-between' }}>
+        <View style={styles.messageInfo}>
           <Text style={styles.messageTime}>{formatTimestamp(item.timestamp)}</Text>
           {item.isEdited && (
             <Text style={styles.editedTag}>Edited</Text>
           )}
+          <View style={styles.statusIcons}>
+            {isSentByCurrentUser && (<>
+              {
+                item.seen ? (
+                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered icon
+                ) :
+                  <Ionicons name="checkmark" size={16} color="#eeee" /> // Seen icon
+              }
+            </>)
+            }
+          </View>
         </View>
       </View>
     </Pressable>
@@ -96,6 +109,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
     textAlign: 'right',
+  },
+  messageInfo: {
+    top:5,
+    gap: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusIcons: {
+    flexDirection: 'row',
+    marginLeft:10,
   },
 });
 

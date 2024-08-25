@@ -1,6 +1,6 @@
 // services/chatConversationService.js
 
-import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc ,getDocs,where,writeBatch,limit} from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from '../firebase/config';
 
 export const fetchMessages = (friendId, callback) => {
@@ -36,6 +36,8 @@ export const sendMessage = async (friendId, newMessage) => {
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
+            seen: false,
+            isEdited:false,
             text: newMessage,
             timestamp: Timestamp.now(),
         });
@@ -48,9 +50,10 @@ export const sendMessage = async (friendId, newMessage) => {
         // Update the chat document with the last message
         const chatDocRef = doc(db, 'chats', chatId);
         await setDoc(chatDocRef, {
-            user1: userId,
-            user2: friendId,
+            senderId: userId,
             last: newMessage,
+            seen: false
+
         }, { merge: true });
     } catch (error) {
         console.error('Error sending message:', error);
@@ -64,7 +67,7 @@ export const editMessage = async (friendId, messageId, newMessage) => {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
         const messageRef = doc(db, 'chats', chatId, 'messages', messageId);
-        await updateDoc(messageRef, { text: newMessage });
+        await updateDoc(messageRef, { text: newMessage,isEdited:true });
     } catch (error) {
         console.error('Error editing message:', error);
     }
@@ -74,8 +77,102 @@ export const deleteMessage = async (friendId, messageId) => {
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
+        
+        // Reference to the chat messages collection
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+        
+        // Reference to the chat document
+        const chatDocRef = doc(db, 'chats', chatId);
+
+        // Fetch all messages to find the last one
+        const messagesQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
+        const snapshot = await getDocs(messagesQuery);
+
+        if (!snapshot.empty) {
+            // Get the last message
+            const lastMessage = snapshot.docs[0].data();
+
+            // Check if the deleted message was the last message
+            if (messageId === lastMessage.id) {
+                // If it was the last message, update the chat document
+                await updateDoc(chatDocRef, {
+                    last: 'Messege Deleted' // or any placeholder indicating no recent message
+                });
+            }
+        }
+
+        // Delete the message
         await deleteDoc(doc(db, 'chats', chatId, 'messages', messageId));
+
     } catch (error) {
         console.error('Error deleting message:', error);
     }
 };
+
+export const checkForNewMessages = async (friendId, callback) => {
+    try {
+        const userId = FIREBASE_AUTH.currentUser.uid;
+        const chatId = [userId, friendId].sort().join('_');
+        const chatDocRef = doc(db, 'chats', chatId);
+
+        // Fetch the chat document
+        const chatDoc = await getDoc(chatDocRef);
+
+        if (chatDoc.exists()) {
+            const chatData = chatDoc.data();
+
+            // Check if the sender is not the current user and the message is unseen
+            if (chatData.senderId !== userId && chatData.seen === false) {
+                // Trigger the callback to show "New message" indicator
+                callback(true);
+            } else {
+                callback(false);
+            }
+        } else {
+            callback(false);
+        }
+    } catch (error) {
+        console.error('Error checking for new messages:', error);
+        callback(false);
+    }
+};
+
+export const checkAndUpdateSeenStatus = async (friendId, currentUserId) => {
+    try {
+        const chatId = [currentUserId, friendId].sort().join('_');
+
+        const chatDocRef = doc(db, 'chats', chatId);
+        const chatDocSnapshot = await getDoc(chatDocRef);
+
+        if (chatDocSnapshot.exists()) {
+            const chatData = chatDocSnapshot.data();
+
+            // Check if the message is from the other user and if it is not yet seen
+            if (chatData.senderId !== currentUserId && chatData.seen === false) {
+                await updateDoc(chatDocRef, { seen: true });
+                console.log("Message marked as seen.");
+            }
+        }
+
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+        const unseenMessagesQuery = query(
+            messagesRef,
+            where('senderId', '==', friendId), // Messages sent by the friend
+            where('seen', '==', false) // Only unseen messages
+        );
+
+        const snapshot = await getDocs(unseenMessagesQuery);
+
+        const batch = writeBatch(db);
+
+        snapshot.forEach((doc) => {
+            // Update each message to set 'seen' to true
+            batch.update(doc.ref, { seen: true });
+        });
+
+        await batch.commit();
+    } catch (error) {
+        console.error("Error updating seen status: ", error);
+    }
+};
+

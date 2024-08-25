@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { View, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import { View, TouchableWithoutFeedback, StyleSheet, Text } from 'react-native';
 import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/stories';
 import ProfileScreen from '../Pages/Main/profile';
@@ -16,6 +16,8 @@ export default function TabNavigator() {
             setIsButtonExpanded(false); // Collapse the button when clicking outside
         }
     };
+
+    
 
     return (
         <View style={{ flex: 1 }}>
@@ -39,7 +41,17 @@ export default function TabNavigator() {
                     },
                 }}
             >
-                <Tab.Screen name="chats" component={ChatScreen} />
+                <Tab.Screen
+                    name="chats"
+                    component={ChatScreen}
+                    options={{
+                        tabBarLabel: ({ color }) => (
+                            <View style={styles.labelContainer}>
+                                <Text style={[styles.labelText, { color }]}>Chats</Text>
+                            </View>
+                        ),
+                    }}
+                />
                 <Tab.Screen name="thoughts" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
@@ -51,11 +63,11 @@ export default function TabNavigator() {
                 </TouchableWithoutFeedback>
             )}
 
-                <AnimatedFloatingButton
-                    up={50}
-                    expanded={isButtonExpanded}
-                    setExpanded={setIsButtonExpanded}
-                />
+            <AnimatedFloatingButton
+                up={50}
+                expanded={isButtonExpanded}
+                setExpanded={setIsButtonExpanded}
+            />
         </View>
     );
 }
@@ -65,5 +77,27 @@ const styles = StyleSheet.create({
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'transparent',
         zIndex: 1,
+    },
+    labelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    labelText: {
+        fontSize: 15,
+    },
+    badgeContainer: {
+        backgroundColor: '#A8342A',
+        borderRadius: 10,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        marginLeft: 6,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 20,
+    },
+    badgeText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
 });

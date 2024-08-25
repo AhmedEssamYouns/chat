@@ -8,10 +8,11 @@ import Navbar from '../../Components/chat-navbar';
 import MessageList from '../../Components/Messege-list';
 import { Keyboard } from 'react-native';
 import DropdownMenu from '../../Components/chat-menu-model';
-import { fetchMessages, deleteMessage, editMessage, sendMessage } from '../../firebase/manage-Chat-room';
+import { fetchMessages, deleteMessage, editMessage, sendMessage, checkAndUpdateSeenStatus } from '../../firebase/manage-Chat-room';
+import { FIREBASE_AUTH } from '../../firebase/config';
 const ChatConversationScreen = ({ route, navigation }) => {
-  const [messages, setMessages] = useState([]);
 
+  const [messages, setMessages] = useState([]);
   const { friendId } = route.params;
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
@@ -25,6 +26,8 @@ const ChatConversationScreen = ({ route, navigation }) => {
   const [isButtonVisible, setIsButtonVisible] = useState(false);
   const inputRef = useRef(null);
   const flatListRef = useRef(null);
+
+
 
 
   useEffect(() => {
@@ -50,9 +53,15 @@ const ChatConversationScreen = ({ route, navigation }) => {
   }, [searchQuery]);
 
   useEffect(() => {
+    const currentUserId = FIREBASE_AUTH.currentUser.uid;
+
+    // Check and update the seen status when the screen loads
+    checkAndUpdateSeenStatus(friendId, currentUserId);
+
     const unsubscribe = fetchMessages(friendId, (data) => {
       setMessages(data);
     });
+
     return () => unsubscribe();
   }, [friendId]);
 

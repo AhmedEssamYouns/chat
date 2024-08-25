@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
+import { checkForNewMessages } from '../../firebase/manage-Chat-room';
+import { FIREBASE_AUTH } from '../../firebase/config';
 
 const formatTimestamp = (timestamp) => {
   const now = new Date();
@@ -27,6 +29,7 @@ const ChatScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [newMessageStatus, setNewMessageStatus] = useState({});
 
   useEffect(() => {
     const unsubscribe = subscribeToChats((data, error) => {
@@ -45,6 +48,23 @@ const ChatScreen = ({ navigation }) => {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    // Check for new messages for each chat
+    const checkNewMessagesForChats = async () => {
+      const status = {};
+      for (const chat of chats) {
+        await checkForNewMessages(chat.friendId, (hasNewMessage) => {
+          status[chat.friendId] = hasNewMessage;
+        });
+      }
+      setNewMessageStatus(status);
+    };
+
+    if (chats.length > 0) {
+      checkNewMessagesForChats();
+    }
+  }, [chats]);
 
   const handleSearch = (text) => {
     setSearchQuery(text);
@@ -67,11 +87,34 @@ const ChatScreen = ({ navigation }) => {
         </View>
         <View style={styles.chatMessageContainer}>
           <Text style={styles.chatMessage}>{item.lastMessage}</Text>
-          {/* {item.status === 'seen' ? (
-            <Ionicons name="checkmark-done" size={16} color="#1DA1F2" style={styles.statusIcon} />
-          ) : (
-            <Ionicons name="checkmark" size={16} color="#BBBBBB" style={styles.statusIcon} />
-          )} */}
+          {/* Conditionally show the "New message" text */}
+          {newMessageStatus[item.friendId] && (
+            <View style={{
+              position: 'absolute', right: 0,
+              padding: 5,
+              backgroundColor: '#121212',
+              zIndex: 1,
+            }}>
+              <Text style={styles.newMessageIndicator}>New message</Text>
+            </View>
+          )}
+          {/* Message status icons */}
+          {item.lastMessage == 'Messege Deleted' ?
+            <MaterialIcons name="do-not-disturb" size={16} color="#BBBBBB" style={styles.statusIcon} />
+            : (
+              <>
+                {item.senderId == FIREBASE_AUTH.currentUser.uid && (
+                  <>
+                    {item.seen == true ? (
+                      <Ionicons name="checkmark-done" size={16} color="#1DA1F2" style={styles.statusIcon} />
+                    ) : (
+                      <Ionicons name="checkmark" size={16} color="#BBBBBB" style={styles.statusIcon} />
+                    )}
+                  </>
+                )
+                }
+              </>)
+          }
         </View>
       </View>
     </TouchableOpacity>
@@ -87,7 +130,7 @@ const ChatScreen = ({ navigation }) => {
 
   const renderEmptyListMessage = () => (
     <View style={styles.emptyMessageContainer}>
-      <Text style={styles.emptyMessage}>No chats found by this name.</Text>
+      <Text style={styles.emptyMessage}>No chats found.</Text>
     </View>
   );
 
@@ -156,10 +199,21 @@ const styles = StyleSheet.create({
   chatMessageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between'
   },
   chatMessage: {
+    width: '80%',
+    textAlign: 'left',
+    height: 20,
     color: '#DDDDDD',
     marginRight: 5,
+  },
+  newMessageIndicator: {
+
+    color: 'red',
+    fontWeight: 'bold',
+    marginLeft: 10,
+    fontSize: 10,
   },
   statusIcon: {
     position: 'absolute',

@@ -13,6 +13,7 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
         onChangeText={setNewMessage}
         placeholder={isEditing ? 'Edit your message' : 'Type a message'}
         placeholderTextColor="#999"
+        multiline
       />
       <TouchableOpacity onPress={handleSend}>
         <Ionicons

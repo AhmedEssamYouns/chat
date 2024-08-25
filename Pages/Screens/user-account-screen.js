@@ -34,7 +34,7 @@ const UserAccountScreen = () => {
         });
 
         // Set up real-time listener for posts
-  
+
         const postsRef = collection(db, 'posts');
         const postsQuery = query(postsRef, where('id', '==', friendId));
         const unsubscribePosts = onSnapshot(postsQuery, (querySnapshot) => {
@@ -92,7 +92,10 @@ const UserAccountScreen = () => {
             </View>
             <View style={styles.profileHeader}>
                 <Image source={{ uri: user.profileImage }} style={styles.avatar} />
+
                 <View style={{ padding: 15 }}>
+                    <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
+
                     <Text style={styles.profileBio}>{user.bio}</Text>
                     <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
                 </View>
@@ -172,7 +175,7 @@ const styles = StyleSheet.create({
     actionButton: {
         width: 140,
         alignItems: 'center',
-        backgroundColor: '#A8342A',
+        backgroundColor: '#222',
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 5,

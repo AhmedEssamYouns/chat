@@ -141,6 +141,8 @@ export default function MainTabNavigator() {
                           headerShown:false
                         }} />
                         <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
+
 
                     </>
                 ) : (

@@ -1,7 +1,7 @@
 // services/chatService.js
 
 import { collection, doc, getDoc, query, orderBy, limit, getDocs, onSnapshot } from 'firebase/firestore';
-import { FIREBASE_AUTH,db } from './config';
+import { FIREBASE_AUTH, db } from './config';
 
 export const fetchLastMessage = async (chatId) => {
   try {
@@ -10,6 +10,40 @@ export const fetchLastMessage = async (chatId) => {
     if (chatDoc.exists()) {
       const chatData = chatDoc.data();
       return chatData.last || 'No messages yet';
+    } else {
+      return 'No messages yet';
+    }
+  } catch (error) {
+    console.error('Error fetching chat document:', error);
+    return 'Error retrieving messages';
+  }
+};
+
+
+
+export const checkStute = async (chatId) => {
+  try {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatDocRef);
+    if (chatDoc.exists()) {
+      const chatData = chatDoc.data();
+      return chatData.seen || 'No messages yet';
+    } else {
+      return 'No messages yet';
+    }
+  } catch (error) {
+    console.error('Error fetching chat document:', error);
+    return 'Error retrieving messages';
+  }
+};
+
+export const checkSender = async (chatId) => {
+  try {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatDocRef);
+    if (chatDoc.exists()) {
+      const chatData = chatDoc.data();
+      return chatData.senderId || 'No messages yet';
     } else {
       return 'No messages yet';
     }
@@ -52,7 +86,8 @@ export const subscribeToChats = (callback) => {
             friendImage: friendData.profileImage,
             lastMessage: await fetchLastMessage(chatId),
             timestamp: lastMessage ? lastMessage.timestamp.toDate() : new Date(),
-            status: lastMessage ? 'seen' : 'delivered',
+            seen: await checkStute(chatId),
+            senderId:await checkSender(chatId)
           };
         })
       );

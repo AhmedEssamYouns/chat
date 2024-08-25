@@ -65,7 +65,7 @@ const CreatePostModal = ({ visible, onClose }) => {
             setPostText(null)
             setSelectedImage(null)
             // Navigate to the Stories tab screen
-            navigation.navigate("Tabs", { screen: "profile" });
+            navigation.navigate("Tabs", { screen: "thoughts" });
             onClose(); // Close the modal
         } catch (error) {
             console.error('Error creating post:', error);
