@@ -1,10 +1,13 @@
+// ProfileScreen.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import PostsList from '../../Components/posts-list';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
+import PostsModal from '../../Components/PostsModel';
+import PostGrid from '../../Components/postsGrid';
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [userProfile, setUserProfile] = useState({
@@ -12,14 +15,14 @@ const ProfileScreen = () => {
         name: FIREBASE_AUTH.currentUser.displayName,
         bio: 'edit profile to add bio',
         posts: [],
-        friends:0,
+        friends: 0,
     });
-
+    const [isModalVisible, setModalVisible] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(0);
 
     useEffect(() => {
         const userId = FIREBASE_AUTH.currentUser.uid;
 
-        // Fetch user profile data
         const userDocRef = doc(db, 'users', userId);
         const unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
@@ -35,7 +38,6 @@ const ProfileScreen = () => {
             }
         });
 
-        // Fetch user posts
         const postsRef = collection(db, 'posts');
         const postsQuery = query(postsRef, where('id', '==', userId));
         const unsubscribePosts = onSnapshot(postsQuery, (querySnapshot) => {
@@ -46,17 +48,27 @@ const ProfileScreen = () => {
             }));
         });
 
-        // Clean up listeners on component unmount
         return () => {
             unsubscribeUser();
             unsubscribePosts();
         };
     }, []);
 
+    const handleModalOpen = () => setModalVisible(true);
+    const handleModalClose = () => setModalVisible(false);
+
+    const handlePostSelect = (index) => {
+        console.log('Selected post index:', index); // Logs the selected post index
+        setSelectedPost(index);
+        handleModalOpen();
+    };
+
     return (
         <View style={{ flex: 1, backgroundColor: '#121212' }}>
             <View style={styles.profileHeader}>
-                <Image source={{ uri: userProfile.avatar }} style={styles.avatar} />
+                <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: userProfile.avatar })}>
+                    <Image source={{ uri: userProfile.avatar }} style={styles.avatar} />
+                </Pressable>
                 <View style={{ padding: 15 }}>
                     <Text style={styles.profileName}>{userProfile.name}</Text>
                     <Text style={styles.profileBio}>{userProfile.bio}</Text>
@@ -67,22 +79,42 @@ const ProfileScreen = () => {
                 >
                     <Feather name="edit" size={18} color="tomato" />
                 </TouchableOpacity>
-                <Text style={styles.sectionTitle}>Recent Posts</Text>
 
-                <TouchableOpacity style={styles.friendsButton} onPress={() => navigation.navigate('Friends')}>
-                    <Text style={{ color: '#ccc', fontSize: 15 }}>
-                        Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>{userProfile.friends}</Text>
-                    </Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', position: 'absolute', justifyContent: 'space-between', bottom: 0, width: '110%' }}>
+                    <TouchableOpacity
+                        style={styles.postsButton}
+                        onPress={handleModalOpen}
+                    >
+                        <Text style={styles.sectionTitle}>Snaps</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.friendsButton}
+                        onPress={() => navigation.navigate('Friends')}
+                    >
+                        <Text style={{ color: '#ccc', fontSize: 15 }}>
+                            Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>{userProfile.friends}</Text>
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-
-            <PostsList
-                posts={userProfile.posts}
-                currentUserId={userProfile.id}
-                handleLovePress={(postId) => console.log('Love pressed for post:', postId)}
-                onEditPost={(postId) => console.log('Edit post:', postId)}
-                onDeletePost={(postId) => console.log('Delete post:', postId)}
+            <PostGrid
+                userId={userProfile.id}
+                onPostSelect={handlePostSelect}
             />
+
+            <Modal
+                visible={isModalVisible}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={handleModalClose}
+            >
+                    <PostsModal
+                        posts={userProfile.posts}
+                        id={userProfile.id}
+                        initialPost={selectedPost} 
+                        onClose={handleModalClose}
+                    />
+            </Modal>
         </View>
     );
 };
@@ -121,16 +153,14 @@ const styles = StyleSheet.create({
         top: 40,
     },
     friendsButton: {
-        position: 'absolute',
-        right: 20,
-        bottom: 12,
+        padding: 10,
     },
     sectionTitle: {
         fontSize: 15,
         color: '#BBBBBB',
-        position: 'absolute',
-        left: 30,
-        bottom: 10,
+    },
+    postsButton: {
+        padding: 10,
     },
 });
 

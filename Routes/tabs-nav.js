@@ -5,19 +5,25 @@ import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/stories';
 import ProfileScreen from '../Pages/Main/profile';
 import { AnimatedFloatingButton } from '../Components/Floating-Button';
+import { trackUnseenMessages } from '../firebase/manage-Chat-room';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function TabNavigator() {
     const [isButtonExpanded, setIsButtonExpanded] = useState(false);
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+
+    useEffect(() => {
+        const unsubscribe = trackUnseenMessages(setUnreadMessagesCount);
+
+        return () => unsubscribe(); // Clean up the listener when the component unmounts
+    }, []);
 
     const handleOutsidePress = () => {
         if (isButtonExpanded) {
             setIsButtonExpanded(false); // Collapse the button when clicking outside
         }
     };
-
-    
 
     return (
         <View style={{ flex: 1 }}>
@@ -48,11 +54,16 @@ export default function TabNavigator() {
                         tabBarLabel: ({ color }) => (
                             <View style={styles.labelContainer}>
                                 <Text style={[styles.labelText, { color }]}>Chats</Text>
+                                {unreadMessagesCount > 0 && (
+                                    <View style={styles.badgeContainer}>
+                                        <Text style={styles.badgeText}>{unreadMessagesCount}</Text>
+                                    </View>
+                                )}
                             </View>
                         ),
                     }}
                 />
-                <Tab.Screen name="thoughts" component={StoriesScreen} />
+                <Tab.Screen name="snaps" component={StoriesScreen} />
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
 

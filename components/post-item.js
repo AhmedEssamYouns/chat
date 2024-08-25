@@ -9,8 +9,10 @@ import ConfirmationModal from './alert';
 import getTimeDifference from './getTime';
 import deletePostById from './delete-post';
 import LikeButton from '../firebase/add-remove-like';
+import ImageViewer from 'react-native-image-zoom-viewer';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) => {
+const PostItem = ({ item, currentUserId, handleLovePress }) => {
     const [userDetails, setUserDetails] = useState(null);
     const [isEditModalVisible, setEditModalVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -26,7 +28,6 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
         setModalVisible(false);
         try {
             await deletePostById(item.postId);
-            // You might want to refresh or update your UI here
         } catch (error) {
             console.error('Error deleting post:', error);
         }
@@ -62,6 +63,7 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
     }
 
     const isLiked = item.likes && item.likes[currentUserId]; // Check if the post is liked by the current user
+    const imageUrls = item.imageUrls?.map(url => ({ url }));
 
     return (
         <View style={styles.storyItem}>
@@ -70,15 +72,18 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
                     style={{ flexDirection: 'row', alignItems: 'center' }}
                     onPress={() => !isOwner && navigation.navigate('account', { friendId: userDetails.uid })}
                 >
-                    <View style={styles.avatarContainer}>
+                    <Pressable
+                        style={styles.avatarContainer}
+                        onPress={() => navigation.navigate('ImageScreen', { imageUri: userDetails.profileImage })}
+                    >
                         <Image
                             source={{ uri: userDetails.profileImage || 'https://randomuser.me/api/portraits/men/1.jpg' }}
                             style={styles.avatar}
                         />
-                    </View>
+                    </Pressable>
                     <View style={styles.headerTextContainer}>
                         <Text style={styles.storyName}>{userDetails.username}</Text>
-                        <Text style={styles.storyTime}>{timeDifference}</Text> 
+                        <Text style={styles.storyTime}>{timeDifference}</Text>
                     </View>
                 </Pressable>
                 {isOwner && (
@@ -95,10 +100,33 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
             <View style={styles.storyContent}>
                 <View style={styles.storyTextContainer}>
                     {item.text && <Text style={styles.storyTitle}>{item.text}</Text>}
-                    {item.imageUrl && <Image source={{ uri: item.imageUrl }} style={styles.storyPhoto} />}
+                    {item.imageUrls && (
+                        <TouchableWithoutFeedback>
+                            {item.imageUrls && <>
+                                {item.imageUrls.length > 1 ?
+                                    <ImageViewer
+                                        imageUrls={imageUrls}
+                                        doubleClickInterval={false}
+                                        enableImageZoom={false}
+                                        saveToLocalByLongPress={false}
+                                        renderIndicator={(currentIndex, allSize) => (
+                                            <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', paddingHorizontal: 10, padding: 5, borderRadius: 10 }}>
+                                                <Text style={{ color: 'white' }}>{`${currentIndex} / ${allSize}`}</Text>
+                                            </View>
+                                        )}
+                                        style={styles.storyPhoto}
+                                    />
+                                    :
+                                    <Image source={{ uri: imageUrls[0].url }} style={styles.storyPhoto}></Image>
+                                }
+                            </>
+                            }
+                        </TouchableWithoutFeedback>
+
+                    )}
                 </View>
                 <View style={styles.actionContainer}>
-                    <LikeButton 
+                    <LikeButton
                         post={item}
                         isLiked={isLiked}
                         currentUserId={currentUserId}
@@ -121,14 +149,15 @@ const PostItem = ({ item, currentUserId, onEdit, onDelete, handleLovePress }) =>
                 onClose={() => setEditModalVisible(false)}
                 postId={item.postId}
                 existingText={item.text}
-                existingImage={item.imageUrl}
+                existingImage={item.imageUrls}
             />
         </View>
     );
 };
+
 const styles = StyleSheet.create({
     storyItem: {
-        marginLeft: 35,
+        marginLeft: 20,
         paddingBottom: 15,
         marginHorizontal: 10,
         marginTop: 15,
@@ -174,7 +203,8 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     storyTextContainer: {
-        paddingHorizontal: 30,
+        paddingLeft: 10,
+        paddingRight: 30,
         borderLeftWidth: 1,
         borderLeftColor: '#bbb',
     },
@@ -185,16 +215,16 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     storyPhoto: {
-        width: '100%',
-        resizeMode: 'cover',
-        height: 200,
+        marginTop: 10,
+        width: '110%',
+        height: 300,
         borderRadius: 10,
         borderWidth: 1,
     },
     actionContainer: {
         flexDirection: 'row',
-        alignItems:'center',
-        right:20,
+        alignItems: 'center',
+        right: 20,
         paddingTop: 10,
     },
     loveSection: {

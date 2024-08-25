@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Text, StyleSheet } from 'react-native';
 import PostItem from './post-item';
 import { LogBox } from 'react-native';
 
-LogBox.ignoreAllLogs(
-  
-)
-const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost }) => {
+LogBox.ignoreAllLogs();
+
+const ITEM_HEIGHT = 450; // Adjust this value based on the height of your PostItem component
+
+const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex }) => {
+  const flatListRef = useRef(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
   const sortedPosts = [...posts].sort((a, b) => {
     const timeA = new Date(a.time);
     const timeB = new Date(b.time);
@@ -23,8 +27,28 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
     />
   );
 
+  useEffect(() => {
+    if (initialPostindex != null) {
+      const offset = ITEM_HEIGHT * initialPostindex;
+      setScrollOffset(offset);
+    }
+  }, [initialPostindex, sortedPosts]);
+
+  useEffect(() => {
+    if (flatListRef.current && scrollOffset != null) {
+      flatListRef.current.scrollToOffset({ offset: scrollOffset, animated: true });
+    }
+  }, [scrollOffset]);
+
+  const getItemLayout = (data, index) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  });
+
   return (
     <FlatList
+      ref={flatListRef}
       data={sortedPosts}
       renderItem={renderItem}
       keyExtractor={(item) => item.postId} // Ensure item.postId is unique
@@ -32,6 +56,11 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
       ListFooterComponent={
         <Text style={styles.endOfPostsText}>No Posts</Text>
       }
+      getItemLayout={getItemLayout}
+      onScrollToIndexFailed={(info) => {
+        // Handle the case when scrolling to index fails
+        console.log('Scroll to index failed', info);
+      }}
     />
   );
 };

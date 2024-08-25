@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { collection, doc, query, where, onSnapshot } from 'firebase/firestore';
 import { db, FIREBASE_AUTH } from '../../firebase/config';
 import PostsList from '../../Components/posts-list';
 import { handleStatusChange, removeFriend, monitorFriendStatuses } from '../../firebase/frinend-state';
 import { getUserById } from '../../firebase/getUser';
+import PostGrid from '../../Components/postsGrid';
+import PostsModal from '../../Components/PostsModel';
 import ConfirmationModal from '../../Components/alert';
 import { Feather } from '@expo/vector-icons';
 
@@ -16,6 +18,7 @@ const UserAccountScreen = () => {
     const [friendStatuses, setFriendStatuses] = useState({});
     const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
     const [modalAction, setModalAction] = useState(null); // Track the action to be confirmed
+    const [isModalVisible2, setModalVisible2] = useState(false); // State to control modal visibility
     const navigation = useNavigation();
     const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
@@ -82,8 +85,19 @@ const UserAccountScreen = () => {
         setIsModalVisible(false);
     };
 
+    const [selectedPost, setSelectedPost] = useState(0);
+    const handleModalOpen = () => setModalVisible2(true);
+    const handlePostSelect = (index) => {
+        console.log('Selected post index:', index); // Logs the selected post index
+        setSelectedPost(index);
+        handleModalOpen();
+    };
+
     if (!user) return <Text>Loading...</Text>;
 
+    const handleModalClose = () => {
+        setModalVisible2(false);
+    };
     return (
         <View style={{ flex: 1, backgroundColor: '#121212', paddingTop: '12%' }}>
             <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
@@ -91,8 +105,9 @@ const UserAccountScreen = () => {
                 <Text style={styles.profileName}>{user.username}</Text>
             </View>
             <View style={styles.profileHeader}>
-                <Image source={{ uri: user.profileImage }} style={styles.avatar} />
-
+                <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: user.profileImage })}>
+                    <Image source={{ uri: user.profileImage }} style={styles.avatar} />
+                </Pressable>
                 <View style={{ padding: 15 }}>
                     <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
 
@@ -112,18 +127,28 @@ const UserAccountScreen = () => {
                         <Text style={styles.actionButtonText}>Send Message</Text>
                     </TouchableOpacity>
                 </View>
-                <Text style={styles.sectionTitle}>Posts</Text>
+                <Text style={styles.sectionTitle}>Snaps</Text>
             </View>
+                <PostGrid
+                    userId={friendId}
+                onPostSelect={handlePostSelect}
 
-            <PostsList
-                posts={user.posts || []}
-                currentUserId={currentUserId}
-                handleLovePress={() => { }}
-                onEditPost={() => { }}
-                onDeletePost={() => { }}
-            />
+                />
 
-            {/* Confirmation Modal */}
+            <Modal
+                visible={isModalVisible2}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={handleModalClose}
+            >
+                <PostsModal
+                    posts={user.posts}
+                    id={friendId}
+                    initialPost={selectedPost} 
+                    onClose={handleModalClose}
+                />
+            </Modal>
+
             <ConfirmationModal
                 visible={isModalVisible}
                 onConfirm={handleConfirmDelete}

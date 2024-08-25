@@ -1,6 +1,6 @@
 // services/chatConversationService.js
 
-import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc ,getDocs,where,writeBatch,limit} from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc, getDocs, where, writeBatch, limit } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from '../firebase/config';
 
 export const fetchMessages = (friendId, callback) => {
@@ -37,7 +37,7 @@ export const sendMessage = async (friendId, newMessage) => {
             senderId: userId,
             receiverId: friendId,
             seen: false,
-            isEdited:false,
+            isEdited: false,
             text: newMessage,
             timestamp: Timestamp.now(),
         });
@@ -50,6 +50,7 @@ export const sendMessage = async (friendId, newMessage) => {
         // Update the chat document with the last message
         const chatDocRef = doc(db, 'chats', chatId);
         await setDoc(chatDocRef, {
+            receiverId: friendId,
             senderId: userId,
             last: newMessage,
             seen: false
@@ -67,7 +68,7 @@ export const editMessage = async (friendId, messageId, newMessage) => {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
         const messageRef = doc(db, 'chats', chatId, 'messages', messageId);
-        await updateDoc(messageRef, { text: newMessage,isEdited:true });
+        await updateDoc(messageRef, { text: newMessage, isEdited: true });
     } catch (error) {
         console.error('Error editing message:', error);
     }
@@ -77,10 +78,10 @@ export const deleteMessage = async (friendId, messageId) => {
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
-        
+
         // Reference to the chat messages collection
         const messagesRef = collection(db, 'chats', chatId, 'messages');
-        
+
         // Reference to the chat document
         const chatDocRef = doc(db, 'chats', chatId);
 
@@ -176,3 +177,19 @@ export const checkAndUpdateSeenStatus = async (friendId, currentUserId) => {
     }
 };
 
+export function trackUnseenMessages(setUnreadMessagesCount) {
+    const userId = FIREBASE_AUTH.currentUser.uid;
+
+    const chatCollectionRef = collection(db, 'chats');
+
+    // Fetch all messages where 'seen' is false
+    const q = query(chatCollectionRef, where('seen', '==', false));
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        // Filter out messages where senderId is the current user
+        const filteredMessages = querySnapshot.docs.filter(doc => doc.data().receiverId == userId);
+        setUnreadMessagesCount(filteredMessages.length);
+    });
+
+    return unsubscribe;
+}

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
 import { checkForNewMessages } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 
 const formatTimestamp = (timestamp) => {
   const now = new Date();
@@ -30,6 +32,7 @@ const ChatScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessageStatus, setNewMessageStatus] = useState({});
+  const [unseenMessagesCount, setUnseenMessagesCount] = useState({});
 
   useEffect(() => {
     const unsubscribe = subscribeToChats((data, error) => {
@@ -38,7 +41,6 @@ const ChatScreen = ({ navigation }) => {
         setChats([]);
         setFilteredChats([]);
       } else {
-        // Sort chats by timestamp in descending order
         const sortedChats = data.sort((a, b) => b.timestamp - a.timestamp);
         setChats(sortedChats);
         setFilteredChats(sortedChats);
@@ -50,14 +52,37 @@ const ChatScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    // Check for new messages for each chat
     const checkNewMessagesForChats = async () => {
       const status = {};
+      const unseenCounts = {};
+
       for (const chat of chats) {
+        // Check for new messages
         await checkForNewMessages(chat.friendId, (hasNewMessage) => {
           status[chat.friendId] = hasNewMessage;
         });
+
+        // Fetch unseen messages count for each chat
+        const userId = FIREBASE_AUTH.currentUser.uid;
+        const chatId = [userId, chat.friendId].sort().join('_');
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+        const q = query(messagesRef, where('seen', '==', false));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+          const filteredMessages = querySnapshot.docs.filter(
+            (doc) => doc.data().receiverId == userId
+          );
+          unseenCounts[chat.friendId] = filteredMessages.length;
+          setUnseenMessagesCount((prevCounts) => ({
+            ...prevCounts,
+            [chat.friendId]: filteredMessages.length
+          }));
+        });
+
+        // Clean up the listener
+        return () => unsubscribe();
       }
+
       setNewMessageStatus(status);
     };
 
@@ -79,7 +104,9 @@ const ChatScreen = ({ navigation }) => {
       style={styles.chatItem}
       onPress={() => navigation.navigate('chat', { friendId: item.friendId })}
     >
+      <Pressable style={{zIndex:2}} onPress={() => navigation.navigate('ImageScreen', { imageUri: item.friendImage })}>
       <Image source={{ uri: item.friendImage }} style={styles.avatar} />
+      </Pressable>
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
           <Text style={styles.chatName}>{item.friendName}</Text>
@@ -87,34 +114,26 @@ const ChatScreen = ({ navigation }) => {
         </View>
         <View style={styles.chatMessageContainer}>
           <Text style={styles.chatMessage}>{item.lastMessage}</Text>
-          {/* Conditionally show the "New message" text */}
-          {newMessageStatus[item.friendId] && (
-            <View style={{
-              position: 'absolute', right: 0,
-              padding: 5,
-              backgroundColor: '#121212',
-              zIndex: 1,
-            }}>
-              <Text style={styles.newMessageIndicator}>New message</Text>
+          {unseenMessagesCount[item.friendId] > 0 && (
+            <View style={styles.newMessageIndicatorContainer}>
+              <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>
             </View>
           )}
-          {/* Message status icons */}
-          {item.lastMessage == 'Messege Deleted' ?
+          {item.lastMessage === 'Message Deleted' ?
             <MaterialIcons name="do-not-disturb" size={16} color="#BBBBBB" style={styles.statusIcon} />
             : (
               <>
-                {item.senderId == FIREBASE_AUTH.currentUser.uid && (
+                {item.senderId === FIREBASE_AUTH.currentUser.uid && (
                   <>
-                    {item.seen == true ? (
+                    {item.seen === true ? (
                       <Ionicons name="checkmark-done" size={16} color="#1DA1F2" style={styles.statusIcon} />
                     ) : (
                       <Ionicons name="checkmark" size={16} color="#BBBBBB" style={styles.statusIcon} />
                     )}
                   </>
-                )
-                }
-              </>)
-          }
+                )}
+              </>
+            )}
         </View>
       </View>
     </TouchableOpacity>
@@ -154,7 +173,7 @@ const ChatScreen = ({ navigation }) => {
         <FlatList
           data={filteredChats}
           renderItem={renderChatItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.friendId}
           style={styles.chatList}
           ListEmptyComponent={renderEmptyListMessage}
           ListFooterComponent={renderEncryptionMessage}
@@ -208,11 +227,24 @@ const styles = StyleSheet.create({
     color: '#DDDDDD',
     marginRight: 5,
   },
+  newMessageIndicatorContainer: {
+    position: 'absolute',
+    right: 5,
+    padding: 5,
+    paddingHorizontal: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 15,
+    height: 25,
+    minWidth: 25,
+    backgroundColor: '#A8342A',
+    zIndex: 1,
+  },
   newMessageIndicator: {
-
-    color: 'red',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    color: '#fff',
     fontWeight: 'bold',
-    marginLeft: 10,
     fontSize: 10,
   },
   statusIcon: {
@@ -229,7 +261,6 @@ const styles = StyleSheet.create({
   },
   encryptionMessage: {
     color: '#BBBBBB',
-    fontSize: 12,
   },
   emptyMessageContainer: {
     flex: 1,
@@ -239,7 +270,6 @@ const styles = StyleSheet.create({
   },
   emptyMessage: {
     color: '#BBBBBB',
-    fontSize: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -247,9 +277,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: '#FFFFFF',
+    color: '#BBBBBB',
     marginTop: 10,
-    fontSize: 16,
   },
   errorContainer: {
     flex: 1,
@@ -258,7 +287,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    fontSize: 16,
   },
 });
 

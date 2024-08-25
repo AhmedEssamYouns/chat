@@ -20,6 +20,7 @@ import SignInScreen from '../Pages/Screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
 import { ActivityIndicator } from 'react-native';
 import FriendRequestModal from '../Components/friends-requist-mode';
+import ImageScreen from '../Components/image';
 
 const Stack = createStackNavigator();
 
@@ -137,6 +138,22 @@ export default function MainTabNavigator() {
                         <Stack.Screen name='chat' component={ChatConversationScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='search' component={SearchScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='Friends' component={FriendsScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name="ImageScreen" component={ImageScreen}
+                         options={{
+                            headerTitle:'',
+                            headerStyle: {
+                                backgroundColor: '#121212',
+                                elevation: 0,
+                                shadowOpacity: 0,
+                                shadowOffset: { height: 0 },
+                            },
+                            headerTitleStyle: {
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: 18,
+                            },
+                            headerTintColor: "white"
+                        }} />
                         <Stack.Screen name='account' component={UserAccountScreen} options={{
                           headerShown:false
                         }} />

@@ -1,13 +1,12 @@
-import React, { useState,useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { storage, db } from '../firebase/config';
 import { FIREBASE_AUTH } from '../firebase/config';
-import { addDoc, doc, setDoc } from 'firebase/firestore';
+import { addDoc, doc, setDoc, collection } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection } from 'firebase/firestore';
 import { getUserById } from '../firebase/getUser';
 import * as ImageManipulator from 'expo-image-manipulator';
 
@@ -15,57 +14,73 @@ const CreatePostModal = ({ visible, onClose }) => {
     useEffect(() => {
         const fetchUserDetails = async () => {
             const userData = await getUserById(FIREBASE_AUTH.currentUser.uid);
-            setuser(userData)
+            setuser(userData);
         }
         fetchUserDetails();
     }, [FIREBASE_AUTH.currentUser.uid]);
 
-
     const navigation = useNavigation();
     const [user, setuser] = useState('');
     const [postText, setPostText] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImages, setSelectedImages] = useState([]);
     const [uploading, setUploading] = useState(false);
+    const [selectionLimit, setSelectionLimit] = useState(4); // Default limit
+    useEffect(() => {
+        if (selectedImages.length == 3) {
+            setSelectionLimit(1);
+        } else if (selectedImages.length == 2) {
+            setSelectionLimit(2);
+        } else if (selectedImages.length == 1) {
+            setSelectionLimit(3);
+        } else {
+            setSelectionLimit(4);
+        }
+        console.log(selectionLimit)
 
+    }, [selectedImages.length]); // Depend on selectedImages
     const handlePost = async () => {
-        if (!postText && !selectedImage) {
-            alert('Please enter text or upload an image to post.');
+        
+        if (selectedImages.length === 0) {
+            alert('Please upload at least one image to post.');
             return;
         }
-
         setUploading(true);
         try {
-            let imageUrl = '';
+            let imageUrls = [];
 
-            // Handle image upload
-            if (selectedImage) {
-                const imageRef = ref(storage, `posts/${Date.now()}`);
-                const response = await fetch(selectedImage);
-                const blob = await response.blob();
-                await uploadBytes(imageRef, blob);
-                imageUrl = await getDownloadURL(imageRef);
+            // Handle image uploads
+            if (selectedImages.length > 0) {
+                const uploadPromises = selectedImages.map(async (imageUri) => {
+                    const imageRef = ref(storage, `posts/${Date.now()}`);
+                    const response = await fetch(imageUri);
+                    const blob = await response.blob();
+                    await uploadBytes(imageRef, blob);
+                    return await getDownloadURL(imageRef);
+                });
+
+                imageUrls = await Promise.all(uploadPromises);
             }
 
             // Create a new document in Firestore to get the auto-generated ID
             const postRef = await addDoc(collection(db, 'posts'), {
                 text: postText,
-                imageUrl,
+                imageUrls,
                 id: FIREBASE_AUTH.currentUser.uid,
-                time:new Date().toISOString()
+                time: new Date().toISOString(),
             });
 
             // Update the document with the auto-generated ID as postId
             await setDoc(doc(db, 'posts', postRef.id), {
                 postId: postRef.id,
                 text: postText,
-                imageUrl,
+                imageUrls,
                 id: FIREBASE_AUTH.currentUser.uid,
                 time: new Date().toISOString(),
             });
-            setPostText(null)
-            setSelectedImage(null)
-            // Navigate to the Stories tab screen
-            navigation.navigate("Tabs", { screen: "thoughts" });
+
+            setPostText('');
+            setSelectedImages([]);
+            navigation.navigate("Tabs", { screen: "profile" });
             onClose(); // Close the modal
         } catch (error) {
             console.error('Error creating post:', error);
@@ -74,8 +89,6 @@ const CreatePostModal = ({ visible, onClose }) => {
             setUploading(false);
         }
     };
-
-
 
     const compressImage = async (uri) => {
         const manipResult = await ImageManipulator.manipulateAsync(
@@ -86,25 +99,29 @@ const CreatePostModal = ({ visible, onClose }) => {
         return manipResult.uri;
     };
 
-    const pickImage = async () => {
+    const pickImages = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 1,
+            allowsMultipleSelection: true,
+            selectionLimit: selectionLimit
         });
 
-
         if (!result.canceled) {
-            const compressedUri = await compressImage(result.assets[0].uri);
-
-            setSelectedImage(compressedUri);
+            const compressedUris = await Promise.all(
+                result.assets.map(async (asset) => await compressImage(asset.uri))
+            );
+            setSelectedImages((prevImages) => [
+                ...prevImages,
+                ...compressedUris.slice(0, 4 - prevImages.length) // Ensure total is not more than 4
+            ]);
         }
     };
-  
 
-    const cancelImage = () => {
-        setSelectedImage(null); // Clear the selected image
+    const cancelImage = (index) => {
+        setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
     return (
@@ -124,39 +141,47 @@ const CreatePostModal = ({ visible, onClose }) => {
                             <Text style={styles.username}>{user.username}</Text>
                         </View>
                     </View>
-                    <TouchableOpacity onPress={handlePost} disabled={uploading || (!postText && !selectedImage)}>
-                        <Text style={[styles.postButton, { opacity: uploading || postText || selectedImage ? 1 : 0.5 }]}>
+                    <TouchableOpacity
+                        onPress={handlePost}
+                        disabled={uploading || selectedImages.length === 0}
+                    >
+                        <Text style={[styles.postButton, { opacity: uploading || selectedImages.length > 0 ? 1 : 0.5 }]}>
                             {uploading ? 'Posting...' : 'Post'}
                         </Text>
                     </TouchableOpacity>
+
                 </View>
 
                 {/* Text Input */}
                 <TextInput
                     style={styles.textInput}
-                    placeholder="Share your thoughts..."
+                    placeholder="Share your story..."
                     placeholderTextColor="#aaa"
                     multiline
                     value={postText}
                     onChangeText={setPostText}
                 />
 
-                {/* Display Selected Image */}
-                {selectedImage && (
-                    <View style={styles.imageContainer}>
-                        <Image source={{ uri: selectedImage }} style={styles.selectedImage} />
-                        <TouchableOpacity style={styles.cancelImageButton} onPress={cancelImage}>
-                            <AntDesign name="closecircle" size={24} color="white" />
-                            <Text style={styles.cancelImageText}>Cancel Image</Text>
-                        </TouchableOpacity>
-                    </View>
+                {/* Display Selected Images */}
+                {selectedImages.length > 0 && (
+                    <ScrollView style={styles.imageContainer} horizontal>
+                        {selectedImages.map((uri, index) => (
+                            <View key={index} style={styles.imageWrapper}>
+                                <Image source={{ uri }} style={styles.selectedImage} />
+                                <TouchableOpacity style={styles.cancelImageButton} onPress={() => cancelImage(index)}>
+                                    <AntDesign name="closecircle" size={24} color="white" />
+                                    <Text style={styles.cancelImageText}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </ScrollView>
                 )}
 
-                {!selectedImage &&
-                    <TouchableOpacity style={styles.imagePickerIcon} onPress={pickImage}>
+                {selectedImages.length != 4 && (
+                    <TouchableOpacity style={styles.imagePickerIcon} onPress={pickImages}>
                         <AntDesign name="picture" size={28} color="white" />
                     </TouchableOpacity>
-                }
+                )}
             </View>
         </Modal>
     );
@@ -205,20 +230,24 @@ const styles = StyleSheet.create({
         textAlignVertical: 'top',
     },
     imageContainer: {
-        alignItems: 'center',
+        flexDirection: 'row',
         marginTop: 20,
+        paddingLeft:10
+    },
+    imageWrapper: {
+        marginRight: 10,
     },
     selectedImage: {
-        width: '100%',
-        height: 200,
+        width: 100,
+        height: 100,
         borderRadius: 10,
     },
     cancelImageButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 5,
         backgroundColor: '#333',
-        padding: 10,
+        padding: 5,
         borderRadius: 20,
     },
     cancelImageText: {
