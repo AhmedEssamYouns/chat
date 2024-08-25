@@ -36,15 +36,14 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
     const cancelDelete = () => {
         setModalVisible(false);
     };
-
     useEffect(() => {
-        const fetchUserDetails = async () => {
-            if (item.id) {
-                const userData = await getUserById(item.id);
-                setUserDetails(userData);
-            }
-        };
-        fetchUserDetails();
+        // Subscribe to real-time updates
+        const unsubscribe = getUserById(item.id, (userData) => {
+            setUserDetails(userData);
+        });
+
+        // Cleanup function to stop listening for updates
+        return () => unsubscribe();
     }, [item.id]);
 
     useEffect(() => {

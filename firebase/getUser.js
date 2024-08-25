@@ -1,19 +1,31 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './config';
 
-
-export const getUserById = async (userId) => {
+/**
+ * Subscribes to real-time updates for a user's document.
+ * 
+ */
+export const getUserById = (userId, callback) => {
     try {
         const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-            return userDoc.data();
-        } else {
-            console.log('No such user!');
-            return null;
-        }
+
+        // Subscribe to real-time updates
+        const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+                callback(snapshot.data());
+            } else {
+                console.log('No such user!');
+                callback(null);
+            }
+        }, (error) => {
+            console.error('Error fetching user:', error);
+            callback(null); // Optionally handle errors by setting a default state or notifying the user
+        });
+
+        // Return the unsubscribe function to stop listening for updates
+        return unsubscribe;
     } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('Error setting up snapshot listener:', error);
         throw error;
     }
 };

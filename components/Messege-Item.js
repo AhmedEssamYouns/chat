@@ -57,12 +57,15 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
           )}
           <View style={styles.statusIcons}>
             {isSentByCurrentUser && (<>
-              {
+              {item.deleverd ? (
                 item.seen ? (
-                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered icon
-                ) :
-                  <Ionicons name="checkmark" size={16} color="#eeee" /> // Seen icon
-              }
+                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
+                ) : (
+                  <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
+                )
+              ) : (
+                <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
+              )}
             </>)
             }
           </View>
@@ -111,7 +114,7 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   messageInfo: {
-    top:5,
+    top: 5,
     gap: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -119,7 +122,7 @@ const styles = StyleSheet.create({
   },
   statusIcons: {
     flexDirection: 'row',
-    marginLeft:10,
+    marginLeft: 10,
   },
 });
 

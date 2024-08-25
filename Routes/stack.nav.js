@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Feather } from '@expo/vector-icons';
-import { onSnapshot,doc } from 'firebase/firestore';
+import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { TouchableOpacity, View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { TouchableWithoutFeedback, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import TabNavigator from './tabs-nav';
 import ChatConversationScreen from '../Pages/Screens/chat-room';
 import SearchScreen from '../Pages/Screens/Search-screen';
 import FriendsScreen from '../Pages/Screens/Frineds-screen';
 import UserAccountScreen from '../Pages/Screens/user-account-screen';
 import SettingMenu from '../Components/setting-menu';
-import RotatingButton from '../Components/animated-rotate-button';
-import HeaderRightIcons from '../Components/header-right-icons'; // Updated import
+import HeaderRightIcons from '../Components/header-right-icons';
 import SignUpScreen from '../Pages/Screens/sign-up';
 import ForgetPasswordScreen from '../Pages/Screens/forget-password';
 import ChangePasswordScreen from '../Pages/Screens/change-password';
 import EditProfileScreen from '../Pages/Screens/edit-profile';
 import SignInScreen from '../Pages/Screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
-import { ActivityIndicator } from 'react-native';
 import FriendRequestModal from '../Components/friends-requist-mode';
 import ImageScreen from '../Components/image';
+import { setOnlineStatus } from '../firebase/onlineStutes';
 
 const Stack = createStackNavigator();
 
@@ -29,12 +27,8 @@ export default function MainTabNavigator() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false);
     const [expanded, setExpanded] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
-
+    const [modalVisible, setModalVisible] = useState(false);
     const [notificationCount, setNotificationCount] = useState(0);
-
-
-
 
     const handleMenuToggle = () => {
         setMenuVisible(!menuVisible);
@@ -43,15 +37,24 @@ export default function MainTabNavigator() {
 
     const handleOutsidePress = () => {
         if (menuVisible) {
-            setMenuVisible(false); // Collapse the menu when clicking outside
+            setMenuVisible(false);
             setExpanded(false);
         }
     };
+
     useEffect(() => {
         const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'Authenticated' : 'Not authenticated');
             setIsAuthenticated(!!user);
             setIsLoading(false);
+
+            if (user) {
+                // Set online status when the user is authenticated
+                setOnlineStatus(true);
+
+                // Clean up and set offline status when the user signs out
+                return () => setOnlineStatus(false);
+            }
         });
 
         return unsubscribe;
@@ -70,6 +73,7 @@ export default function MainTabNavigator() {
             return unsubscribe;
         }
     }, [isAuthenticated]);
+
     if (isLoading) {
         return (
             <View style={styles.loaderContainer}>
@@ -88,7 +92,6 @@ export default function MainTabNavigator() {
                 }}>
                 {isAuthenticated ? (
                     <>
-
                         <Stack.Screen
                             name="Tabs"
                             component={TabNavigator}
@@ -159,8 +162,6 @@ export default function MainTabNavigator() {
                         }} />
                         <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />
-
-
                     </>
                 ) : (
                     <>

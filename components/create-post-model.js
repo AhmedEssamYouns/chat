@@ -12,11 +12,13 @@ import * as ImageManipulator from 'expo-image-manipulator';
 
 const CreatePostModal = ({ visible, onClose }) => {
     useEffect(() => {
-        const fetchUserDetails = async () => {
-            const userData = await getUserById(FIREBASE_AUTH.currentUser.uid);
+        // Subscribe to real-time updates
+        const unsubscribe = getUserById(FIREBASE_AUTH.currentUser.uid, (userData) => {
             setuser(userData);
-        }
-        fetchUserDetails();
+        });
+
+        // Cleanup function to stop listening for updates
+        return () => unsubscribe();
     }, [FIREBASE_AUTH.currentUser.uid]);
 
     const navigation = useNavigation();

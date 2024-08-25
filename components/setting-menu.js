@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH } from '../firebase/config';
 import { CommonActions } from '@react-navigation/native';
-
+import { setOnlineStatus } from '../firebase/onlineStutes';
 const SettingMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
 
@@ -24,6 +24,7 @@ const SettingMenu = ({ visible, onClose }) => {
 
     const handleLogout = async () => {
         try {
+            await setOnlineStatus(false);
             onClose()
             await FIREBASE_AUTH.signOut();
             // Reset the navigation stack and navigate to the SignIn screen

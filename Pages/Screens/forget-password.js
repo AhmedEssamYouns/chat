@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { handleForgotPassword } from '../../firebase/auth'; // Import the forgot password function
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleResetPassword = () => {
-    if (email === '') {
-      Alert.alert('Error', 'Please enter your email.');
-      return;
+  const handleResetPassword = async () => {
+    await handleForgotPassword(email, setEmailError, setIsLoading);
+
+    if (!emailError) {
+      // Only show the success message if there is no error
+      Alert.alert('Success', 'Password reset link sent to your email.');
+      navigation.navigate('SignIn'); // Navigate back to the sign-in screen after reset
     }
-
-    // Here you would typically handle password reset logic
-    // For example, by sending a password reset link to the email
-
-    Alert.alert('Success', 'Password reset link sent to your email.');
-    navigation.navigate('SignIn'); // Navigate back to the sign-in screen after reset
   };
 
   return (
@@ -28,8 +28,13 @@ const ForgotPasswordScreen = ({ navigation }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
       />
-      <TouchableOpacity style={styles.button} onPress={handleResetPassword}>
-        <Text style={styles.buttonText}>Send Reset Link</Text>
+      {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+      <TouchableOpacity style={styles.button} onPress={handleResetPassword} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.buttonText}>Send Reset Link</Text>
+        )}
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
         <Text style={styles.link}>Back to Sign In</Text>
@@ -59,6 +64,11 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 20,
     borderRadius: 25,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#f44336',

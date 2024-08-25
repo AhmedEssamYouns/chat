@@ -12,11 +12,13 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   const [user, setuser] = useState('')
 
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      const userData = await getUserById(frindID);
-      setuser(userData)
-    }
-    fetchUserDetails();
+    // Subscribe to real-time updates
+    const unsubscribe = getUserById(frindID, (userData) => {
+      setuser(userData);
+    });
+
+    // Cleanup function to stop listening for updates
+    return () => unsubscribe();
   }, [frindID]);
   useEffect(() => {
     Animated.timing(searchAnim, {
@@ -51,13 +53,19 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }} onPress={() =>
-           navigation.navigate('account', { friendId: user.uid })
+            navigation.navigate('account', { friendId: user.uid })
           }>
             <Image
               style={styles.Image}
               source={{ uri: user.profileImage }}
             />
-            <Text style={styles.navbarTitle}>{user.username}</Text>
+            <View>
+              <Text style={styles.navbarTitle}>{user.username}</Text>
+              <View style={{flexDirection:'row',gap:5,alignItems:'center'}}>
+                <Text style={{color:'#bbb'}}>{user.online == true ? 'online' : 'offline'}</Text>
+                <View style={{ backgroundColor: user.online ? 'green' : 'red', borderRadius: 10, width: 10, height: 10,top:1 }}></View>
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
       ) : (

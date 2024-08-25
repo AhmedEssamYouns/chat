@@ -37,6 +37,7 @@ export const sendMessage = async (friendId, newMessage) => {
             senderId: userId,
             receiverId: friendId,
             seen: false,
+            deleverd:false,
             isEdited: false,
             text: newMessage,
             timestamp: Timestamp.now(),
@@ -52,6 +53,7 @@ export const sendMessage = async (friendId, newMessage) => {
         await setDoc(chatDocRef, {
             receiverId: friendId,
             senderId: userId,
+            deleverd:false,
             last: newMessage,
             seen: false
 
@@ -193,3 +195,26 @@ export function trackUnseenMessages(setUnreadMessagesCount) {
 
     return unsubscribe;
 }
+export const listenToLastMessage = (friendId, callback) => {
+    const userId = FIREBASE_AUTH.currentUser.uid;
+    const chatId = [userId, friendId].sort().join('_');
+    const messagesRef = collection(db, 'chats', chatId, 'messages');
+    
+    const q = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
+    
+    return onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+            callback({ lastMessage: 'No messages yet', deleverdo: false, seeno: false });
+            return;
+        }
+
+        const lastMessageDoc = snapshot.docs[0];
+        const lastMessageData = lastMessageDoc.data();
+        callback({ 
+            lastMessage: lastMessageData.text || 'No messages yet',
+            deleverdo: lastMessageData.deleverd || false,
+            seeno: lastMessageData.seen || false,
+            senderId: lastMessageData.senderId || ''
+        });
+    });
+};

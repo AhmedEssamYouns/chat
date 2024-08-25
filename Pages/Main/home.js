@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import SearchBar from '../../Components/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
@@ -73,6 +74,7 @@ const ChatScreen = ({ navigation }) => {
             (doc) => doc.data().receiverId == userId
           );
           unseenCounts[chat.friendId] = filteredMessages.length;
+          console.log(filteredMessages.length)
           setUnseenMessagesCount((prevCounts) => ({
             ...prevCounts,
             [chat.friendId]: filteredMessages.length
@@ -104,9 +106,7 @@ const ChatScreen = ({ navigation }) => {
       style={styles.chatItem}
       onPress={() => navigation.navigate('chat', { friendId: item.friendId })}
     >
-      <Pressable style={{zIndex:2}} onPress={() => navigation.navigate('ImageScreen', { imageUri: item.friendImage })}>
       <Image source={{ uri: item.friendImage }} style={styles.avatar} />
-      </Pressable>
       <View style={styles.chatInfo}>
         <View style={styles.chatHeader}>
           <Text style={styles.chatName}>{item.friendName}</Text>
@@ -119,24 +119,36 @@ const ChatScreen = ({ navigation }) => {
               <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>
             </View>
           )}
-          {item.lastMessage === 'Message Deleted' ?
+          {item.lastMessage == 'Messege Deleted' ?
             <MaterialIcons name="do-not-disturb" size={16} color="#BBBBBB" style={styles.statusIcon} />
             : (
               <>
-                {item.senderId === FIREBASE_AUTH.currentUser.uid && (
+                {item.senderId == FIREBASE_AUTH.currentUser.uid && (
+
                   <>
-                    {item.seen === true ? (
-                      <Ionicons name="checkmark-done" size={16} color="#1DA1F2" style={styles.statusIcon} />
-                    ) : (
-                      <Ionicons name="checkmark" size={16} color="#BBBBBB" style={styles.statusIcon} />
-                    )}
+                    {item.deleverd == true ? (
+                      <>
+                        {item.seen == true ? (
+                          <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
+                        ) : (
+                          <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
+                        )
+                        }
+                      </>
+                    )
+                      : (
+                        <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
+                      )
+                    }
                   </>
-                )}
+                )
+                }
+
               </>
             )}
         </View>
       </View>
-    </TouchableOpacity>
+    </TouchableOpacity >
   );
 
   const renderEncryptionMessage = () => (
@@ -242,7 +254,6 @@ const styles = StyleSheet.create({
   },
   newMessageIndicator: {
     alignSelf: 'center',
-    justifyContent: 'center',
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 10,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { handleChangePassword } from '../../firebase/auth'; // Import the handleChangePassword function
 
 const ChangePasswordScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -8,8 +9,10 @@ const ChangePasswordScreen = ({ navigation }) => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChangePassword = () => {
+  const handlePasswordChange = async () => {
     if (currentPassword === '' || newPassword === '' || confirmNewPassword === '') {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
@@ -20,11 +23,14 @@ const ChangePasswordScreen = ({ navigation }) => {
       return;
     }
 
-    // Here you would typically handle password change logic
-    // For example, by making a request to your authentication API
+    await handleChangePassword(currentPassword, newPassword, setPasswordError, setIsLoading);
 
-    Alert.alert('Success', 'Password changed successfully!');
-    navigation.navigate('SignIn'); // Navigate back to the sign-in screen after password change
+    if (passwordError === '') {
+      Alert.alert('Success', 'Password changed successfully!');
+      navigation.navigate('SignIn'); // Navigate back to the sign-in screen after password change
+    } else {
+      Alert.alert('Error', passwordError);
+    }
   };
 
   return (
@@ -34,7 +40,7 @@ const ChangePasswordScreen = ({ navigation }) => {
         <TextInput
           style={styles.inputField}
           placeholder="Current Password"
-          placeholderTextColor={'white'}
+          placeholderTextColor="white"
           value={currentPassword}
           onChangeText={setCurrentPassword}
           secureTextEntry={!isPasswordVisible}
@@ -51,7 +57,7 @@ const ChangePasswordScreen = ({ navigation }) => {
         <TextInput
           style={styles.inputField}
           placeholder="New Password"
-          placeholderTextColor={'white'}
+          placeholderTextColor="white"
           value={newPassword}
           onChangeText={setNewPassword}
           secureTextEntry={!isPasswordVisible}
@@ -68,7 +74,7 @@ const ChangePasswordScreen = ({ navigation }) => {
         <TextInput
           style={styles.inputField}
           placeholder="Confirm New Password"
-          placeholderTextColor={'white'}
+          placeholderTextColor="white"
           value={confirmNewPassword}
           onChangeText={setConfirmNewPassword}
           secureTextEntry={!isConfirmPasswordVisible}
@@ -81,9 +87,16 @@ const ChangePasswordScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleChangePassword}>
-        <Text style={styles.buttonText}>Change Password</Text>
+      {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+      <TouchableOpacity style={styles.button} onPress={handlePasswordChange} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.buttonText}>Change Password</Text>
+        )}
       </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
         <Text style={styles.link}>Back to Sign In</Text>
       </TouchableOpacity>
@@ -132,6 +145,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 20,
   },
   link: {
     color: '#BBBBBB',

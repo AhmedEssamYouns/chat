@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, TouchableWithoutFeedback, FlatList } from 'react-native';
 import { doc, onSnapshot, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from '../firebase/config';
-import { getUserById } from '../firebase/getUser';
 
 export default function FriendRequestModal({ visible, onClose }) {
     const [friendRequests, setFriendRequests] = useState([]);
@@ -13,7 +12,7 @@ export default function FriendRequestModal({ visible, onClose }) {
             const currentUserId = FIREBASE_AUTH.currentUser.uid;
             const userDocRef = doc(db, 'users', currentUserId);
 
-            // Fetching the friend requests received
+            // Subscribe to real-time updates
             const unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     const data = docSnapshot.data();
@@ -23,13 +22,25 @@ export default function FriendRequestModal({ visible, onClose }) {
                     // Fetch user details for each request
                     const details = {};
                     for (const requestId of requests) {
-                        const userData = await getUserById(requestId);
-                        details[requestId] = userData;
+                        // Use onSnapshot to get real-time updates for each requested user
+                        const userDocRef = doc(db, 'users', requestId);
+                        await new Promise((resolve) => {
+                            const unsubscribeUser = onSnapshot(userDocRef, (userSnapshot) => {
+                                if (userSnapshot.exists()) {
+                                    details[requestId] = userSnapshot.data();
+                                    setUserDetails(prevDetails => ({ ...prevDetails, ...details }));
+                                    resolve(); // Resolve the promise when data is fetched
+                                }
+                            });
+
+                            // Cleanup function for each listener
+                            return () => unsubscribeUser();
+                        });
                     }
-                    setUserDetails(details);
                 }
             });
 
+            // Cleanup function for the main listener
             return () => unsubscribe();
         }
     }, [visible]);

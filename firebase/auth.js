@@ -2,6 +2,39 @@ import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPasswo
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from './config';
 import { CommonActions } from '@react-navigation/native';
+import { setOnlineStatus } from './onlineStutes';
+import { updatePassword } from 'firebase/auth';
+import { sendPasswordResetEmail } from 'firebase/auth';
+
+
+
+
+export const handleForgotPassword = async (email, setEmailError, setIsLoading) => {
+    setEmailError('');
+    setIsLoading(true); // Show the loading indicator
+
+    if (email === '') {
+        setEmailError('Please enter your email address.');
+        setIsLoading(false); // Hide the loading indicator
+        return;
+    }
+
+    try {
+        await sendPasswordResetEmail(FIREBASE_AUTH, email);
+        setEmailError('Password reset email sent. Please check your inbox.');
+    } catch (error) {
+        if (error.code.includes('auth/invalid-email')) {
+            setEmailError('Invalid email address.');
+        } else if (error.code.includes('auth/user-not-found')) {
+            setEmailError('User not found.');
+        } else {
+            setEmailError('Failed to send reset email. Please try again.');
+        }
+    } finally {
+        setIsLoading(false); // Hide the loading indicator
+    }
+};
+
 // Function to check username availability
 export const checkUsernameAvailability = async (username, setUsernameStatus, setUsernameError) => {
     if (username.length >= 3) {
@@ -81,6 +114,7 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
             uid: user.uid,
+            online:true,
             email: email,
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
@@ -114,6 +148,7 @@ export const handleSignIn = async (email, password, navigation, setEmailError, s
 
     try {
         await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+        await setOnlineStatus(true);
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
@@ -130,6 +165,37 @@ export const handleSignIn = async (email, password, navigation, setEmailError, s
         } else {
             const generalError = error.code.replace('auth/', '').replace(/-/g, ' ');
             setEmailError(`Sign in failed, ${generalError}`);
+        }
+    } finally {
+        setIsLoading(false); // Hide the loading indicator
+    }
+};
+
+export const handleChangePassword = async (currentPassword, newPassword, setPasswordError, setIsLoading) => {
+    setPasswordError('');
+    setIsLoading(true); // Show the loading indicator
+
+    if (newPassword === '') {
+        setPasswordError('Please enter your new password.');
+        setIsLoading(false); // Hide the loading indicator
+        return;
+    }
+
+    if (newPassword.length < 8) {
+        setPasswordError('Password must be at least 8 characters long.');
+        setIsLoading(false); // Hide the loading indicator
+        return;
+    }
+
+    try {
+        const user = FIREBASE_AUTH.currentUser;
+        await updatePassword(user, newPassword);
+        setPasswordError('Password updated successfully.');
+    } catch (error) {
+        if (error.code.includes('auth/requires-recent-login')) {
+            setPasswordError('You need to sign in again before changing your password.');
+        } else {
+            setPasswordError('Failed to update password. Please try again.');
         }
     } finally {
         setIsLoading(false); // Hide the loading indicator

@@ -5,7 +5,6 @@ import { collection, doc, query, where, onSnapshot } from 'firebase/firestore';
 import { db, FIREBASE_AUTH } from '../../firebase/config';
 import PostsList from '../../Components/posts-list';
 import { handleStatusChange, removeFriend, monitorFriendStatuses } from '../../firebase/frinend-state';
-import { getUserById } from '../../firebase/getUser';
 import PostGrid from '../../Components/postsGrid';
 import PostsModal from '../../Components/PostsModel';
 import ConfirmationModal from '../../Components/alert';

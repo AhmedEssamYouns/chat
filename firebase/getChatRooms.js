@@ -37,6 +37,22 @@ export const checkStute = async (chatId) => {
   }
 };
 
+export const checkDeleverd = async (chatId) => {
+  try {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatDocRef);
+    if (chatDoc.exists()) {
+      const chatData = chatDoc.data();
+      return chatData.deleverd || 'No messages yet';
+    } else {
+      return 'No messages yet';
+    }
+  } catch (error) {
+    console.error('Error fetching chat document:', error);
+    return 'Error retrieving messages';
+  }
+};
+
 export const checkSender = async (chatId) => {
   try {
     const chatDocRef = doc(db, 'chats', chatId);
@@ -87,6 +103,7 @@ export const subscribeToChats = (callback) => {
             lastMessage: await fetchLastMessage(chatId),
             timestamp: lastMessage ? lastMessage.timestamp.toDate() : new Date(),
             seen: await checkStute(chatId),
+            deleverd:await checkDeleverd(chatId),
             senderId:await checkSender(chatId)
           };
         })
@@ -99,3 +116,4 @@ export const subscribeToChats = (callback) => {
     }
   });
 };
+ 
