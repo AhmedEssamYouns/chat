@@ -42,9 +42,7 @@ const PostGrid = ({ userId, onPostSelect }) => {
 
 const styles = StyleSheet.create({
     grid: {
-        flex: 1,
         top:5,
-        width:'90%',
         alignSelf: 'center',
     },
     gridContent: {

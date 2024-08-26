@@ -29,7 +29,7 @@ const updateDeliveredMessages = async (userId) => {
         const chatsSnapshot = await getDocs(chatsRef);
 
         // Filter chat IDs that contain the userId
-        const chatIds = chatsSnapshot.docs
+        const chatIds = chatsSnapshot?.docs
             .filter(doc => doc.id.split('_').includes(userId))
             .map(doc => doc.id);
 

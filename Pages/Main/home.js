@@ -74,7 +74,6 @@ const ChatScreen = ({ navigation }) => {
             (doc) => doc.data().receiverId == userId
           );
           unseenCounts[chat.friendId] = filteredMessages.length;
-          console.log(filteredMessages.length)
           setUnseenMessagesCount((prevCounts) => ({
             ...prevCounts,
             [chat.friendId]: filteredMessages.length
@@ -113,7 +112,14 @@ const ChatScreen = ({ navigation }) => {
           <Text style={styles.chatTime}>{formatTimestamp(item.timestamp)}</Text>
         </View>
         <View style={styles.chatMessageContainer}>
-          <Text style={styles.chatMessage}>{item.lastMessage}</Text>
+         
+          
+          <Text style={[styles.chatMessage,
+            {
+    color: unseenMessagesCount[item.friendId] > 0 ? '#eeee':'#bbbb'
+
+            }  
+          ]}>{item.lastMessage}</Text>
           {unseenMessagesCount[item.friendId] > 0 && (
             <View style={styles.newMessageIndicatorContainer}>
               <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>
@@ -236,7 +242,6 @@ const styles = StyleSheet.create({
     width: '80%',
     textAlign: 'left',
     height: 20,
-    color: '#DDDDDD',
     marginRight: 5,
   },
   newMessageIndicatorContainer: {

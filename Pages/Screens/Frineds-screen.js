@@ -87,7 +87,7 @@ const FriendsScreen = () => {
                                     </TouchableOpacity>
                                     <TextInput
                                         style={styles.searchInput}
-                                        placeholder="Search friends..."
+                                        placeholder="flirt friends by name..."
                                         placeholderTextColor={'#BBBBBB'}
                                         value={searchText}
                                         onChangeText={setSearchText}
@@ -152,8 +152,8 @@ const FriendsScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
+        paddingTop:10,
         flex: 1,
-        paddingTop: 50,
         backgroundColor: '#121212',
     },
     searchSection: {

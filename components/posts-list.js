@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Text, StyleSheet } from 'react-native';
+import { FlatList, Text, StyleSheet, Dimensions } from 'react-native';
 import PostItem from './post-item';
 import { LogBox } from 'react-native';
 
 LogBox.ignoreAllLogs();
 
-const ITEM_HEIGHT = 450; // Adjust this value based on the height of your PostItem component
+const ITEM_HEIGHT = Dimensions.get('window').height*0.6; // Adjust this value based on the height of your PostItem component
 
 const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex }) => {
   const flatListRef = useRef(null);

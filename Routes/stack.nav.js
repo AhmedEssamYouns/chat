@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { TouchableWithoutFeedback, View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableWithoutFeedback, View, Text, StyleSheet, ActivityIndicator, StatusBar } from 'react-native';
 import TabNavigator from './tabs-nav';
 import ChatConversationScreen from '../Pages/Screens/chat-room';
 import SearchScreen from '../Pages/Screens/Search-screen';
@@ -19,6 +19,7 @@ import { FIREBASE_AUTH } from '../firebase/config';
 import FriendRequestModal from '../Components/friends-requist-mode';
 import ImageScreen from '../Components/image';
 import { setOnlineStatus } from '../firebase/onlineStutes';
+import { monitorUserOnlineStatus } from '../firebase/manage-Chat-room';
 
 const Stack = createStackNavigator();
 
@@ -52,8 +53,14 @@ export default function MainTabNavigator() {
                 // Set online status when the user is authenticated
                 setOnlineStatus(true);
 
+                // Start monitoring the user's online status
+                const monitorUnsubscribe = monitorUserOnlineStatus(FIREBASE_AUTH.currentUser.uid, FIREBASE_AUTH.currentUser.uid);
+
                 // Clean up and set offline status when the user signs out
-                return () => setOnlineStatus(false);
+                return () => {
+                    setOnlineStatus(false);
+                    monitorUnsubscribe(); // Unsubscribe from the online status monitoring
+                };
             }
         });
 
@@ -84,6 +91,7 @@ export default function MainTabNavigator() {
 
     return (
         <View style={{ flex: 1 }}>
+            <StatusBar barStyle="light-content" backgroundColor="#121212" />
             <Stack.Navigator
                 screenOptions={{
                     headerStyle: { backgroundColor: '#121212' },
@@ -142,23 +150,23 @@ export default function MainTabNavigator() {
                         <Stack.Screen name='search' component={SearchScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='Friends' component={FriendsScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="ImageScreen" component={ImageScreen}
-                         options={{
-                            headerTitle:'',
-                            headerStyle: {
-                                backgroundColor: '#121212',
-                                elevation: 0,
-                                shadowOpacity: 0,
-                                shadowOffset: { height: 0 },
-                            },
-                            headerTitleStyle: {
-                                color: 'white',
-                                fontWeight: 'bold',
-                                fontSize: 18,
-                            },
-                            headerTintColor: "white"
-                        }} />
+                            options={{
+                                headerTitle: '',
+                                headerStyle: {
+                                    backgroundColor: '#121212',
+                                    elevation: 0,
+                                    shadowOpacity: 0,
+                                    shadowOffset: { height: 0 },
+                                },
+                                headerTitleStyle: {
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: 18,
+                                },
+                                headerTintColor: "white"
+                            }} />
                         <Stack.Screen name='account' component={UserAccountScreen} options={{
-                          headerShown:false
+                            headerShown: false
                         }} />
                         <Stack.Screen name="SignIn" component={SignInScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="SignUp" component={SignUpScreen} options={{ headerShown: false }} />

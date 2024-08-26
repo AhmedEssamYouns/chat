@@ -65,6 +65,7 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
     const imageUrls = item.imageUrls?.map(url => ({ url }));
 
     return (
+        <>
         <View style={styles.storyItem}>
             <View style={styles.header}>
                 <Pressable
@@ -151,18 +152,24 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
                 existingImage={item.imageUrls}
             />
         </View>
+        <View style={{
+            width:'90%',
+            alignSelf:'center',
+            borderColor: '#333',
+            borderBottomWidth: 1,
+        }}></View>
+        </>
     );
 };
 
 const styles = StyleSheet.create({
     storyItem: {
-        marginLeft: 20,
+        marginLeft: 30,
         paddingBottom: 15,
         marginHorizontal: 10,
         marginTop: 15,
         borderRadius: 10,
-        borderColor: '#333',
-        borderBottomWidth: 1,
+
     },
     header: {
         flexDirection: 'row',
@@ -203,7 +210,7 @@ const styles = StyleSheet.create({
     },
     storyTextContainer: {
         paddingLeft: 10,
-        paddingRight: 30,
+        paddingRight: 55,
         borderLeftWidth: 1,
         borderLeftColor: '#bbb',
     },

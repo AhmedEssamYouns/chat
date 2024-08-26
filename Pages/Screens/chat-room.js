@@ -10,6 +10,8 @@ import { Keyboard } from 'react-native';
 import DropdownMenu from '../../Components/chat-menu-model';
 import { fetchMessages, deleteMessage, editMessage, sendMessage, checkAndUpdateSeenStatus } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
+import { updateOfflineStatus,updateOnlineStatus} from '../../firebase/manage-Chat-room';
+
 const ChatConversationScreen = ({ route, navigation }) => {
 
   const [messages, setMessages] = useState([]);
@@ -55,14 +57,22 @@ const ChatConversationScreen = ({ route, navigation }) => {
   useEffect(() => {
     const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
-    // Check and update the seen status when the screen loads
-    checkAndUpdateSeenStatus(friendId, currentUserId);
+    // Update online status when the component mounts
+    updateOnlineStatus(friendId, currentUserId);
 
+    // Check and update the seen status when the screen loads
     const unsubscribe = fetchMessages(friendId, (data) => {
       setMessages(data);
     });
 
-    return () => unsubscribe();
+    checkAndUpdateSeenStatus(friendId, currentUserId);
+
+    // Clean up function
+    return () => {
+      unsubscribe();
+      // Update offline status when the component unmounts
+      updateOfflineStatus(friendId, currentUserId);
+    };
   }, [friendId]);
 
   useEffect(() => {

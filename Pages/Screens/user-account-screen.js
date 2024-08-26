@@ -98,7 +98,7 @@ const UserAccountScreen = () => {
         setModalVisible2(false);
     };
     return (
-        <View style={{ flex: 1, backgroundColor: '#121212', paddingTop: '12%' }}>
+        <View style={{ flex: 1, backgroundColor: '#121212', }}>
             <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
                 <Feather name='arrow-left' size={25} color={'#fff'} style={{ left: 15, padding: 10 }} onPress={() => navigation.goBack()} />
                 <Text style={styles.profileName}>{user.username}</Text>
@@ -111,8 +111,8 @@ const UserAccountScreen = () => {
                     <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
 
                     <Text style={styles.profileBio}>{user.bio}</Text>
-                    <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
                 </View>
+
             </View>
 
             <View>
@@ -126,7 +126,10 @@ const UserAccountScreen = () => {
                         <Text style={styles.actionButtonText}>Send Message</Text>
                     </TouchableOpacity>
                 </View>
+                <View style={{flexDirection:'row',justifyContent:'space-between'}}>
                 <Text style={styles.sectionTitle}>Snaps</Text>
+                <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
+                </View>
             </View>
                 <PostGrid
                     userId={friendId}
@@ -182,19 +185,17 @@ const styles = StyleSheet.create({
         color: '#DDDDDD',
         textAlign: 'justify',
         width: 200,
-        marginVertical: 10,
+        marginTop:10,
     },
     friendsCount: {
-        position: 'absolute',
         fontSize: 14,
+        paddingHorizontal: 25,
         color: '#AAAAAA',
-        bottom: 10,
-        right: -30,
     },
     actionButtons: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        paddingVertical: 20,
+        paddingBottom:20,
     },
     actionButton: {
         width: 140,

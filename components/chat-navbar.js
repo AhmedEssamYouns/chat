@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from './animated-rotate-button';
 import { getUserById } from '../firebase/getUser';
@@ -61,9 +61,9 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
             />
             <View>
               <Text style={styles.navbarTitle}>{user.username}</Text>
-              <View style={{flexDirection:'row',gap:5,alignItems:'center'}}>
-                <Text style={{color:'#bbb'}}>{user.online == true ? 'online' : 'offline'}</Text>
-                <View style={{ backgroundColor: user.online ? 'green' : 'red', borderRadius: 10, width: 10, height: 10,top:1 }}></View>
+              <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                <Text style={{ color: '#bbb' }}>{user.online == true ? 'online' : 'offline'}</Text>
+                <View style={{ backgroundColor: user.online ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
               </View>
             </View>
           </TouchableOpacity>
@@ -150,7 +150,6 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
 
 const styles = StyleSheet.create({
   navbar: {
-    paddingTop: '14%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
