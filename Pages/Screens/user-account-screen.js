@@ -99,6 +99,9 @@ const UserAccountScreen = () => {
     };
 
     const cleanBio = (bio) => {
+        if (!bio) {
+          return ''; // Return an empty string if bio is null or undefined
+        }
         return bio
           .split('\n')
           .filter(line => line.trim() !== '')

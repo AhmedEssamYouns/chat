@@ -69,6 +69,11 @@ const FriendsScreen = () => {
                                 renderItem={renderFriendItem}
                                 keyExtractor={(item) => item.uid}
                                 style={styles.friendList}
+                                ListEmptyComponent={
+                                    <View style={styles.emptyContainer}>
+                                        <Text style={styles.emptyText}>No users found</Text>
+                                    </View>
+                                }
                                 contentContainerStyle={styles.friendListContainer}
                             />
                         </>
@@ -121,7 +126,7 @@ const FriendsScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop:10,
+        paddingTop: 10,
         flex: 1,
         backgroundColor: '#121212',
     },
@@ -242,6 +247,15 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    }, emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    emptyText: {
+        color: '#BBBBBB',
+        fontSize: 16,
     },
 });
 

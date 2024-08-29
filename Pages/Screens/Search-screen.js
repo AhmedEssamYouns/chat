@@ -47,7 +47,7 @@ const SearchScreen = () => {
                 <TouchableOpacity
                     style={[
                         styles.statusButton,
-                        friendStatus === 'Friend' && { backgroundColor: '#444', width: 90,alignItems:'center' },
+                        friendStatus === 'Friend' && { backgroundColor: '#444', width: 90, alignItems: 'center' },
                     ]}
                     onPress={() => handleStatusChange(item.uid, currentUserId, friendStatuses, setFriendStatuses)}
                     disabled={friendStatus === 'Friend'} // Disable button for friends
@@ -86,6 +86,11 @@ const SearchScreen = () => {
                 keyExtractor={(item) => item.uid}
                 style={styles.userList}
                 contentContainerStyle={styles.userListContainer}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>No users found</Text>
+                    </View>
+                }
             />
         </View>
     );
@@ -144,13 +149,23 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 15,
         borderRadius: 5,
-        width:90,
-        alignItems:'center',
+        width: 90,
+        alignItems: 'center',
         backgroundColor: '#333',
     },
     statusButtonText: {
         color: '#FFFFFF',
         fontSize: 12,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    emptyText: {
+        color: '#BBBBBB',
+        fontSize: 16,
     },
 });
 

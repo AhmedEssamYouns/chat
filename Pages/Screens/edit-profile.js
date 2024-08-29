@@ -123,7 +123,8 @@ const EditProfileScreen = () => {
                 photoURL: updatedProfileImageUrl,
             });
 
-            Alert.alert('Success', 'Profile updated successfully!');
+            ToastAndroid.show('Profile Updated successfully.', ToastAndroid.LONG);
+
             navigation.goBack();
         } catch (error) {
             console.log('Error updating profile:', error.message);
