@@ -1,5 +1,6 @@
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { ToastAndroid } from 'react-native';
 
 // Function to delete a post by its ID
 const deletePostById = async (postId) => {
@@ -9,6 +10,7 @@ const deletePostById = async (postId) => {
 
         // Delete the document
         await deleteDoc(postRef);
+        ToastAndroid.show('Post deleted successfully.', ToastAndroid.LONG);
 
         console.log(`Post with ID ${postId} deleted successfully.`);
     } catch (error) {

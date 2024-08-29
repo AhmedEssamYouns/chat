@@ -4,9 +4,9 @@ import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, delet
 import { FIREBASE_AUTH, db, storage } from '../firebase/config';
 import { getDatabase, ref, get } from 'firebase/database';
 import { getMessaging, getToken } from "firebase/messaging";
-
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as w } from 'firebase/storage';
+import { ToastAndroid } from 'react-native';
 const uploadImage = async (uri) => {
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -16,8 +16,31 @@ const uploadImage = async (uri) => {
     await uploadBytes(imageRef, blob);
     return getDownloadURL(imageRef);
 };
-
-
+export const deleteChatDocument = async (currentUserId, friendId) => {
+    try {
+      // Create chatId by sorting the IDs and joining them with an underscore
+      const chatId = [currentUserId, friendId].sort().join('_');
+      
+      // Reference to the chat document and its messages subcollection
+      const chatDocRef = doc(db, 'chats', chatId);
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      
+      // Fetch all messages in the subcollection
+      const messagesSnapshot = await getDocs(messagesRef);
+  
+      // Delete each message document
+      const deleteMessagesPromises = messagesSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deleteMessagesPromises);
+  
+      // Delete the chat document
+      await deleteDoc(chatDocRef);
+      ToastAndroid.show('chat deleted.', ToastAndroid.LONG);
+      
+      console.log(`Chat document with ID ${chatId} has been deleted.`);
+    } catch (error) {
+      console.error('Error deleting chat document:', error);
+    }
+  };
 
 
 export const fetchMessages = (friendId, callback) => {
@@ -105,6 +128,8 @@ export const editMessage = async (friendId, messageId, newMessage) => {
         await updateDoc(chatDocRef, { last: newMessage })
         const messageRef = doc(db, 'chats', chatId, 'messages', messageId);
         await updateDoc(messageRef, { text: newMessage, isEdited: true });
+        ToastAndroid.show('messege edited.', ToastAndroid.LONG);
+
     } catch (error) {
         console.error('Error editing message:', error);
     }
@@ -140,6 +165,7 @@ export const deleteMessage = async (friendId, messageId) => {
 
         // Delete the message
         await deleteDoc(doc(db, 'chats', chatId, 'messages', messageId));
+        ToastAndroid.show('messege deleted.', ToastAndroid.LONG);
 
     } catch (error) {
         console.error('Error deleting message:', error);

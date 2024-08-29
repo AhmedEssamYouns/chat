@@ -71,7 +71,7 @@ const ProfileScreen = () => {
                 </Pressable>
                 <View style={{ padding: 15 }}>
                     <Text style={styles.profileName}>{userProfile.name}</Text>
-                    <Text style={styles.profileBio}>{userProfile.bio}</Text>
+                    <Text style={styles.profileBio}>{userProfile.bio || 'no bio'}</Text>
                 </View>
                 <TouchableOpacity
                     style={styles.editButton}

@@ -4,28 +4,39 @@ import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from './animated-rotate-button';
 import { getUserById } from '../firebase/getUser';
 import { subscribeToUserOnlineStatus } from '../firebase/Real-Time-online';
+import ConfirmationModal from './alert';
+import { deleteChatDocument } from '../firebase/manage-Chat-room';
+import { FIREBASE_AUTH } from '../firebase/config';
 
-const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
+
+const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex,
+   searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [user, setUser] = useState('');
-  const [isFriendOnline, setIsFriendOnline] = useState(false);  // Track online status
+  const [user, setUser] = useState(null); // Initialize with null
+  const [isFriendOnline, setIsFriendOnline] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const searchAnim = useRef(new Animated.Value(-300)).current;
   const searchInputRef = useRef(null);
+const currentUserId = FIREBASE_AUTH.currentUser.uid
   useEffect(() => {
-    const unsubscribe = getUserById(frindID, (userData) => {
-      setUser(userData);
-    });
+    if (frindID) {
+      const unsubscribe = getUserById(frindID, (userData) => {
+        setUser(userData);
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    }
   }, [frindID]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToUserOnlineStatus(frindID, (onlineStatus) => {
-      setIsFriendOnline(onlineStatus); // Update the online status based on real-time updates
-    });
+    if (frindID) {
+      const unsubscribe = subscribeToUserOnlineStatus(frindID, (onlineStatus) => {
+        setIsFriendOnline(onlineStatus);
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+    }
   }, [frindID]);
 
   useEffect(() => {
@@ -38,7 +49,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
 
     if (isSearchMode) {
       setTimeout(() => {
-        searchInputRef.current.focus();
+        searchInputRef.current?.focus(); // Optional chaining to avoid errors
       }, 300);
     }
   }, [isSearchMode]);
@@ -53,6 +64,19 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
     setIsMenuVisible(false);
   };
 
+  const handleClearChat = async () => {
+    try {
+      if (currentUserId && frindID) {
+        await deleteChatDocument(currentUserId, frindID);
+        console.log('Chat cleared successfully');
+        navigation.navigate('Tabs')
+        setIsModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Failed to clear chat:', error);
+    }
+  };
+
   return (
     <View style={styles.navbar}>
       {!isSearchMode ? (
@@ -60,19 +84,23 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
-            onPress={() => navigation.navigate('account', { friendId: user.uid })}
-          >
-            <Image style={styles.Image} source={{ uri: user.profileImage }} />
-            <View>
-              <Text style={styles.navbarTitle}>{user.username}</Text>
-              <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                <Text style={{ color: '#bbb' }}>{isFriendOnline ? 'online' : 'offline'}</Text>
-                <View style={{ backgroundColor: isFriendOnline ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
+          {user ? (
+            <TouchableOpacity
+              style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
+              onPress={() => navigation.navigate('account', { friendId: user.uid })}
+            >
+              <Image style={styles.Image} source={{ uri: user.profileImage }} />
+              <View>
+                <Text style={styles.navbarTitle}>{user.username}</Text>
+                <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
+                  <Text style={{ color: '#bbb' }}>{isFriendOnline ? 'online' : 'offline'}</Text>
+                  <View style={{ backgroundColor: isFriendOnline ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.navbarTitle}>Loading...</Text> // Handle case when user is not available
+          )}
         </View>
       ) : (
         <Animated.View style={[styles.searchBar, { transform: [{ translateX: searchAnim }] }]}>
@@ -136,7 +164,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
                 style={styles.menuItem}
                 onPress={() => {
                   handleMenuToggle();
-                  navigation.navigate('account', { friendId: user.uid });
+                  navigation.navigate('account', { friendId: user?.uid });
                 }}
               >
                 <Text style={styles.menuItemText}>View Account</Text>
@@ -144,13 +172,28 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
               <TouchableOpacity style={styles.menuItem} onPress={handleSearchMenuClick}>
                 <Text style={styles.menuItemText}>Search</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.menuItem} onPress={() => console.log('Option 4')}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  handleMenuToggle();
+                  setIsModalVisible(true);  // Show the confirmation modal
+                }}
+              >
                 <Text style={styles.menuItemText}>Clear Chat</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
         </Modal>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        visible={isModalVisible}
+        onConfirm={handleClearChat}
+        onCancel={() => setIsModalVisible(false)}
+        message="Are you sure you want to clear this chat?"
+        confirm="Clear"
+      />
     </View>
   );
 };
@@ -217,19 +260,16 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     marginTop: 60,
-    marginRight: 20,
-    backgroundColor: '#333',
-    elevation: 10,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    width: 150,
+    backgroundColor: '#121212',
+    borderRadius: 5,
+    padding: 10,
   },
   menuItem: {
     paddingVertical: 10,
   },
   menuItemText: {
     color: '#FFFFFF',
-    fontSize: 16,
   },
 });
 

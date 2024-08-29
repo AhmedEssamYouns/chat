@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView, ToastAndroid } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../firebase/config';
@@ -57,6 +57,7 @@ const EditPostModal = ({ visible, onClose, postId, existingText, existingImages 
                 text: postText,
                 imageUrls: imageUrls,
             });
+            ToastAndroid.show('Post edited successfully.', ToastAndroid.LONG);
 
             setPostText('');
             setSelectedImages([]);

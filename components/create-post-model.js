@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView, ToastAndroid } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -82,6 +82,8 @@ const CreatePostModal = ({ visible, onClose }) => {
 
             setPostText('');
             setSelectedImages([]);
+        ToastAndroid.show('snap shared successfully.', ToastAndroid.LONG);
+
             navigation.navigate("Tabs", { screen: "profile" });
             onClose(); // Close the modal
         } catch (error) {

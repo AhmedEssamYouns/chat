@@ -110,12 +110,12 @@ const UserAccountScreen = () => {
                 <View style={{ padding: 15 }}>
                     <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
 
-                    <Text style={styles.profileBio}>{user.bio}</Text>
+                    <Text style={styles.profileBio}>{user.bio || 'no bio'}</Text>
                 </View>
 
             </View>
 
-            <View>
+            <View style={{ borderBottomColor: '#222', borderBottomWidth: 1 }}>
                 <View style={styles.actionButtons}>
                     <TouchableOpacity style={styles.actionButton} onPress={handleStatusAction}>
                         <Text style={styles.actionButtonText}>
@@ -126,16 +126,15 @@ const UserAccountScreen = () => {
                         <Text style={styles.actionButtonText}>Send Message</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                <Text style={styles.sectionTitle}>Snaps</Text>
-                <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.sectionTitle}>Snaps</Text>
+                    <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
                 </View>
             </View>
-                <PostGrid
-                    userId={friendId}
+            <PostGrid
+                userId={friendId}
                 onPostSelect={handlePostSelect}
-
-                />
+            />
 
             <Modal
                 visible={isModalVisible2}
@@ -146,7 +145,7 @@ const UserAccountScreen = () => {
                 <PostsModal
                     posts={user.posts}
                     id={friendId}
-                    initialPost={selectedPost} 
+                    initialPost={selectedPost}
                     onClose={handleModalClose}
                 />
             </Modal>
@@ -185,7 +184,7 @@ const styles = StyleSheet.create({
         color: '#DDDDDD',
         textAlign: 'justify',
         width: 200,
-        marginTop:10,
+        marginTop: 10,
     },
     friendsCount: {
         fontSize: 14,
@@ -195,7 +194,7 @@ const styles = StyleSheet.create({
     actionButtons: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        paddingBottom:20,
+        paddingBottom: 20,
     },
     actionButton: {
         width: 140,

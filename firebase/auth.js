@@ -5,6 +5,8 @@ import { CommonActions } from '@react-navigation/native';
 import { setOnlineStatus } from './onlineStutes';
 import { updatePassword } from 'firebase/auth';
 import { sendPasswordResetEmail } from 'firebase/auth';
+import Toast from 'react-native-toast-message';
+import { ToastAndroid } from 'react-native';
 
 
 
@@ -119,7 +121,6 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
 
-        navigation.navigate('SignIn');
     } catch (error) {
         if (error.code.includes('auth/invalid-email')) {
             setEmailError('Invalid email address.');
@@ -132,6 +133,12 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         }
     } finally {
         setLoading(false);
+            // Show success message
+            ToastAndroid.show('You have successfully signed up!', ToastAndroid.LONG);
+            // Navigate to Sign In screen after a delay to allow the toast to be visible
+            setTimeout(() => {
+                navigation.navigate('SignIn');
+            }, 1000); // Adjust the delay to match the toast visibility time
     }
 };
 

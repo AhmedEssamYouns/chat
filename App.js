@@ -6,7 +6,7 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { removeUserFromAllChats, rejoinChats, getRemovedChats } from './firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from './firebase/config';
-
+import Toast from 'react-native-toast-message';
 SplashScreen.preventAutoHideAsync();
 
 const fetchFonts = () => {
@@ -63,9 +63,12 @@ const App = () => {
   }
 
   return (
+    <>
     <NavigationContainer>
       <MainTabNavigator />
     </NavigationContainer>
+    <Toast ref={(ref) => Toast.setRef(ref)} />
+    </>
   );
 };
 

@@ -1,8 +1,8 @@
-// PostGrid.js
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, Text } from 'react-native';
 import { fetchUserPostsRealtime } from '../firebase/fetchPosts';
 import PostCard from './postCard';
+
 const PostGrid = ({ userId, onPostSelect }) => {
     const [postImages, setPostImages] = useState([]);
 
@@ -24,29 +24,40 @@ const PostGrid = ({ userId, onPostSelect }) => {
 
     return (
         <View style={styles.grid}>
-            <FlatList
-                data={postImages}
-                renderItem={({ item, index }) => (
-                    <PostCard 
-                        imageUrl={item}
-                        onPress={() => handlePostPress(index)}
-                    />
-                )}
-                keyExtractor={(item, index) => index.toString()}
-                numColumns={3}
-                contentContainerStyle={styles.gridContent}
-            />
+            {postImages.length > 0 ? (
+                <FlatList
+                    data={postImages}
+                    renderItem={({ item, index }) => (
+                        <PostCard
+                            imageUrl={item}
+                            onPress={() => handlePostPress(index)}
+                        />
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                    numColumns={3}
+                    contentContainerStyle={styles.gridContent}
+                />
+            ) : (
+                <Text style={styles.noSnapsText}>No snaps yet</Text>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     grid: {
-        top:5,
+        top: 5,
         alignSelf: 'center',
     },
     gridContent: {
         alignItems: 'flex-start',
+    },
+    noSnapsText: {
+        color: '#bbb',
+        fontFamily:'title',
+        textAlign: 'center',
+        marginTop: 20, // Adjust to position the text as needed
+        fontSize: 16, // Adjust text size as needed
     },
 });
 

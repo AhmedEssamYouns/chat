@@ -5,7 +5,7 @@ import { LogBox } from 'react-native';
 
 LogBox.ignoreAllLogs();
 
-const ITEM_HEIGHT = Dimensions.get('window').height * 0.6; // Adjust this value based on the height of your PostItem component
+const ITEM_HEIGHT = Dimensions.get('screen').height * 0.55; // Adjust this value based on the height of your PostItem component
 
 const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex,header }) => {
   const flatListRef = useRef(null);

@@ -52,6 +52,7 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
     <>
       {item.text && (
         <Pressable
+        onLongPress={handleLongPress}
           style={({ pressed }) => [
             styles.messageContainer,
             messageStyle,
