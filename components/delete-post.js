@@ -10,7 +10,7 @@ const deletePostById = async (postId) => {
 
         // Delete the document
         await deleteDoc(postRef);
-        ToastAndroid.show('Post deleted successfully.', ToastAndroid.LONG);
+        ToastAndroid.show('Post deleted.', ToastAndroid.LONG);
 
         console.log(`Post with ID ${postId} deleted successfully.`);
     } catch (error) {

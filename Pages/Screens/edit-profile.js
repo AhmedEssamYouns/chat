@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +14,8 @@ const EditProfileScreen = () => {
     const navigation = useNavigation();
     const [username, setUsername] = useState('');
     const [bio, setBio] = useState('');
+    const [wow, setwow] = useState('');
+
     const [profileImage, setProfileImage] = useState(null);
     const [initialUsername, setInitialUsername] = useState('');
     const [initialBio, setInitialBio] = useState('');
@@ -64,7 +66,7 @@ const EditProfileScreen = () => {
         );
         return manipResult.uri;
     };
-    
+
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -72,13 +74,13 @@ const EditProfileScreen = () => {
             aspect: [1, 1],
             quality: 1,
         });
-    
+
         if (!result.canceled) {
             const compressedUri = await compressImage(result.assets[0].uri);
             setProfileImage(compressedUri);
         }
     };
-    
+
     const handleSaveProfile = async () => {
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
         if (username.includes(' ')) {
@@ -131,10 +133,21 @@ const EditProfileScreen = () => {
         }
     };
 
+
+    const handleChangeText = (text) => {
+        const lines = text.split('\n').length
+        if (lines <= 5) {
+            setBio(text);
+        } else {
+            ToastAndroid.show('can not add more than 5 lines.', ToastAndroid.LONG);
+
+        }
+    };
+
     // Determine if the save button should be enabled
-    const isSaveButtonDisabled = 
-        username === initialUsername && 
-        bio === initialBio && 
+    const isSaveButtonDisabled =
+        username === initialUsername &&
+        bio === initialBio &&
         profileImage === initialProfileImage;
 
     if (isLoading) {
@@ -160,7 +173,7 @@ const EditProfileScreen = () => {
             <View style={styles.usernameContainer}>
                 <TextInput
                     maxLength={20}
-                    style={{color:"white",width:'85%'}}
+                    style={{ color: "white", width: '85%' }}
                     placeholder="Username"
                     placeholderTextColor={'white'}
                     value={username}
@@ -184,8 +197,9 @@ const EditProfileScreen = () => {
                 placeholderTextColor={'white'}
                 value={bio}
                 maxLength={80}
-                onChangeText={setBio}
+                onChangeText={handleChangeText}
                 multiline
+
             />
 
             <TouchableOpacity style={styles.button} onPress={handleSaveProfile} disabled={isSaveButtonDisabled || isUpdating}>
@@ -261,9 +275,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#333',
         height: 50,
         width: '100%',
-        borderRadius:20,
-        marginBottom:10,
-        padding:10,
+        borderRadius: 20,
+        marginBottom: 10,
+        padding: 10,
     },
     statusIcon: {
         position: 'absolute',

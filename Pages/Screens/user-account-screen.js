@@ -97,6 +97,13 @@ const UserAccountScreen = () => {
     const handleModalClose = () => {
         setModalVisible2(false);
     };
+
+    const cleanBio = (bio) => {
+        return bio
+          .split('\n')
+          .filter(line => line.trim() !== '')
+          .join('\n');
+      };
     return (
         <View style={{ flex: 1, backgroundColor: '#121212', }}>
             <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
@@ -110,7 +117,7 @@ const UserAccountScreen = () => {
                 <View style={{ padding: 15 }}>
                     <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
 
-                    <Text style={styles.profileBio}>{user.bio || 'no bio'}</Text>
+                    <Text style={styles.profileBio}>{cleanBio(user.bio) || 'no bio'}</Text>
                 </View>
 
             </View>

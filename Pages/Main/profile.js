@@ -62,7 +62,12 @@ const ProfileScreen = () => {
         setSelectedPost(index);
         handleModalOpen();
     };
-
+    const cleanBio = (bio) => {
+        return bio
+          .split('\n')
+          .filter(line => line.trim() !== '')
+          .join('\n');
+      };
     return (
         <View style={{ flex: 1, backgroundColor: '#121212' }}>
             <View style={styles.profileHeader}>
@@ -71,7 +76,7 @@ const ProfileScreen = () => {
                 </Pressable>
                 <View style={{ padding: 15 }}>
                     <Text style={styles.profileName}>{userProfile.name}</Text>
-                    <Text style={styles.profileBio}>{userProfile.bio || 'no bio'}</Text>
+                    <Text style={styles.profileBio}>{cleanBio(userProfile.bio) || 'no bio'}</Text>
                 </View>
                 <TouchableOpacity
                     style={styles.editButton}
@@ -144,7 +149,6 @@ const styles = StyleSheet.create({
         color: '#DDDDDD',
         textAlign: 'justify',
         width: 200,
-        marginVertical: 10,
     },
     editButton: {
         position: 'absolute',
