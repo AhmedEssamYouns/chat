@@ -1,4 +1,3 @@
-// ImageScreen.js
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -15,7 +14,9 @@ const ImageScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <ImageViewer imageUrls={images}
+      <ImageViewer
+        imageUrls={images}
+        renderIndicator={() => null} // Hide the indicator
       />
     </View>
   );

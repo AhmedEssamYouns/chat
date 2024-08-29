@@ -4,6 +4,7 @@ import { FIREBASE_AUTH } from '../firebase/config';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmationModal from './alert';
 import { deleteMessage } from '../firebase/manage-Chat-room'; // Ensure this function is available
+import { useNavigation } from '@react-navigation/native';
 
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
@@ -17,7 +18,7 @@ const formatTimestamp = (timestamp) => {
 const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageToDelete, setImageToDelete] = useState(null);
-
+  const navigation = useNavigation()
   const lowerCaseText = item.text.toLowerCase();
   const lowerCaseSearchQuery = searchQuery.toLowerCase();
   const matchIndex = lowerCaseText.indexOf(lowerCaseSearchQuery);
@@ -32,7 +33,7 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const handleDeleteImage = async () => {
     try {
       if (imageToDelete) {
-        await deleteMessage(item.receiverId,imageToDelete.id); // Implement deleteMessage in your firebase utility
+        await deleteMessage(item.receiverId, imageToDelete.id); // Implement deleteMessage in your firebase utility
         setModalVisible(false);
         setImageToDelete(null);
       }
@@ -93,7 +94,7 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         </Pressable>
       )}
       {item.imageUrl && (
-        <Pressable onLongPress={handleLongPressImage}>
+        <Pressable onPress={()=>navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
           <Image
             style={[styles.image, {
               alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start'

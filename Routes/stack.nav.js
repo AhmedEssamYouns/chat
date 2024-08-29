@@ -156,12 +156,12 @@ export default function MainTabNavigator() {
                             options={{
                                 headerTitle: '',
                                 headerStyle: {
+                                    backgroundColor:'black',
                                     elevation: 0,
                                     shadowOpacity: 0,
                                     shadowOffset: { height: 0 },
                                 },
                                 headerTitleStyle: {
-                                    color: 'white',
                                     fontWeight: 'bold',
                                     fontSize: 18,
                                 },
