@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
-import { AppState, View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import MainTabNavigator from './Routes/stack.nav';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { setOnlineStatus } from './firebase/onlineStutes'
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -35,23 +33,7 @@ const App = () => {
     prepare();
   }, []);
 
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState) => {
-      if (nextAppState.match(/inactive|background/)) {
-        setOnlineStatus(false); // Set user status to offline
-      } else {
-        setOnlineStatus(true); // Set user status to online
-      }
-    };
 
-    // Add event listener for app state changes
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    // Cleanup function
-    return () => {
-      subscription.remove(); // Remove event listener on unmount
-    };
-  }, []);
 
   if (!fontsLoaded) {
     return null; // Optionally, return a loading indicator or placeholder

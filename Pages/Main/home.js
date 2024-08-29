@@ -8,6 +8,7 @@ import { checkForNewMessages } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { Feather } from '@expo/vector-icons';
 
 const formatTimestamp = (timestamp) => {
   const now = new Date();
@@ -112,14 +113,14 @@ const ChatScreen = ({ navigation }) => {
           <Text style={styles.chatTime}>{formatTimestamp(item.timestamp)}</Text>
         </View>
         <View style={styles.chatMessageContainer}>
-         
-          
-          <Text style={[styles.chatMessage,
-            {
-    color: unseenMessagesCount[item.friendId] > 0 ? '#eeee':'#bbbb'
 
-            }  
-          ]}>{item.lastMessage}</Text>
+
+          <Text style={[styles.chatMessage,
+          {
+            color: unseenMessagesCount[item.friendId] > 0 ? '#eeee' : '#bbbb'
+
+          }
+          ]}>{item.imageUrl ? <Text>Photo {' '}<Feather name='camera' size={15} /></Text> : item.lastMessage}</Text>
           {unseenMessagesCount[item.friendId] > 0 && (
             <View style={styles.newMessageIndicatorContainer}>
               <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>

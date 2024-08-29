@@ -18,6 +18,21 @@ export const fetchLastMessage = async (chatId) => {
     return 'Error retrieving messages';
   }
 };
+export const fetchImage = async (chatId) => {
+  try {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatDocRef);
+    if (chatDoc.exists()) {
+      const chatData = chatDoc.data();
+      return chatData.imageUrl || null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching chat document:', error);
+    return 'Error retrieving messages';
+  }
+};
 
 
 
@@ -101,6 +116,7 @@ export const subscribeToChats = (callback) => {
             friendName: friendData.username,
             friendImage: friendData.profileImage,
             lastMessage: await fetchLastMessage(chatId),
+            imageUrl:await fetchImage(chatId),
             timestamp: lastMessage ? lastMessage.timestamp.toDate() : new Date(),
             seen: await checkStute(chatId),
             deleverd:await checkDeleverd(chatId),

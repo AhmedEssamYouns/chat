@@ -3,7 +3,7 @@ import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/aut
 import { getStorage } from 'firebase/storage';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { enableLogging } from 'firebase/database';
 // Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCEGmSfNtYPxQrP5crC98FBXC62ihvVKt0",
@@ -25,3 +25,4 @@ export const FIREBASE_AUTH = initializeAuth(firebaseApp, {
 
 export const db = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
+enableLogging(true)

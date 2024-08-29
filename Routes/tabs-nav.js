@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { View, TouchableWithoutFeedback, StyleSheet, Text } from 'react-native';
 import ChatScreen from '../Pages/Main/home';
-import StoriesScreen from '../Pages/Main/stories';
+import StoriesScreen from '../Pages/Main/snaps';
 import ProfileScreen from '../Pages/Main/profile';
 import { AnimatedFloatingButton } from '../Components/Floating-Button';
 import { trackUnseenMessages } from '../firebase/manage-Chat-room';

@@ -14,7 +14,6 @@ export const setOnlineStatus = async (isOnline) => {
 
         if (isOnline) {
             // If the user is online, update the delivered status of messages
-            await updateDeliveredMessages(userId);
             await updateDeliveredChats(userId);
         }
     } catch (error) {
@@ -22,7 +21,7 @@ export const setOnlineStatus = async (isOnline) => {
     }
 };
 
-const updateDeliveredMessages = async (userId) => {
+export const updateDeliveredMessages = async (userId) => {
     try {
         // Query all chat documents
         const chatsRef = collection(db, 'chats');
@@ -52,23 +51,12 @@ const updateDeliveredMessages = async (userId) => {
                 });
             });
 
-            const chatRef = doc(db, 'chats', chatId);
-            const chatquery = query(
-                chatRef,
-                where('receiverId', '==', userId),
-            );
-            const chatSnapshot = await getDocs(chatquery);
-
-            const updatePromises2 = chatSnapshot.docs.map((messageDoc) => {
-                const chatDocRef = doc(db, 'chats', chatId);
-                return updateDoc(chatDocRef, {
-                    deleverd: true,
-                });
-            });
 
 
-            await Promise.all(updatePromises,updatePromises2);
+            await Promise.all(updatePromises);
         }
+        updateDeliveredField(db, userId);
+
     } catch (error) {
         console.error('Error updating delivered messages:', error);
     }
@@ -94,3 +82,25 @@ const updateDeliveredChats = async (userId) => {
         console.error('Error updating delivered chats:', error);
     }
 };
+
+const updateDeliveredField = async (db, userId) => {
+    // Reference to the collection
+    const chatsRef = collection(db, 'chats');
+  
+    // Create a query to find documents where receiverId matches userId
+    const q = query(chatsRef, where('receiverId', '==', userId));
+  
+    // Fetch documents matching the query
+    const chatSnapshot = await getDocs(q);
+  
+    // Create an array of update promises
+    const updatePromises = chatSnapshot.docs.map((chatDoc) => {
+      const chatDocRef = doc(db, 'chats', chatDoc.id); // Use chatDoc.id to get the document reference
+      return updateDoc(chatDocRef, { deleverd: true }); // Correct the field name from 'deleverd' to 'delivered'
+    });
+  
+    // Wait for all updates to complete
+    await Promise.all(updatePromises);
+  
+    console.log('All matching documents updated');
+  };

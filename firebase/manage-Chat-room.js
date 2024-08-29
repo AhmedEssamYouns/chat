@@ -1,8 +1,24 @@
 // services/chatConversationService.js
 
 import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc, getDocs, where, writeBatch, limit, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { FIREBASE_AUTH, db } from '../firebase/config';
-import { useState, useEffect } from 'react';
+import { FIREBASE_AUTH, db,storage } from '../firebase/config';
+import { getDatabase, ref, get } from 'firebase/database';
+
+import { uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref as w } from 'firebase/storage';
+const uploadImage = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const userId = FIREBASE_AUTH.currentUser.uid;
+    const imageRef = w(storage, `images/${userId}/${Date.now()}`);
+
+    await uploadBytes(imageRef, blob);
+    return getDownloadURL(imageRef);
+};
+
+
+
+
 export const fetchMessages = (friendId, callback) => {
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
@@ -24,8 +40,8 @@ export const fetchMessages = (friendId, callback) => {
     }
 };
 
-export const sendMessage = async (friendId, newMessage) => {
-    if (newMessage.trim() === '') return;
+export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
+    if (newMessage.trim() === '' && !imageUrl) return;
 
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
@@ -34,7 +50,7 @@ export const sendMessage = async (friendId, newMessage) => {
 
         // Check if the friend is online
         const isFriendOnline = await checkIfUserIsOnline(friendId);
-
+        console.log(isFriendOnline)
         const isFriendInChat = await new Promise((resolve) => {
             const unsubscribe = checkUserInChat(chatId, friendId, (isOnline) => {
                 resolve(isOnline);
@@ -43,14 +59,19 @@ export const sendMessage = async (friendId, newMessage) => {
         });
         const wow = isFriendOnline == 1 ? true : false
         console.log(wow)
+        let image = null;
+        if (imageUrl) {
+            image = await uploadImage(imageUrl);
+        }
         console.log(isFriendInChat)
         // Add the message
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
-            seen: isFriendInChat,
+            seen: isFriendInChat && wow,
             deleverd: wow, // Set based on online status
             isEdited: false,
+            imageUrl:image,
             text: newMessage,
             timestamp: Timestamp.now(),
         });
@@ -65,9 +86,10 @@ export const sendMessage = async (friendId, newMessage) => {
         await setDoc(chatDocRef, {
             receiverId: friendId,
             senderId: userId,
+            imageUrl:image,
             deleverd: wow, // Set based on online status
             last: newMessage,
-            seen: isFriendInChat
+            seen: isFriendInChat && wow,
         }, { merge: true });
 
     } catch (error) {
@@ -237,62 +259,21 @@ export const listenToLastMessage = (friendId, callback) => {
     });
 };
 
-export const monitorUserOnlineStatus = (currentUserId) => {
-    const userDocRef = doc(db, 'users', receiverId); // Monitor the receiver's status
 
-    // Listen for online status changes of the receiver
-    const unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
-        if (docSnapshot.exists()) {
-            const userData = docSnapshot.data();
-            const isOnline = userData.online;
-
-            if (isOnline) {
-                await updateDeliveredMessages(currentUserId);
-            }
-        }
-    });
-
-    // Optionally return the unsubscribe function for cleanup
-    return unsubscribe;
-};
 
 export const checkIfUserIsOnline = async (userId) => {
-    const userDocRef = doc(db, 'users', userId);
+    const db = getDatabase();
+    const userStatusDatabaseRef = ref(db, `/status/${userId}`);
 
     try {
-        const docSnapshot = await getDoc(userDocRef);
-        if (docSnapshot.exists()) {
-            const userData = docSnapshot.data();
-            return userData.online; // Return the online status (true or false)
+        const snapshot = await get(userStatusDatabaseRef);
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            return userData.state == 'online'; // Return true if the user is online
         }
     } catch (error) {
         console.error('Error checking user online status:', error);
         return false; // Return false if there's an error
-    }
-};
-const updateDeliveredMessages = async (receiverId) => {
-    try {
-        const chatsRef = collection(db, 'chats');
-        const undeliveredMessagesQuery = query(
-            chatsRef,
-            where('receiverId', '==', receiverId), // Messages received by the user
-            where('delivered', '==', false) // Only undelivered messages
-        );
-
-        const snapshot = await getDocs(undeliveredMessagesQuery);
-
-        if (!snapshot.empty) {
-            const batch = writeBatch(db);
-
-            snapshot.forEach((doc) => {
-                // Update each message to set 'delivered' to true
-                batch.update(doc.ref, { delivered: true });
-            });
-
-            await batch.commit();
-        }
-    } catch (error) {
-        console.error("Error updating delivered status: ", error);
     }
 };
 

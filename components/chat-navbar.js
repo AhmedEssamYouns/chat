@@ -1,25 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, StyleSheet, Animated, Easing, Modal, Keyboard, StatusBar } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Image, Animated, Easing, Modal, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from './animated-rotate-button';
 import { getUserById } from '../firebase/getUser';
+import { subscribeToUserOnlineStatus } from '../firebase/Real-Time-online';
 
 const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex, searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [expanded, setExpanded] = useState(false); // Add this state
-  const searchAnim = useRef(new Animated.Value(-300)).current; // Start from off-screen left
-  const searchInputRef = useRef(null); // Reference for the search input
-  const [user, setuser] = useState('')
-
+  const [expanded, setExpanded] = useState(false);
+  const [user, setUser] = useState('');
+  const [isFriendOnline, setIsFriendOnline] = useState(false);  // Track online status
+  const searchAnim = useRef(new Animated.Value(-300)).current;
+  const searchInputRef = useRef(null);
+console.log(frindID ,'is',isFriendOnline)
   useEffect(() => {
-    // Subscribe to real-time updates
     const unsubscribe = getUserById(frindID, (userData) => {
-      setuser(userData);
+      setUser(userData);
     });
 
-    // Cleanup function to stop listening for updates
     return () => unsubscribe();
   }, [frindID]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToUserOnlineStatus(frindID, (onlineStatus) => {
+      setIsFriendOnline(onlineStatus); // Update the online status based on real-time updates
+    });
+
+    return () => unsubscribe();
+  }, [frindID]);
+
   useEffect(() => {
     Animated.timing(searchAnim, {
       toValue: isSearchMode ? 0 : -300,
@@ -29,41 +38,39 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
     }).start();
 
     if (isSearchMode) {
-      // Focus the search input and show the keyboard
       setTimeout(() => {
         searchInputRef.current.focus();
-      }, 300); // Delay slightly to ensure animation completes
+      }, 300);
     }
   }, [isSearchMode]);
 
   const handleMenuToggle = () => {
     setIsMenuVisible(!isMenuVisible);
-    setExpanded(!expanded); // Toggle expanded state
+    setExpanded(!expanded);
   };
 
   const handleSearchMenuClick = () => {
     setIsSearchMode(true);
-    setIsMenuVisible(false); // Close the dropdown menu
+    setIsMenuVisible(false);
   };
+
   return (
     <View style={styles.navbar}>
       {!isSearchMode ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', }}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
-          <TouchableOpacity style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }} onPress={() =>
-            navigation.navigate('account', { friendId: user.uid })
-          }>
-            <Image
-              style={styles.Image}
-              source={{ uri: user.profileImage }}
-            />
+          <TouchableOpacity
+            style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}
+            onPress={() => navigation.navigate('account', { friendId: user.uid })}
+          >
+            <Image style={styles.Image} source={{ uri: user.profileImage }} />
             <View>
               <Text style={styles.navbarTitle}>{user.username}</Text>
               <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                <Text style={{ color: '#bbb' }}>{user.online == true ? 'online' : 'offline'}</Text>
-                <View style={{ backgroundColor: user.online ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
+                <Text style={{ color: '#bbb' }}>{isFriendOnline ? 'online' : 'offline'}</Text>
+                <View style={{ backgroundColor: isFriendOnline ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
               </View>
             </View>
           </TouchableOpacity>
@@ -111,13 +118,12 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
               backgroundColor={'#121212'}
               onPress={handleMenuToggle}
               icon={expanded ? 'arrow-up' : 'more-horizontal'}
-              expanded={expanded} // Pass expanded state to RotatingButton
+              expanded={expanded}
             />
           </>
         )}
       </View>
 
-      {/* Dropdown Menu */}
       {isMenuVisible && (
         <Modal
           transparent={true}
@@ -127,11 +133,13 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
         >
           <TouchableOpacity style={styles.modalOverlay} onPress={handleMenuToggle}>
             <View style={styles.menuContainer}>
-              <TouchableOpacity style={styles.menuItem} onPress={() => {
-                handleMenuToggle();
-                navigation.navigate('account', { friendId: user.uid })
-
-              }}>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => {
+                  handleMenuToggle();
+                  navigation.navigate('account', { friendId: user.uid });
+                }}
+              >
                 <Text style={styles.menuItemText}>View Account</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={handleSearchMenuClick}>
@@ -174,7 +182,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   searchBar: {
     width: '100%',
@@ -202,7 +210,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
   },
-  // Modal dropdown styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

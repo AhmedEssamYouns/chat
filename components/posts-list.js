@@ -5,9 +5,9 @@ import { LogBox } from 'react-native';
 
 LogBox.ignoreAllLogs();
 
-const ITEM_HEIGHT = Dimensions.get('window').height*0.6; // Adjust this value based on the height of your PostItem component
+const ITEM_HEIGHT = Dimensions.get('window').height * 0.6; // Adjust this value based on the height of your PostItem component
 
-const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex }) => {
+const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex,header }) => {
   const flatListRef = useRef(null);
   const [scrollOffset, setScrollOffset] = useState(0);
 
@@ -48,6 +48,7 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
 
   return (
     <FlatList
+      ListHeaderComponent={header}
       ref={flatListRef}
       data={sortedPosts}
       renderItem={renderItem}

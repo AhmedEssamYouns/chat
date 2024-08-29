@@ -18,8 +18,8 @@ import SignInScreen from '../Pages/Screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
 import FriendRequestModal from '../Components/friends-requist-mode';
 import ImageScreen from '../Components/image';
-import { setOnlineStatus } from '../firebase/onlineStutes';
-import { monitorUserOnlineStatus } from '../firebase/manage-Chat-room';
+import { trackUserPresence, subscribeToUserOnlineStatus } from '../firebase/Real-Time-online'; // Import your function
+import {updateDeliveredMessages} from '../firebase/onlineStutes';
 
 const Stack = createStackNavigator();
 
@@ -44,32 +44,35 @@ export default function MainTabNavigator() {
     };
 
     useEffect(() => {
-        const unsubscribe = FIREBASE_AUTH.onAuthStateChanged(user => {
+        const unsubscribeAuth = FIREBASE_AUTH.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'Authenticated' : 'Not authenticated');
             setIsAuthenticated(!!user);
             setIsLoading(false);
 
             if (user) {
-                // Set online status when the user is authenticated
-                setOnlineStatus(true);
+                // Track user presence when authenticated
+                trackUserPresence(); 
 
-                // Start monitoring the user's online status
-                const monitorUnsubscribe = monitorUserOnlineStatus(FIREBASE_AUTH.currentUser.uid, FIREBASE_AUTH.currentUser.uid);
+                // Subscribe to user's online status in real-time
+                const unsubscribeStatus = subscribeToUserOnlineStatus(user.uid, (isOnline) => {
+                    if (isOnline) {
+                        updateDeliveredMessages(user.uid); // Update undelivered messages when user comes online
+                    }
+                });
 
-                // Clean up and set offline status when the user signs out
+                // Clean up on unmount
                 return () => {
-                    setOnlineStatus(false);
-                    monitorUnsubscribe(); // Unsubscribe from the online status monitoring
+                    if (unsubscribeStatus) unsubscribeStatus();
                 };
             }
         });
 
-        return unsubscribe;
+        return unsubscribeAuth;
     }, []);
 
     useEffect(() => {
         if (isAuthenticated) {
-            const unsubscribe = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
+            const unsubscribeSnapshot = onSnapshot(doc(db, 'users', FIREBASE_AUTH.currentUser.uid), (docSnapshot) => {
                 if (docSnapshot.exists()) {
                     const data = docSnapshot.data();
                     const newCount = data.friendRequestsReceived ? data.friendRequestsReceived.length : 0;
@@ -77,7 +80,7 @@ export default function MainTabNavigator() {
                 }
             });
 
-            return unsubscribe;
+            return unsubscribeSnapshot;
         }
     }, [isAuthenticated]);
 
@@ -153,7 +156,6 @@ export default function MainTabNavigator() {
                             options={{
                                 headerTitle: '',
                                 headerStyle: {
-                                    backgroundColor: '#121212',
                                     elevation: 0,
                                     shadowOpacity: 0,
                                     shadowOffset: { height: 0 },
@@ -163,7 +165,7 @@ export default function MainTabNavigator() {
                                     fontWeight: 'bold',
                                     fontSize: 18,
                                 },
-                                headerTintColor: "white"
+                                headerTintColor: "#fff"
                             }} />
                         <Stack.Screen name='account' component={UserAccountScreen} options={{
                             headerShown: false

@@ -10,7 +10,7 @@ import { Keyboard } from 'react-native';
 import DropdownMenu from '../../Components/chat-menu-model';
 import { fetchMessages, deleteMessage, editMessage, sendMessage, checkAndUpdateSeenStatus } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
-import { updateOfflineStatus,updateOnlineStatus} from '../../firebase/manage-Chat-room';
+import { updateOfflineStatus, updateOnlineStatus } from '../../firebase/manage-Chat-room';
 
 const ChatConversationScreen = ({ route, navigation }) => {
 
@@ -117,6 +117,7 @@ const ChatConversationScreen = ({ route, navigation }) => {
       flatListRef.current.scrollToIndex({ index: adjustedIndex, animated: true });
     }
   };
+  const [image, setImage] = useState(null);
 
   const handleSend = () => {
     if (newMessage.trim() !== '') {
@@ -222,6 +223,7 @@ const ChatConversationScreen = ({ route, navigation }) => {
       </ImageBackground>
       {!isSearchMode &&
         <MessageInput
+          friendId={friendId}
           ref={inputRef}
           newMessage={newMessage}
           setNewMessage={setNewMessage}

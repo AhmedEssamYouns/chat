@@ -63,13 +63,15 @@ const StoriesScreen = () => {
     <View style={{ flex: 1, backgroundColor: '#121212' }}>
       {hasFriends ? (
         friendsHavePosts ? (
-          <PostsList
-            posts={posts}
-            currentUserId={FIREBASE_AUTH.currentUser.uid}
-            handleLovePress={(postId) => console.log('Love pressed for post:', postId)}
-            onEditPost={(postId) => console.log('Edit post:', postId)}
-            onDeletePost={(postId) => console.log('Delete post:', postId)}
-          />
+          <>
+            <PostsList
+              posts={posts}
+              currentUserId={FIREBASE_AUTH.currentUser.uid}
+              handleLovePress={(postId) => console.log('Love pressed for post:', postId)}
+              onEditPost={(postId) => console.log('Edit post:', postId)}
+              onDeletePost={(postId) => console.log('Delete post:', postId)}
+            />
+          </>
         ) : (
           <View style={styles.noFriendsContainer}>
             <Text style={styles.noFriendsText}>Your friends haven't posted anything yet.</Text>

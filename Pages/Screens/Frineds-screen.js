@@ -1,46 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH, db } from '../../firebase/config';
-import { doc, onSnapshot, collection, query, where, getDocs } from 'firebase/firestore';
+import useFriends from '../../firebase/ferchFriends';
 
 const FriendsScreen = () => {
     const [searchText, setSearchText] = useState('');
-    const [friends, setFriends] = useState([]);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
-    const [loading, setLoading] = useState(true); // Loading state
+    const { friends, loading } = useFriends(); // Use the custom hook
     const navigation = useNavigation();
-
-    useEffect(() => {
-        const userId = FIREBASE_AUTH.currentUser.uid;
-        const userDocRef = doc(db, 'users', userId);
-
-        const unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
-            setLoading(true); // Show activity indicator
-            if (docSnapshot.exists()) {
-                const userData = docSnapshot.data();
-                const friendsIds = userData.friends || [];
-
-                if (friendsIds.length > 0) {
-                    const friendsQuery = query(
-                        collection(db, 'users'),
-                        where('uid', 'in', friendsIds)
-                    );
-
-                    const querySnapshot = await getDocs(friendsQuery);
-                    const friendsData = querySnapshot.docs.map(doc => doc.data());
-                    setFriends(friendsData);
-                } else {
-                    setFriends([]); // No friends
-                }
-            }
-            setLoading(false); // Hide activity indicator
-        });
-
-        return () => unsubscribe(); // Clean up listener on unmount
-    }, []);
 
     const handleFriendClick = (friend) => {
         setSelectedFriend(friend);
@@ -87,7 +56,7 @@ const FriendsScreen = () => {
                                     </TouchableOpacity>
                                     <TextInput
                                         style={styles.searchInput}
-                                        placeholder="flirt friends by name..."
+                                        placeholder="Search friends by name..."
                                         placeholderTextColor={'#BBBBBB'}
                                         value={searchText}
                                         onChangeText={setSearchText}
