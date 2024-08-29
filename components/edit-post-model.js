@@ -9,10 +9,10 @@ import { storage } from '../firebase/config';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-const EditPostModal = ({ visible, onClose, postId, existingText, existingImages }) => {
+const EditPostModal = ({ item, visible, onClose, postId, existingText, existingImages }) => {
     const navigation = useNavigation();
     const [postText, setPostText] = useState(existingText || '');
-    const [selectedImages, setSelectedImages] = useState(existingImages || []);
+    const [selectedImages, setSelectedImages] = useState(item.imageUrls || []);
     const [uploading, setUploading] = useState(false);
     const [selectionLimit, setSelectionLimit] = useState(4);
 
@@ -104,8 +104,13 @@ const EditPostModal = ({ visible, onClose, postId, existingText, existingImages 
         setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
+ 
     return (
-        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={()=>{
+            onClose()
+            setPostText(existingText)
+            setSelectedImages(item.imageUrls)}
+        }>
             <View style={styles.modalContainer}>
                 {/* Top Bar */}
                 <View style={styles.topBar}>

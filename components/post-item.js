@@ -149,6 +149,7 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
                 onClose={() => setEditModalVisible(false)}
                 postId={item.postId}
                 existingText={item.text}
+                item={item}
                 existingImage={item.imageUrls}
             />
         </View>
