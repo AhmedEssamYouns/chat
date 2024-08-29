@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 25,
-    backgroundColor: 'rgba(187, 187, 187, 0.6)', // Transparent dark gray
+    backgroundColor: 'rgba(50, 50, 50, 0.7)',
     borderRadius: 30, // Circular button
     padding: 10,
     elevation: 10, // Shadow for Android
