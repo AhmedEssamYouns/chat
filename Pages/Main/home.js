@@ -120,7 +120,18 @@ const ChatScreen = ({ navigation }) => {
             color: unseenMessagesCount[item.friendId] > 0 ? '#eeee' : '#bbbb'
 
           }
-          ]}>{item.imageUrl ? <Text>Photo {' '}<Feather name='camera' size={15} /></Text> : item.lastMessage}</Text>
+          ]}>
+
+            {item.lastMessage == 'Messege Deleted' ?
+              <Text>{item.lastMessage}</Text>
+              :
+              <>
+
+                {item.imageUrl ? <Text>Photo {' '}<Feather name='camera' size={15} /></Text> : item.lastMessage}
+              </>
+
+            }
+          </Text>
           {unseenMessagesCount[item.friendId] > 0 && (
             <View style={styles.newMessageIndicatorContainer}>
               <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>

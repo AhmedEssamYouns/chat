@@ -12,7 +12,6 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   const [isFriendOnline, setIsFriendOnline] = useState(false);  // Track online status
   const searchAnim = useRef(new Animated.Value(-300)).current;
   const searchInputRef = useRef(null);
-console.log(frindID ,'is',isFriendOnline)
   useEffect(() => {
     const unsubscribe = getUserById(frindID, (userData) => {
       setUser(userData);

@@ -215,8 +215,6 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         paddingHorizontal: 25,
         paddingBottom: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#333',
     },
 });
 

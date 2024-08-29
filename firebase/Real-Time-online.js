@@ -75,7 +75,6 @@ export const subscribeToUserOnlineStatus = (userId, callback) => {
         updateDoc(UserDocRef, {
             online: isOnline,
         }).then(() => {
-            console.log(`User document updated. User is now ${isOnline ? 'online' : 'offline'}.`);
         }).catch((error) => {
             console.error('Error updating Firestore document:', error);
         });

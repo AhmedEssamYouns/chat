@@ -1,8 +1,9 @@
 // services/chatConversationService.js
 
 import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc, getDocs, where, writeBatch, limit, arrayUnion, arrayRemove } from 'firebase/firestore';
-import { FIREBASE_AUTH, db,storage } from '../firebase/config';
+import { FIREBASE_AUTH, db, storage } from '../firebase/config';
 import { getDatabase, ref, get } from 'firebase/database';
+import { getMessaging, getToken } from "firebase/messaging";
 
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as w } from 'firebase/storage';
@@ -39,7 +40,6 @@ export const fetchMessages = (friendId, callback) => {
         console.error('Error fetching messages:', error);
     }
 };
-
 export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
     if (newMessage.trim() === '' && !imageUrl) return;
 
@@ -48,54 +48,51 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
         const chatId = [userId, friendId].sort().join('_');
         const messagesRef = collection(db, 'chats', chatId, 'messages');
 
-        // Check if the friend is online
         const isFriendOnline = await checkIfUserIsOnline(friendId);
-        console.log(isFriendOnline)
         const isFriendInChat = await new Promise((resolve) => {
             const unsubscribe = checkUserInChat(chatId, friendId, (isOnline) => {
                 resolve(isOnline);
-                unsubscribe(); // Clean up listener after getting the status
+                unsubscribe();
             });
         });
-        const wow = isFriendOnline == 1 ? true : false
-        console.log(wow)
+
         let image = null;
         if (imageUrl) {
             image = await uploadImage(imageUrl);
         }
-        console.log(isFriendInChat)
-        // Add the message
+
+        const wow = isFriendOnline == 1 ? true : false;
+
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
             seen: isFriendInChat && wow,
-            deleverd: wow, // Set based on online status
+            deleverd: wow,
             isEdited: false,
-            imageUrl:image,
+            imageUrl: image,
             text: newMessage,
             timestamp: Timestamp.now(),
         });
 
-        // Update the message with its ID
-        await setDoc(messageDocRef, {
-            id: messageDocRef.id,
-        }, { merge: true });
+        await setDoc(messageDocRef, { id: messageDocRef.id }, { merge: true });
 
-        // Update the chat document
         const chatDocRef = doc(db, 'chats', chatId);
         await setDoc(chatDocRef, {
             receiverId: friendId,
             senderId: userId,
-            imageUrl:image,
-            deleverd: wow, // Set based on online status
+            imageUrl: image,
+            deleverd: wow,
             last: newMessage,
             seen: isFriendInChat && wow,
         }, { merge: true });
+
+        // Cloud Function will handle the notification sending
 
     } catch (error) {
         console.error('Error sending message:', error);
     }
 };
+
 
 
 export const editMessage = async (friendId, messageId, newMessage) => {
@@ -251,7 +248,7 @@ export const listenToLastMessage = (friendId, callback) => {
         const lastMessageDoc = snapshot.docs[0];
         const lastMessageData = lastMessageDoc.data();
         callback({
-            lastMessage: lastMessageData.text || 'No messages yet',
+            lastMessage: lastMessageData.text || 'sent messege',
             deleverdo: lastMessageData.deleverd || false,
             seeno: lastMessageData.seen || false,
             senderId: lastMessageData.senderId || ''
@@ -309,4 +306,118 @@ export const checkUserInChat = (chatId, userId, callback) => {
 
     // Return the unsubscribe function so the listener can be cleaned up if needed
     return unsubscribe;
+};
+
+export const removeUserFromAllChats = async (userId) => {
+    try {
+        // Query all chat documents where the user is in the 'currentOnline' array
+        const chatsRef = collection(db, 'chats');
+        const userChatsQuery = query(
+            chatsRef,
+            where('currentOnline', 'array-contains', userId)
+        );
+
+        const querySnapshot = await getDocs(userChatsQuery);
+
+        // Create a batch to update each chat document
+        const batch = writeBatch(db);
+        const removedChatIds = []; // Array to store removed chat IDs
+
+        querySnapshot.forEach((chatDoc) => {
+            const chatDocRef = chatDoc.ref;
+            batch.update(chatDocRef, {
+                currentOnline: arrayRemove(userId)
+            });
+            removedChatIds.push(chatDoc.id); // Store the chat ID
+        });
+
+        // Commit the batch
+        await batch.commit();
+
+        // Store the removed chat IDs
+        await storeRemovedChats(userId, removedChatIds);
+
+        console.log(`User ${userId} removed from chats with IDs: ${removedChatIds.join(', ')}`);
+        return removedChatIds; // Return the list of removed chat IDs
+    } catch (error) {
+        console.error('Error removing user from chats:', error);
+        throw error; // Optionally rethrow the error to handle it outside this function
+    }
+};
+
+
+export const rejoinChats = async (userId, chatIds) => {
+    try {
+        // Create a batch to update each chat document
+        const batch = writeBatch(db);
+
+        for (const chatId of chatIds) {
+            const chatDocRef = doc(db, 'chats', chatId);
+            batch.update(chatDocRef, {
+                currentOnline: arrayUnion(userId) // Add user back to the 'currentOnline' array
+            });
+
+            // Also check and update seen status for each chat
+            // Assuming the friendId can be derived from chat data or another mechanism
+            const chatDocSnapshot = await getDoc(chatDocRef);
+            if (chatDocSnapshot.exists()) {
+                const chatData = chatDocSnapshot.data();
+                if (chatData) {
+                    const friendId = chatData.senderId
+                    if (friendId) {
+                        await checkAndUpdateSeenStatus(friendId, userId);
+                    }
+                }
+            }
+        }
+
+        // Commit the batch
+        await batch.commit();
+
+        console.log(`User ${userId} rejoined chats with IDs: ${chatIds.join(', ')}`);
+    } catch (error) {
+        console.error('Error rejoining chats:', error);
+        throw error; // Optionally rethrow the error to handle it outside this function
+    }
+};
+
+
+export const storeRemovedChats = async (userId, chatIds) => {
+    try {
+        const removedChatsRef = collection(db, 'removedChats');
+        // Store the removed chat IDs with the userId
+        const userRemovedChatsRef = doc(removedChatsRef, userId);
+        await setDoc(userRemovedChatsRef, { chatIds }, { merge: true });
+
+        console.log(`Stored removed chats for user ${userId}`);
+    } catch (error) {
+        console.error('Error storing removed chats:', error);
+        throw error; // Optionally rethrow the error to handle it outside this function
+    }
+};
+
+export const getRemovedChats = async (userId) => {
+    try {
+        const removedChatsRef = collection(db, 'removedChats');
+        const userRemovedChatsRef = doc(removedChatsRef, userId);
+        const docSnapshot = await getDoc(userRemovedChatsRef);
+
+        if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            return data.chatIds || [];
+        } else {
+            return [];
+        }
+    } catch (error) {
+        console.error('Error retrieving removed chats:', error);
+        throw error; // Optionally rethrow the error to handle it outside this function
+    }
+};
+export const saveTokenToFirestore = async () => {
+    const userId = FIREBASE_AUTH.currentUser.uid;
+    const token = await getToken(getMessaging());
+    if (token) {
+        const userRef = doc(db, 'users', userId);
+        await setDoc(userRef, { fcmToken: token }, { merge: true });
+    }
 };
