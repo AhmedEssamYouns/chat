@@ -99,9 +99,9 @@ const styles = StyleSheet.create({
   },
   scrollButton: {
     position: 'absolute',
-    bottom: 30,
-    right: 25,
-    backgroundColor: 'rgba(50, 50, 50, 0.7)',
+    top: 20,
+    left: 25,
+    backgroundColor: 'rgba(50, 50, 50, 0.9)',
     borderRadius: 30, // Circular button
     padding: 10,
     elevation: 10, // Shadow for Android
