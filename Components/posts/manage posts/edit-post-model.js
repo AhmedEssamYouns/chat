@@ -1,54 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView, ToastAndroid } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { storage, db } from '../firebase/config';
-import { FIREBASE_AUTH } from '../firebase/config';
-import { addDoc, doc, setDoc, collection } from 'firebase/firestore';
+import { db } from '../../../firebase/config';
+import { doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getUserById } from '../firebase/getUser';
+import { storage } from '../../../firebase/config';
+import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 
-const CreatePostModal = ({ visible, onClose }) => {
-    useEffect(() => {
-        // Subscribe to real-time updates
-        const unsubscribe = getUserById(FIREBASE_AUTH.currentUser.uid, (userData) => {
-            setuser(userData);
-        });
-
-        // Cleanup function to stop listening for updates
-        return () => unsubscribe();
-    }, [FIREBASE_AUTH.currentUser.uid]);
-
+const EditPostModal = ({ item, visible, onClose, postId, existingText, existingImages }) => {
     const navigation = useNavigation();
-    const [user, setuser] = useState('');
-    const [postText, setPostText] = useState('');
-    const [selectedImages, setSelectedImages] = useState([]);
+    const [postText, setPostText] = useState(existingText || '');
+    const [selectedImages, setSelectedImages] = useState(item.imageUrls || []);
     const [uploading, setUploading] = useState(false);
-    const [selectionLimit, setSelectionLimit] = useState(4); // Default limit
+    const [selectionLimit, setSelectionLimit] = useState(4);
+
     useEffect(() => {
-        if (selectedImages.length == 3) {
+        if (selectedImages.length === 3) {
             setSelectionLimit(1);
-        } else if (selectedImages.length == 2) {
+        } else if (selectedImages.length === 2) {
             setSelectionLimit(2);
-        } else if (selectedImages.length == 1) {
+        } else if (selectedImages.length === 1) {
             setSelectionLimit(3);
         } else {
             setSelectionLimit(4);
         }
-        console.log(selectionLimit)
+    }, [selectedImages.length]);
 
-    }, [selectedImages.length]); // Depend on selectedImages
-    const handlePost = async () => {
-        
-        if (selectedImages.length === 0) {
-            alert('Please upload at least one image to post.');
+    const handleUpdate = async () => {
+        if (selectedImages.length === 0 && !postText) {
+            alert('Please enter text or upload an image to update the post.');
             return;
         }
+
         setUploading(true);
         try {
-            let imageUrls = [];
+            let imageUrls = [...selectedImages];
 
             // Handle image uploads
             if (selectedImages.length > 0) {
@@ -63,32 +51,20 @@ const CreatePostModal = ({ visible, onClose }) => {
                 imageUrls = await Promise.all(uploadPromises);
             }
 
-            // Create a new document in Firestore to get the auto-generated ID
-            const postRef = await addDoc(collection(db, 'posts'), {
+            // Update post in Firestore
+            const postRef = doc(db, 'posts', postId);
+            await updateDoc(postRef, {
                 text: postText,
-                imageUrls,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString(),
+                imageUrls: imageUrls,
             });
-
-            // Update the document with the auto-generated ID as postId
-            await setDoc(doc(db, 'posts', postRef.id), {
-                postId: postRef.id,
-                text: postText,
-                imageUrls,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString(),
-            });
+            ToastAndroid.show('Post edited successfully.', ToastAndroid.LONG);
 
             setPostText('');
             setSelectedImages([]);
-        ToastAndroid.show('snap shared successfully.', ToastAndroid.LONG);
-
-            navigation.navigate("Tabs", { screen: "profile" });
             onClose(); // Close the modal
         } catch (error) {
-            console.error('Error creating post:', error);
-            alert('Failed to create post.');
+            console.error('Error updating post:', error);
+            alert('Failed to update post.');
         } finally {
             setUploading(false);
         }
@@ -128,8 +104,13 @@ const CreatePostModal = ({ visible, onClose }) => {
         setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
+ 
     return (
-        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={()=>{
+            onClose()
+            setPostText(existingText)
+            setSelectedImages(item.imageUrls)}
+        }>
             <View style={styles.modalContainer}>
                 {/* Top Bar */}
                 <View style={styles.topBar}>
@@ -137,29 +118,22 @@ const CreatePostModal = ({ visible, onClose }) => {
                         <TouchableOpacity style={{ padding: 10 }} onPress={onClose}>
                             <Feather name="x" size={24} color="white" />
                         </TouchableOpacity>
-                        <View style={styles.userInfo}>
-                            <Image
-                                source={{ uri: user.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0' }}
-                                style={styles.profileImage}
-                            />
-                            <Text style={styles.username}>{user.username}</Text>
-                        </View>
+                        <Text style={styles.title}>Edit Post</Text>
                     </View>
                     <TouchableOpacity
-                        onPress={handlePost}
+                        onPress={handleUpdate}
                         disabled={uploading || selectedImages.length === 0}
                     >
                         <Text style={[styles.postButton, { opacity: uploading || selectedImages.length > 0 ? 1 : 0.5 }]}>
-                            {uploading ? 'Posting...' : 'Post'}
+                            {uploading ? 'Updating...' : 'Update'}
                         </Text>
                     </TouchableOpacity>
-
                 </View>
 
                 {/* Text Input */}
                 <TextInput
                     style={styles.textInput}
-                    placeholder="Share your story..."
+                    placeholder="Update your story..."
                     placeholderTextColor="#aaa"
                     multiline
                     value={postText}
@@ -181,7 +155,7 @@ const CreatePostModal = ({ visible, onClose }) => {
                     </ScrollView>
                 )}
 
-                {selectedImages.length != 4 && (
+                {selectedImages.length < 4 && (
                     <TouchableOpacity style={styles.imagePickerIcon} onPress={pickImages}>
                         <AntDesign name="picture" size={28} color="white" />
                     </TouchableOpacity>
@@ -206,17 +180,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#333',
     },
-    userInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    profileImage: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        marginRight: 10,
-    },
-    username: {
+    title: {
         color: 'white',
         fontSize: 16,
     },
@@ -236,7 +200,7 @@ const styles = StyleSheet.create({
     imageContainer: {
         flexDirection: 'row',
         marginTop: 20,
-        paddingLeft:10
+        paddingLeft: 10,
     },
     imageWrapper: {
         marginRight: 10,
@@ -268,4 +232,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CreatePostModal;
+export default EditPostModal;

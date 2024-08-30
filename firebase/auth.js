@@ -1,15 +1,43 @@
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from './config';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { setOnlineStatus } from './onlineStutes';
 import { updatePassword } from 'firebase/auth';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import Toast from 'react-native-toast-message';
 import { ToastAndroid } from 'react-native';
+import { getDatabase,ref,set } from 'firebase/database';
 
+export const handleLogout = async (navigation) => {
+    try {
+        const dbs = getDatabase();
+        const user = FIREBASE_AUTH.currentUser;
+        if (user) {
+            const userStatusDatabaseRef = ref(dbs, `/status/${user.uid}`);
 
+            const isOfflineForDatabase = {
+                state: 'offline',
+                last_changed: Date.now(),
+            };
 
+            // Set the user's status to offline
+            await set(userStatusDatabaseRef, isOfflineForDatabase);
+
+            // Sign the user out
+            await FIREBASE_AUTH.signOut();
+
+            // Reset the navigation stack and navigate to the SignIn screen
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'SignIn' }],
+                })
+            );
+        }
+    } catch (error) {
+        console.log('Error signing out:', error.message);
+    }
+};
 
 export const handleForgotPassword = async (email, setEmailError, setIsLoading) => {
     setEmailError('');
@@ -116,7 +144,7 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
             uid: user.uid,
-            online:true,
+            online: true,
             email: email,
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
@@ -133,12 +161,12 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         }
     } finally {
         setLoading(false);
-            // Show success message
-            ToastAndroid.show('You have successfully signed up!', ToastAndroid.LONG);
-            // Navigate to Sign In screen after a delay to allow the toast to be visible
-            setTimeout(() => {
-                navigation.navigate('SignIn');
-            }, 1000); // Adjust the delay to match the toast visibility time
+        // Show success message
+        ToastAndroid.show('You have successfully signed up!', ToastAndroid.LONG);
+        // Navigate to Sign In screen after a delay to allow the toast to be visible
+        setTimeout(() => {
+            navigation.navigate('SignIn');
+        }, 1000); // Adjust the delay to match the toast visibility time
     }
 };
 

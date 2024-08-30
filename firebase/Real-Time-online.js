@@ -35,7 +35,6 @@ export const trackUserPresence = () => {
                 onDisconnect(userStatusDatabaseRef).set(isOfflineForDatabase)
             } else {
                 set(userStatusDatabaseRef, isOfflineForDatabase)
-                    .then(() => console.log('Status set to offline (disconnected from Firebase).'));
             }
         });
 
@@ -43,10 +42,8 @@ export const trackUserPresence = () => {
         netInfoSubscription = NetInfo.addEventListener((state) => {
             if (!state.isConnected) {
                 set(userStatusDatabaseRef, isOfflineForDatabase)
-                    .then(() => console.log('Status set to offline due to network disconnect.'));
             } else {
                 set(userStatusDatabaseRef, isOnlineForDatabase)
-                    .then(() => console.log('Status set to online due to network reconnect.'));
             }
         });
     }
@@ -67,16 +64,13 @@ export const subscribeToUserOnlineStatus = (userId, callback) => {
     // Listen for real-time updates
     const unsubscribe = onValue(userStatusRef, (snapshot) => {
         const status = snapshot.val();
-        console.log('Retrieved status:', status); // Debugging line
         const isOnline = status && status.state === 'online'; 
-        console.log(`User is ${isOnline ? 'online' : 'offline'}`); // Debugging line
 
         // Update the Firestore document based on the online status
         updateDoc(UserDocRef, {
             online: isOnline,
         }).then(() => {
         }).catch((error) => {
-            console.error('Error updating Firestore document:', error);
         });
 
         // Call the callback to update the component state

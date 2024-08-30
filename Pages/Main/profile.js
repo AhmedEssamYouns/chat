@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import PostsList from '../../Components/posts-list';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
-import PostsModal from '../../Components/PostsModel';
-import PostGrid from '../../Components/postsGrid';
+import PostsModal from '../../Components/posts/posts-list/PostsModel';
+import PostGrid from '../../Components/posts/posts-Thumbnail/postsGrid';
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [userProfile, setUserProfile] = useState({

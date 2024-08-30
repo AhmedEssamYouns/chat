@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import ConfirmationModal from './alert'; // Adjust the import path as needed
+import ConfirmationModal from '../elements/alert'; // Adjust the import path as needed
 
 const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, handleDeleteMessage }) => {
     const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);

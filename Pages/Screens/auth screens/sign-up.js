@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
-import { checkUsernameAvailability, handleSignUp } from '../../firebase/auth';
+import { checkUsernameAvailability, handleSignUp } from '../../../firebase/auth';
 
 const SignUpScreen = () => {
     const navigation = useNavigation();

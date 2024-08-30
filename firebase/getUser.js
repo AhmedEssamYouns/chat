@@ -14,18 +14,15 @@ export const getUserById = (userId, callback) => {
             if (snapshot.exists()) {
                 callback(snapshot.data());
             } else {
-                console.log('No such user!');
                 callback(null);
             }
         }, (error) => {
-            console.error('Error fetching user:', error);
             callback(null); // Optionally handle errors by setting a default state or notifying the user
         });
 
         // Return the unsubscribe function to stop listening for updates
         return unsubscribe;
     } catch (error) {
-        console.error('Error setting up snapshot listener:', error);
         throw error;
     }
 };

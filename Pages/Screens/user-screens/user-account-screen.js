@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { collection, doc, query, where, onSnapshot } from 'firebase/firestore';
-import { db, FIREBASE_AUTH } from '../../firebase/config';
-import PostsList from '../../Components/posts-list';
-import { handleStatusChange, removeFriend, monitorFriendStatuses } from '../../firebase/frinend-state';
-import PostGrid from '../../Components/postsGrid';
-import PostsModal from '../../Components/PostsModel';
-import ConfirmationModal from '../../Components/alert';
+import { db, FIREBASE_AUTH } from '../../../firebase/config';
+import { handleStatusChange, removeFriend, monitorFriendStatuses } from '../../../firebase/frinend-state';
+import PostGrid from '../../../Components/posts/posts-Thumbnail/postsGrid';
+import PostsModal from '../../../Components/posts/posts-list/PostsModel';
+import ConfirmationModal from '../../../Components/elements/alert';
 import { Feather } from '@expo/vector-icons';
 
 const UserAccountScreen = () => {
@@ -87,7 +86,6 @@ const UserAccountScreen = () => {
     const [selectedPost, setSelectedPost] = useState(0);
     const handleModalOpen = () => setModalVisible2(true);
     const handlePostSelect = (index) => {
-        console.log('Selected post index:', index); // Logs the selected post index
         setSelectedPost(index);
         handleModalOpen();
     };

@@ -3,7 +3,7 @@ import { TouchableOpacity, StyleSheet, View, Animated, BackHandler } from 'react
 import { Feather, Octicons, AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import RotatingButton from './animated-rotate-button';
-import CreatePostModal from './create-post-model';
+import CreatePostModal from '../posts/manage posts/create-post-model';
 
 // Regular FloatingButton component
 export function FloatingButton({ onPress, icon, up }) {

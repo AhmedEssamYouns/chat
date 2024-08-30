@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/s.png",
+      "image": "./assets/ahmed.png",
       "resizeMode": "contain",
       "backgroundColor": "#121212"
     },
@@ -18,10 +18,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#121212"
-      }
+      },
+      "package": "com.ahmedessamyouns.chat"
     },
     "web": {
       "favicon": "./assets/icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "35c2cb78-d786-43ff-a0a2-9abb2904842e"
+      }
     }
   }
 }

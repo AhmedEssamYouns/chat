@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { handleForgotPassword } from '../../firebase/auth'; // Import the forgot password function
+import { handleForgotPassword } from '../../../firebase/auth'; // Import the forgot password function
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');

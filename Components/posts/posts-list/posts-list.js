@@ -75,7 +75,6 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
         onScroll={handleScroll}
         onScrollToIndexFailed={(info) => {
           // Handle the case when scrolling to index fails
-          console.log('Scroll to index failed', info);
         }}
       />
       {showButton && (

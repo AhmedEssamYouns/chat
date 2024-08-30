@@ -3,11 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Acti
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH, db, storage } from '../../firebase/config';
+import { FIREBASE_AUTH, db, storage } from '../../../firebase/config';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
-import { checkUsernameAvailability } from '../../firebase/auth';
+import { checkUsernameAvailability } from '../../../firebase/auth';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 const EditProfileScreen = () => {
@@ -127,7 +127,6 @@ const EditProfileScreen = () => {
 
             navigation.goBack();
         } catch (error) {
-            console.log('Error updating profile:', error.message);
             Alert.alert('Error', 'Failed to update profile. Please try again later.');
         } finally {
             setIsUpdating(false);

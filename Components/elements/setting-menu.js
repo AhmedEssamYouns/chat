@@ -2,9 +2,7 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, BackHandler } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH } from '../firebase/config';
-import { CommonActions } from '@react-navigation/native';
-import { setOnlineStatus } from '../firebase/onlineStutes';
+import { handleLogout } from '../../firebase/auth';
 const SettingMenu = ({ visible, onClose }) => {
     const navigation = useNavigation();
 
@@ -22,22 +20,6 @@ const SettingMenu = ({ visible, onClose }) => {
         return () => backHandler.remove();
     }, [visible, onClose]);
 
-    const handleLogout = async () => {
-        try {
-            await setOnlineStatus(false);
-            onClose()
-            await FIREBASE_AUTH.signOut();
-            // Reset the navigation stack and navigate to the SignIn screen
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'SignIn' }],
-                })
-            );
-        } catch (error) {
-            console.log('Error signing out:', error.message);
-        }
-    };
 
     if (!visible) return null;
 
@@ -55,7 +37,7 @@ const SettingMenu = ({ visible, onClose }) => {
                 <Feather name="help-circle" size={24} color="white" />
                 <Text style={styles.menuText}>Forgot Password</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutItem} onPress={handleLogout}>
+            <TouchableOpacity style={styles.logoutItem} onPress={()=>{onClose(), handleLogout(navigation)}}>
                 <Feather name="log-out" size={24} color="white" />
                 <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>

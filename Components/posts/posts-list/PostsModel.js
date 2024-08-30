@@ -4,7 +4,6 @@ import { Feather } from '@expo/vector-icons';
 import PostsList from './posts-list';
 
 const PostsModal = ({ posts, onClose ,initialPost,id}) => {
-    console.log(initialPost)
     return (
         <View style={styles.container}>
             <View style={styles.header}>

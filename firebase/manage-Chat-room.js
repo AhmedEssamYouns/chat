@@ -214,7 +214,6 @@ export const checkAndUpdateSeenStatus = async (friendId, currentUserId) => {
             // Check if the message is from the other user and if it is not yet seen
             if (chatData.senderId !== currentUserId && chatData.seen === false) {
                 await updateDoc(chatDocRef, { seen: true });
-                console.log("Chat message marked as seen.");
             }
         }
 
@@ -235,9 +234,7 @@ export const checkAndUpdateSeenStatus = async (friendId, currentUserId) => {
         });
 
         await batch.commit();
-        console.log("All unseen messages updated to seen.");
     } catch (error) {
-        console.error("Error updating seen status:", error);
     }
 };
 

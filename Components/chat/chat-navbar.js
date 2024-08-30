@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image, Animated, Easing, Modal, TextInput, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import RotatingButton from './animated-rotate-button';
-import { getUserById } from '../firebase/getUser';
-import { subscribeToUserOnlineStatus } from '../firebase/Real-Time-online';
-import ConfirmationModal from './alert';
-import { deleteChatDocument } from '../firebase/manage-Chat-room';
-import { FIREBASE_AUTH } from '../firebase/config';
+import RotatingButton from '../Buttons/animated-rotate-button';
+import { getUserById } from '../../firebase/getUser';
+import { subscribeToUserOnlineStatus } from '../../firebase/Real-Time-online';
+import ConfirmationModal from '../elements/alert';
+import { deleteChatDocument } from '../../firebase/manage-Chat-room';
+import { FIREBASE_AUTH } from '../../firebase/config';
 
 
 const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex,

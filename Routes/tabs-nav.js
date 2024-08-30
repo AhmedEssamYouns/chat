@@ -4,7 +4,7 @@ import { View, TouchableWithoutFeedback, StyleSheet, Text } from 'react-native';
 import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/snaps';
 import ProfileScreen from '../Pages/Main/profile';
-import { AnimatedFloatingButton } from '../Components/Floating-Button';
+import { AnimatedFloatingButton } from '../Components/Buttons/Floating-Button';
 import { trackUnseenMessages } from '../firebase/manage-Chat-room';
 
 const Tab = createMaterialTopTabNavigator();

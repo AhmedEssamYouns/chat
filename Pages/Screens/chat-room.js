@@ -2,12 +2,12 @@
 import React, { useState, useRef, useEffect, } from 'react';
 import { View, Text, StyleSheet, Modal, Button, BackHandler, ImageBackground, TouchableOpacity } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { FloatingButton } from '../../Components/Floating-Button';
-import MessageInput from '../../Components/Messege-Input';
-import Navbar from '../../Components/chat-navbar';
-import MessageList from '../../Components/Messege-list';
+import { FloatingButton } from '../../Components/Buttons/Floating-Button';
+import MessageInput from '../../Components/chat/Messege-Input';
+import Navbar from '../../Components/chat/chat-navbar';
+import MessageList from '../../Components/chat/Messege-list';
 import { Keyboard } from 'react-native';
-import DropdownMenu from '../../Components/chat-menu-model';
+import DropdownMenu from '../../Components/chat/chat-menu-model';
 import { fetchMessages, deleteMessage, editMessage, sendMessage, checkAndUpdateSeenStatus } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
 import { updateOfflineStatus, updateOnlineStatus } from '../../firebase/manage-Chat-room';

@@ -24,7 +24,6 @@ const App = () => {
       try {
         await fetchFonts();
       } catch (e) {
-        console.warn(e);
       } finally {
         setFontsLoaded(true);
         SplashScreen.hideAsync();

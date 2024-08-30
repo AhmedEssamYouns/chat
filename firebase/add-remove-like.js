@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './config';
-import AnimatedHeartIcon from '../Components/like-button';
+import AnimatedHeartIcon from '../Components/Buttons/like-button';
 
 const LikeButton = ({ post, isLiked, currentUserId }) => {
     const [liked, setLiked] = useState(isLiked);

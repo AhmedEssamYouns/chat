@@ -3,7 +3,7 @@ import { View, TextInput, TouchableOpacity, StyleSheet, Image, Modal, Text, Butt
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import { sendMessage } from '../firebase/manage-Chat-room';
+import { sendMessage } from '../../firebase/manage-Chat-room';
 const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEditing, friendId }, ref) => {
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);

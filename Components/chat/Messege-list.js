@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import MessageItem from './Messege-Item';
+import MessageItem from './Messege-Item'
 
 const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onLongPressMessage }, ref) => (
     <FlatList

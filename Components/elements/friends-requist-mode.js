@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, TouchableWithoutFeedback, FlatList } from 'react-native';
 import { doc, onSnapshot, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
-import { FIREBASE_AUTH, db } from '../firebase/config';
+import { FIREBASE_AUTH, db } from '../../firebase/config';
 
 export default function FriendRequestModal({ visible, onClose }) {
     const [friendRequests, setFriendRequests] = useState([]);

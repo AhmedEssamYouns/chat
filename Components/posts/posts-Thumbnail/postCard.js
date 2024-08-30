@@ -5,7 +5,6 @@ import { Feather, MaterialIcons,MaterialCommunityIcons } from '@expo/vector-icon
 
 const PostCard = ({ imageUrl, onPress }) => {
     const screenWidth = Dimensions.get('window').width;
-    console.log(imageUrl[1])
     return (
         <TouchableOpacity onPress={onPress} style={[styles.card,{width:screenWidth*0.3}]}>
             {imageUrl[1] &&

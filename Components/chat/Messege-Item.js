@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { FIREBASE_AUTH } from '../firebase/config';
+import { FIREBASE_AUTH } from '../../firebase/config';
 import { Ionicons } from '@expo/vector-icons';
-import ConfirmationModal from './alert';
-import { deleteMessage } from '../firebase/manage-Chat-room'; // Ensure this function is available
+import ConfirmationModal from '../elements/alert';
+import { deleteMessage } from '../../firebase/manage-Chat-room'; // Ensure this function is available
 import { useNavigation } from '@react-navigation/native';
 
 const formatTimestamp = (timestamp) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, Image, ActivityIndicator } from 'react-native';
-import PostsList from '../../Components/posts-list';
+import PostsList from '../../Components/posts/posts-list/posts-list';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';

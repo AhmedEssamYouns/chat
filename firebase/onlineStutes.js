@@ -102,5 +102,4 @@ const updateDeliveredField = async (db, userId) => {
     // Wait for all updates to complete
     await Promise.all(updatePromises);
   
-    console.log('All matching documents updated');
   };

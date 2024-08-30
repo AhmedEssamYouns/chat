@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import SearchBar from '../../Components/Search-Bar';
+import SearchBar from '../../Components/elements/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
 import { checkForNewMessages } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';

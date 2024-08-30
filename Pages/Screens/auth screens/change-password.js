@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { handleChangePassword } from '../../firebase/auth'; // Import the handleChangePassword function
+import { handleChangePassword } from '../../../firebase/auth'; // Import the handleChangePassword function
 
 const ChangePasswordScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState('');

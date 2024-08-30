@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Text } from 'react-native';
-import { fetchUserPostsRealtime } from '../firebase/fetchPosts';
+import { fetchUserPostsRealtime } from '../../../firebase/fetchPosts';
 import PostCard from './postCard';
 
 const PostGrid = ({ userId, onPostSelect }) => {

@@ -1,5 +1,5 @@
 import { deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db } from './config';
 import { ToastAndroid } from 'react-native';
 
 // Function to delete a post by its ID
