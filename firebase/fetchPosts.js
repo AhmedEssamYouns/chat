@@ -1,4 +1,4 @@
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy,doc } from 'firebase/firestore';
 import { db } from './config';
 
 /**
@@ -33,3 +33,20 @@ export const fetchUserPostsRealtime = (userId, callback) => {
         return () => {}; // Return a no-op function as a fallback
     }
 };
+
+export const fetchPostById = (postId, callback) => {
+    const postDocRef = doc(db, 'posts', postId);
+  
+    // Use onSnapshot to listen for real-time updates
+    const unsubscribe = onSnapshot(postDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const postData = docSnapshot.data();
+        callback(postData);
+      } else {
+        console.log('No such post!');
+      }
+    });
+  
+    // Return the unsubscribe function to clean up the listener
+    return unsubscribe;
+  };

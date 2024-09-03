@@ -19,8 +19,10 @@ import { FIREBASE_AUTH } from '../firebase/config';
 import FriendRequestModal from '../Components/elements/friends-requist-mode';
 import ImageScreen from '../Components/elements/image';
 import { trackUserPresence, subscribeToUserOnlineStatus } from '../firebase/Real-Time-online'; // Import your function
-import {updateDeliveredMessages} from '../firebase/onlineStutes';
+import { updateDeliveredMessages } from '../firebase/onlineStutes';
 import { saveTokenToFirestore } from '../firebase/manage-Chat-room';
+import SharePost from '../Pages/Screens/share-post';
+import PostScreen from '../Components/posts/post-screen';
 
 const Stack = createStackNavigator();
 
@@ -47,22 +49,22 @@ export default function MainTabNavigator() {
     useEffect(() => {
         const authenticateUser = async () => {
             const user = FIREBASE_AUTH.currentUser;
-    
+
             if (user) {
                 try {
                     // Track user presence when authenticated
                     trackUserPresence();
-    
+
                     // Save FCM token to Firestore
                     await saveTokenToFirestore();
-    
+
                     // Subscribe to user's online status in real-time
                     const unsubscribeStatus = subscribeToUserOnlineStatus(user.uid, (isOnline) => {
                         if (isOnline) {
                             updateDeliveredMessages(user.uid); // Update undelivered messages when user comes online
                         }
                     });
-    
+
                     // Clean up on unmount
                     return () => {
                         if (unsubscribeStatus) unsubscribeStatus();
@@ -72,20 +74,20 @@ export default function MainTabNavigator() {
                 }
             }
         };
-    
+
         const unsubscribeAuth = FIREBASE_AUTH.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'Authenticated' : 'Not authenticated');
             setIsAuthenticated(!!user);
             setIsLoading(false);
-    
+
             if (user) {
                 authenticateUser(); // Call the async function
             }
         });
-    
+
         return unsubscribeAuth;
     }, []);
-    
+
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -124,6 +126,7 @@ export default function MainTabNavigator() {
                             name="Tabs"
                             component={TabNavigator}
                             options={{
+
                                 headerTitle: () => (
                                     <Text style={styles.headerTitle}>Snap<Text style={{ color: "tomato" }}>Talk</Text></Text>
                                 ),
@@ -150,6 +153,17 @@ export default function MainTabNavigator() {
                                 ),
                             }}
                         />
+                        <Stack.Screen name="PostScreen" component={PostScreen} options={{
+                            title: 'Post'
+                            ,
+                            headerTitleStyle: {
+                                color: 'white',
+                                right:20
+                            },
+                            headerTintColor: "white"
+
+                        }
+                        } />
                         <Stack.Screen name='edit profile' component={EditProfileScreen} options={{
                             headerStyle: {
                                 backgroundColor: '#121212',
@@ -168,12 +182,13 @@ export default function MainTabNavigator() {
                         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='chat' component={ChatConversationScreen} options={{ headerShown: false }} />
                         <Stack.Screen name='search' component={SearchScreen} options={{ headerShown: false }} />
+                        <Stack.Screen name='share' component={SharePost} options={{ headerShown: false }} />
                         <Stack.Screen name='Friends' component={FriendsScreen} options={{ headerShown: false }} />
                         <Stack.Screen name="ImageScreen" component={ImageScreen}
                             options={{
                                 headerTitle: '',
                                 headerStyle: {
-                                    backgroundColor:'black',
+                                    backgroundColor: 'black',
                                     elevation: 0,
                                     shadowOpacity: 0,
                                     shadowOffset: { height: 0 },

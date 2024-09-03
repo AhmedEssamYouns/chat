@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, StyleSheet, View, Animated, BackHandler } from 'react-native';
-import { Feather, Octicons, AntDesign } from '@expo/vector-icons';
+import { TouchableOpacity, StyleSheet, View, Animated, BackHandler, Text } from 'react-native';
+import { Feather, Octicons, AntDesign ,MaterialCommunityIcons,MaterialIcons} from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import RotatingButton from './animated-rotate-button';
 import CreatePostModal from '../posts/manage posts/create-post-model';
@@ -57,7 +57,7 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
 
     const animatedHeight = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 180], // Adjust as needed
+        outputRange: [0, 240], // Adjust as needed
     });
 
     const rotation = rotate.interpolate({
@@ -87,6 +87,7 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
                     }}
                 >
                     <Feather name="share" size={24} color="white" />
+                    <Text style={styles.label}>Share</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.item}
@@ -95,7 +96,18 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
                         navigation.navigate('Friends');
                     }}
                 >
+                    <Octicons name="comment" size={24} color="white" />
+                    <Text style={styles.label}>messege</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.item}
+                    onPress={() => {
+                        setExpanded(false);
+                        navigation.navigate('Group');
+                    }}
+                >
                     <Octicons name="people" size={24} color="white" />
+                    <Text style={styles.label}>group</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.item}
@@ -105,6 +117,7 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
                     }}
                 >
                     <AntDesign name="adduser" size={24} color="white" />
+                    <Text style={styles.label}>add</Text>
                 </TouchableOpacity>
             </Animated.View>
 
@@ -144,13 +157,15 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     item: {
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 10,
+        padding: 7,
+        width: '100%', // Ensure full width for each item
     },
     label: {
+        alignSelf: 'center',
+        textAlign: 'center',
         color: 'white',
-        marginLeft: 10,
+        fontSize: 8, // Adjust label size
     },
 });

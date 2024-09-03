@@ -15,13 +15,24 @@ const formatTimestamp = (timestamp) => {
   });
 };
 
+const formatTimestamp2 = (timestamp) => {
+  const date = new Date(timestamp); // Parse ISO 8601 timestamp
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    hour12: true, // 12-hour format
+  });
+};
+
 const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageToDelete, setImageToDelete] = useState(null);
-  const navigation = useNavigation()
-  const lowerCaseText = item.text.toLowerCase();
+  const navigation = useNavigation();
+  const lowerCaseText = item.text?.toLowerCase();
   const lowerCaseSearchQuery = searchQuery.toLowerCase();
-  const matchIndex = lowerCaseText.indexOf(lowerCaseSearchQuery);
+  const matchIndex = lowerCaseText ? lowerCaseText.indexOf(lowerCaseSearchQuery) : -1;
   const isSentByCurrentUser = item.senderId === FIREBASE_AUTH.currentUser.uid;
   const messageStyle = isSentByCurrentUser ? styles.sentMessage : styles.receivedMessage;
 
@@ -52,11 +63,11 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
     <>
       {item.text && (
         <Pressable
-        onLongPress={handleLongPress}
+          onLongPress={handleLongPress}
           style={({ pressed }) => [
             styles.messageContainer,
             messageStyle,
-            isSentByCurrentUser && pressed && styles.pressedMessage // Apply pressed style only if message is sent by the current user
+            isSentByCurrentUser && pressed && styles.pressedMessage, // Apply pressed style only if message is sent by the current user
           ]}
         >
           <View>
@@ -93,14 +104,68 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
           </View>
         </Pressable>
       )}
+
       {item.imageUrl && (
-        <Pressable onPress={()=>navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
+        <Pressable onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
           <Image
-            style={[styles.image, {
-              alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start'
-            }]}
+            style={[
+              styles.image,
+              {
+                alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
+              },
+            ]}
             source={{ uri: item.imageUrl }}
           />
+          {isSentByCurrentUser && (
+            <View style={styles.statusIconContainer}>
+              {item.deleverd ? (
+                item.seen ? (
+                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
+                ) : (
+                  <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
+                )
+              ) : (
+                <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
+              )}
+            </View>
+          )}
+        </Pressable>
+      )}
+
+      {/* Render Shared Post */}
+      {item.postShared && (
+        <Pressable
+          onLongPress={handleLongPressImage}
+          onPress={() => navigation.navigate('PostScreen', { post: item.postShared })}
+          style={[styles.sharedPostContainer, messageStyle]}
+        >
+          <View style={styles.sharedPostTextContainer}>
+            {/* Check if the profile image exists */}
+            {item.user.profileImage && (
+              <Image
+                style={styles.sharedPostImage}
+                source={{ uri: item.user.profileImage }}
+              />
+            )}
+            <Text style={styles.sharedPostTitle}>{item.user.username}</Text>
+            <Text style={styles.time}>{formatTimestamp2(item.postShared.time)}</Text>
+          </View>
+          <View style={styles.TextContainer}>
+
+            {item.postShared.text &&
+              <Text style={styles.sharedPostDescription}>{item.postShared.text}</Text>
+            }
+          </View>
+          {item.postShared.imageUrls && item.postShared.imageUrls.length > 0 && (
+            <View style={{ backgroundColor: 'white' }}>
+              <Image
+                style={{ height: 300, resizeMode: 'contain' }}
+                source={{ uri: item.postShared.imageUrls[0] }} // Access the first image URL
+              />
+            </View>
+
+          )}
+          <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
           {isSentByCurrentUser && (
             <View style={styles.statusIconContainer}>
               {item.deleverd ? (
@@ -122,7 +187,7 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         visible={modalVisible}
         onConfirm={handleDeleteImage}
         onCancel={() => setModalVisible(false)}
-        message="Do you want to delete this image?"
+        message="Do you want to delete this messege?"
         confirm="Delete"
       />
     </>
@@ -168,6 +233,18 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: 'right',
   },
+  messageTime2: {
+    position: 'absolute',
+    padding: 5,
+    borderRadius: 10,
+    bottom: 5,
+    left: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    color: '#BBBBBB',
+    fontSize: 10,
+    marginTop: 5,
+    textAlign: 'right',
+  },
   editedTag: {
     color: '#BBBBBB',
     fontSize: 12,
@@ -192,6 +269,48 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     padding: 5,
     borderRadius: 20,
+  },
+  sharedPostContainer: {
+    marginVertical: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    width: 300,
+  },
+  sharedPostImage: {
+    height: 30,
+    width: 30,
+    borderRadius: 40,
+    resizeMode: 'cover',
+  },
+  sharedPostTextContainer: {
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#444444',
+  },
+  TextContainer: {
+    paddingHorizontal: 10,
+    paddingBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#444444',
+  },
+  sharedPostTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  time: {
+    position:'absolute',
+    fontSize: 10,
+    color: '#FFFFFF',
+    right: 10
+  },
+  sharedPostDescription: {
+    fontSize: 14,
+    color: '#DDDDDD',
+    marginTop: 5,
   },
 });
 

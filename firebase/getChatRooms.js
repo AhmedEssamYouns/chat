@@ -9,7 +9,7 @@ export const fetchLastMessage = async (chatId) => {
     const chatDoc = await getDoc(chatDocRef);
     if (chatDoc.exists()) {
       const chatData = chatDoc.data();
-      return chatData.last || 'No messages yet';
+      return chatData.last;
     } else {
       return 'No messages yet';
     }
@@ -25,6 +25,21 @@ export const fetchImage = async (chatId) => {
     if (chatDoc.exists()) {
       const chatData = chatDoc.data();
       return chatData.imageUrl || null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching chat document:', error);
+    return 'Error retrieving messages';
+  }
+};
+export const fetchPost = async (chatId) => {
+  try {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const chatDoc = await getDoc(chatDocRef);
+    if (chatDoc.exists()) {
+      const chatData = chatDoc.data();
+      return chatData.postShared || null;
     } else {
       return null;
     }
@@ -117,6 +132,7 @@ export const subscribeToChats = (callback) => {
             friendImage: friendData.profileImage,
             lastMessage: await fetchLastMessage(chatId),
             imageUrl:await fetchImage(chatId),
+            post: await fetchPost(chatId),
             timestamp: lastMessage ? lastMessage.timestamp.toDate() : new Date(),
             seen: await checkStute(chatId),
             deleverd:await checkDeleverd(chatId),

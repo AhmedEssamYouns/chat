@@ -75,7 +75,7 @@ export default function TabNavigator() {
             )}
 
             <AnimatedFloatingButton
-                up={70}
+                up={50}
                 expanded={isButtonExpanded}
                 setExpanded={setIsButtonExpanded}
             />

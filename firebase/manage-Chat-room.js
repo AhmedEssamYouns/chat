@@ -7,6 +7,30 @@ import { getMessaging, getToken } from "firebase/messaging";
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as w } from 'firebase/storage';
 import { ToastAndroid } from 'react-native';
+
+
+
+
+export const fetchUserGroupChats = async () => {
+    try {
+        const userId = FIREBASE_AUTH.currentUser.uid;
+        const groupChatsRef = collection(db, 'groupChats');
+        const userGroupChatsQuery = query(groupChatsRef, where('members', 'array-contains', userId));
+
+        const querySnapshot = await getDocs(userGroupChatsQuery);
+        const groupChats = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        return groupChats;
+    } catch (error) {
+        console.error('Error fetching group chats:', error);
+        throw error;
+    }
+};
+
+
 const uploadImage = async (uri) => {
     const response = await fetch(uri);
     const blob = await response.blob();
@@ -18,29 +42,29 @@ const uploadImage = async (uri) => {
 };
 export const deleteChatDocument = async (currentUserId, friendId) => {
     try {
-      // Create chatId by sorting the IDs and joining them with an underscore
-      const chatId = [currentUserId, friendId].sort().join('_');
-      
-      // Reference to the chat document and its messages subcollection
-      const chatDocRef = doc(db, 'chats', chatId);
-      const messagesRef = collection(db, 'chats', chatId, 'messages');
-      
-      // Fetch all messages in the subcollection
-      const messagesSnapshot = await getDocs(messagesRef);
-  
-      // Delete each message document
-      const deleteMessagesPromises = messagesSnapshot.docs.map(doc => deleteDoc(doc.ref));
-      await Promise.all(deleteMessagesPromises);
-  
-      // Delete the chat document
-      await deleteDoc(chatDocRef);
-      ToastAndroid.show('chat deleted.', ToastAndroid.LONG);
-      
-      console.log(`Chat document with ID ${chatId} has been deleted.`);
+        // Create chatId by sorting the IDs and joining them with an underscore
+        const chatId = [currentUserId, friendId].sort().join('_');
+
+        // Reference to the chat document and its messages subcollection
+        const chatDocRef = doc(db, 'chats', chatId);
+        const messagesRef = collection(db, 'chats', chatId, 'messages');
+
+        // Fetch all messages in the subcollection
+        const messagesSnapshot = await getDocs(messagesRef);
+
+        // Delete each message document
+        const deleteMessagesPromises = messagesSnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(deleteMessagesPromises);
+
+        // Delete the chat document
+        await deleteDoc(chatDocRef);
+        ToastAndroid.show('chat deleted.', ToastAndroid.LONG);
+
+        console.log(`Chat document with ID ${chatId} has been deleted.`);
     } catch (error) {
-      console.error('Error deleting chat document:', error);
+        console.error('Error deleting chat document:', error);
     }
-  };
+};
 
 
 export const fetchMessages = (friendId, callback) => {
@@ -63,8 +87,9 @@ export const fetchMessages = (friendId, callback) => {
         console.error('Error fetching messages:', error);
     }
 };
-export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
-    if (newMessage.trim() === '' && !imageUrl) return;
+
+export const sendMessage = async (friendId, newMessage, imageUrl = null, postShared = null, user = null) => {
+    if (newMessage.trim() === '' && !imageUrl && !postShared && !user) return;
 
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
@@ -89,8 +114,10 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
+            user: user,
             seen: isFriendInChat && wow,
             deleverd: wow,
+            postShared: postShared,
             isEdited: false,
             imageUrl: image,
             text: newMessage,
@@ -104,8 +131,9 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null) => {
             receiverId: friendId,
             senderId: userId,
             imageUrl: image,
+            postShared: postShared,
+            last: postShared != null ? 'shared a post' : newMessage,
             deleverd: wow,
-            last: newMessage,
             seen: isFriendInChat && wow,
         }, { merge: true });
 
@@ -200,6 +228,32 @@ export const checkForNewMessages = async (friendId, callback) => {
     }
 };
 
+export const createGroupChat = async (selectedFriends, groupName) => {
+    if (selectedFriends.length === 0) return;
+
+    try {
+        const userId = FIREBASE_AUTH.currentUser.uid;
+        const groupId = `group_${new Date().getTime()}`; // Generate a unique group ID
+        const groupChatRef = doc(db, 'groupChats', groupId);
+
+        const members = selectedFriends.map(friend => friend.uid);
+        members.push(userId);
+
+        await setDoc(groupChatRef, {
+            groupName: groupName,
+            members: members,
+            createdAt: Timestamp.now(),
+        });
+
+        // Optionally, you can also create an initial message or perform additional setup here
+
+        return groupId;
+
+    } catch (error) {
+        console.error('Error creating group:', error);
+        throw error;
+    }
+};
 
 export const checkAndUpdateSeenStatus = async (friendId, currentUserId) => {
     const chatId = [currentUserId, friendId].sort().join('_');

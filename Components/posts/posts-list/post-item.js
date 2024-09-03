@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH } from '../../../firebase/config';
 import { getUserById } from '../../../firebase/getUser';
@@ -60,105 +60,108 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
     if (!userDetails) {
         return <Text>Loading...</Text>; // Optionally handle loading state
     }
-
+    const postId = item.postId
     const isLiked = item.likes && item.likes[currentUserId]; // Check if the post is liked by the current user
     const imageUrls = item.imageUrls?.map(url => ({ url }));
 
     return (
         <>
-        <View style={styles.storyItem}>
-            <View style={styles.header}>
-                <Pressable
-                    style={{ flexDirection: 'row', alignItems: 'center' }}
-                    onPress={() => !isOwner && navigation.navigate('account', { friendId: userDetails.uid })}
-                >
+            <View style={styles.storyItem}>
+                <View style={styles.header}>
                     <Pressable
-                        style={styles.avatarContainer}
-                        onPress={() => navigation.navigate('ImageScreen', { imageUri: userDetails.profileImage })}
+                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                        onPress={() => !isOwner && navigation.navigate('account', { friendId: userDetails.uid })}
                     >
-                        <Image
-                            source={{ uri: userDetails.profileImage || 'https://randomuser.me/api/portraits/men/1.jpg' }}
-                            style={styles.avatar}
-                        />
+                        <Pressable
+                            style={styles.avatarContainer}
+                            onPress={() => navigation.navigate('ImageScreen', { imageUri: userDetails.profileImage })}
+                        >
+                            <Image
+                                source={{ uri: userDetails.profileImage || 'https://randomuser.me/api/portraits/men/1.jpg' }}
+                                style={styles.avatar}
+                            />
+                        </Pressable>
+                        <View style={styles.headerTextContainer}>
+                            <Text style={styles.storyName}>{userDetails.username}</Text>
+                            <Text style={styles.storyTime}>{timeDifference}</Text>
+                        </View>
                     </Pressable>
-                    <View style={styles.headerTextContainer}>
-                        <Text style={styles.storyName}>{userDetails.username}</Text>
-                        <Text style={styles.storyTime}>{timeDifference}</Text>
-                    </View>
-                </Pressable>
-                {isOwner && (
-                    <View style={styles.actionIcons}>
-                        <TouchableOpacity onPress={() => setEditModalVisible(true)} style={styles.iconButton}>
-                            <AntDesign name="edit" size={20} color="#bbbb" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
-                            <AntDesign name="delete" size={20} color="#bbbb" />
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </View>
-            <View style={styles.storyContent}>
-                <View style={styles.storyTextContainer}>
-                    {item.text && <Text style={styles.storyTitle}>{item.text}</Text>}
-                    {item.imageUrls && (
-                        <TouchableWithoutFeedback>
-                            {item.imageUrls && <>
-                                {item.imageUrls.length > 1 ?
-                                    <ImageViewer
-                                        imageUrls={imageUrls}
-                                        doubleClickInterval={false}
-                                        enableImageZoom={false}
-                                        saveToLocalByLongPress={false}
-                                        renderIndicator={(currentIndex, allSize) => (
-                                            <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', paddingHorizontal: 10, padding: 5, borderRadius: 10 }}>
-                                                <Text style={{ color: 'white' }}>{`${currentIndex} / ${allSize}`}</Text>
-                                            </View>
-                                        )}
-                                        style={styles.storyPhoto}
-                                    />
-                                    :
-                                    <Image source={{ uri: imageUrls[0].url }} style={styles.storyPhoto}></Image>
-                                }
-                            </>
-                            }
-                        </TouchableWithoutFeedback>
-
+                    {isOwner && (
+                        <View style={styles.actionIcons}>
+                            <TouchableOpacity onPress={() => setEditModalVisible(true)} style={styles.iconButton}>
+                                <AntDesign name="edit" size={20} color="#bbbb" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
+                                <AntDesign name="delete" size={20} color="#bbbb" />
+                            </TouchableOpacity>
+                        </View>
                     )}
                 </View>
-                <View style={styles.actionContainer}>
-                    <LikeButton
-                        post={item}
-                        isLiked={isLiked}
-                        currentUserId={currentUserId}
-                        handleLovePress={handleLovePress}
-                    />
-                    <Text style={styles.likesCount}>{item.likesCount || 0}</Text>
+                <View style={styles.storyContent}>
+                    <View style={styles.storyTextContainer}>
+                        {item.text && <Text style={styles.storyTitle}>{item.text}</Text>}
+                        {item.imageUrls && (
+                            <TouchableWithoutFeedback>
+                                {item.imageUrls && <>
+                                    {item.imageUrls.length > 1 ?
+                                        <ImageViewer
+                                            imageUrls={imageUrls}
+                                            doubleClickInterval={false}
+                                            enableImageZoom={false}
+                                            saveToLocalByLongPress={false}
+                                            renderIndicator={(currentIndex, allSize) => (
+                                                <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(0, 0, 0, 0.5)', paddingHorizontal: 10, padding: 5, borderRadius: 10 }}>
+                                                    <Text style={{ color: 'white' }}>{`${currentIndex} / ${allSize}`}</Text>
+                                                </View>
+                                            )}
+                                            style={styles.storyPhoto}
+                                        />
+                                        :
+                                        <Image source={{ uri: imageUrls[0].url }} style={styles.storyPhoto}></Image>
+                                    }
+                                </>
+                                }
+                            </TouchableWithoutFeedback>
+
+                        )}
+                    </View>
+                    <View style={styles.actionContainer}>
+                        <LikeButton
+                            post={item}
+                            isLiked={isLiked}
+                            currentUserId={currentUserId}
+                            handleLovePress={handleLovePress}
+                        />
+                        <Text style={styles.likesCount}>{item.likesCount || 0}</Text>
+                        <TouchableOpacity style={{ position: "absolute", right: 0 }} onPress={() => navigation.navigate('share', { post: item, user: userDetails })}>
+                            <Feather name='share-2' color={'grey'} size={24} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
+
+                <ConfirmationModal
+                    visible={modalVisible}
+                    onConfirm={confirmDelete}
+                    onCancel={cancelDelete}
+                    message="Are you sure you want to delete this post?"
+                    confirm="Delete"
+                />
+
+                <EditPostModal
+                    visible={isEditModalVisible}
+                    onClose={() => setEditModalVisible(false)}
+                    postId={item.postId}
+                    existingText={item.text}
+                    item={item}
+                    existingImage={item.imageUrls}
+                />
             </View>
-
-            <ConfirmationModal
-                visible={modalVisible}
-                onConfirm={confirmDelete}
-                onCancel={cancelDelete}
-                message="Are you sure you want to delete this post?"
-                confirm="Delete"
-            />
-
-            <EditPostModal
-                visible={isEditModalVisible}
-                onClose={() => setEditModalVisible(false)}
-                postId={item.postId}
-                existingText={item.text}
-                item={item}
-                existingImage={item.imageUrls}
-            />
-        </View>
-        <View style={{
-            width:'90%',
-            alignSelf:'center',
-            borderColor: '#333',
-            borderBottomWidth: 1,
-        }}></View>
+            <View style={{
+                width: '90%',
+                alignSelf: 'center',
+                borderColor: '#333',
+                borderBottomWidth: 1,
+            }}></View>
         </>
     );
 };

@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   newMessageIndicatorContainer: {
     position: 'absolute',
-    right: 5,
+    right: 0,
     padding: 5,
     paddingHorizontal: 7,
     justifyContent: 'center',
