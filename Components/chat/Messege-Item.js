@@ -274,7 +274,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 10,
     overflow: 'hidden',
-    width: 300,
+    width: 260,
+    height:300,
   },
   sharedPostImage: {
     height: 30,

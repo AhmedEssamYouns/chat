@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -43,6 +43,8 @@ const SharePost = () => {
             }
             setSelectedFriends([]);
             console.log('post shared')
+            ToastAndroid.show('snap shared.', ToastAndroid.LONG);
+
             Toast.show({
                 type: 'success',
                 text1: 'Post Shared',

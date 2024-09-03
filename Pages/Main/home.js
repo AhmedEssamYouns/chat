@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   statusIcon: {
     position: 'absolute',
-    right: 10,
+    right: 0,
   },
   chatList: {
     backgroundColor: '#121212',
