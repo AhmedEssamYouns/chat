@@ -18,9 +18,6 @@ import SignInScreen from '../Pages/Screens/auth screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
 import FriendRequestModal from '../Components/elements/friends-requist-mode';
 import ImageScreen from '../Components/elements/image';
-import { trackUserPresence, subscribeToUserOnlineStatus } from '../firebase/Real-Time-online'; // Import your function
-import { updateDeliveredMessages } from '../firebase/onlineStutes';
-import { saveTokenToFirestore } from '../firebase/manage-Chat-room';
 import SharePost from '../Pages/Screens/share-post';
 import PostScreen from '../Components/posts/post-screen';
 
@@ -47,33 +44,6 @@ export default function MainTabNavigator() {
     };
 
     useEffect(() => {
-        const authenticateUser = async () => {
-            const user = FIREBASE_AUTH.currentUser;
-
-            if (user) {
-                try {
-                    // Track user presence when authenticated
-                    trackUserPresence();
-
-                    // Save FCM token to Firestore
-                    await saveTokenToFirestore();
-
-                    // Subscribe to user's online status in real-time
-                    const unsubscribeStatus = subscribeToUserOnlineStatus(user.uid, (isOnline) => {
-                        if (isOnline) {
-                            updateDeliveredMessages(user.uid); // Update undelivered messages when user comes online
-                        }
-                    });
-
-                    // Clean up on unmount
-                    return () => {
-                        if (unsubscribeStatus) unsubscribeStatus();
-                    };
-                } catch (error) {
-                    console.error('Error during authentication setup:', error);
-                }
-            }
-        };
 
         const unsubscribeAuth = FIREBASE_AUTH.onAuthStateChanged(user => {
             console.log('Auth state changed:', user ? 'Authenticated' : 'Not authenticated');

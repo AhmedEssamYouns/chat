@@ -1,16 +1,13 @@
 
 import React, { useState, useRef, useEffect, } from 'react';
 import { View, Text, StyleSheet, Modal, Button, BackHandler, ImageBackground, TouchableOpacity } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { FloatingButton } from '../../Components/Buttons/Floating-Button';
 import MessageInput from '../../Components/chat/Messege-Input';
 import Navbar from '../../Components/chat/chat-navbar';
 import MessageList from '../../Components/chat/Messege-list';
 import { Keyboard } from 'react-native';
 import DropdownMenu from '../../Components/chat/chat-menu-model';
-import { fetchMessages, deleteMessage, editMessage, sendMessage, checkAndUpdateSeenStatus } from '../../firebase/manage-Chat-room';
-import { FIREBASE_AUTH } from '../../firebase/config';
-import { updateOfflineStatus, updateOnlineStatus } from '../../firebase/manage-Chat-room';
+import { fetchMessages, deleteMessage, editMessage, sendMessage} from '../../firebase/manage-Chat-room';
 
 const ChatConversationScreen = ({ route, navigation }) => {
 
@@ -55,23 +52,15 @@ const ChatConversationScreen = ({ route, navigation }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    const currentUserId = FIREBASE_AUTH.currentUser.uid;
-
-    // Update online status when the component mounts
-    updateOnlineStatus(friendId, currentUserId);
-
     // Check and update the seen status when the screen loads
     const unsubscribe = fetchMessages(friendId, (data) => {
       setMessages(data);
     });
 
-    checkAndUpdateSeenStatus(friendId, currentUserId);
-
     // Clean up function
     return () => {
       unsubscribe();
       // Update offline status when the component unmounts
-      updateOfflineStatus(friendId, currentUserId);
     };
   }, [friendId]);
 
@@ -117,7 +106,6 @@ const ChatConversationScreen = ({ route, navigation }) => {
       flatListRef.current.scrollToIndex({ index: adjustedIndex, animated: true });
     }
   };
-  const [image, setImage] = useState(null);
 
   const handleSend = () => {
     if (newMessage.trim() !== '') {

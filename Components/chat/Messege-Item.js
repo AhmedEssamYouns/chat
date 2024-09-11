@@ -86,19 +86,6 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
               <Text style={styles.messageTime}>{formatTimestamp(item.timestamp)}</Text>
               {item.isEdited && <Text style={styles.editedTag}>Edited</Text>}
               <View style={styles.statusIcons}>
-                {isSentByCurrentUser && (
-                  <>
-                    {item.deleverd ? (
-                      item.seen ? (
-                        <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
-                      ) : (
-                        <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
-                      )
-                    ) : (
-                      <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
-                    )}
-                  </>
-                )}
               </View>
             </View>
           </View>
@@ -106,29 +93,23 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
       )}
 
       {item.imageUrl && (
-        <Pressable onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
+        <Pressable
+          style={[
+            styles.image,
+            {
+              alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
+            },
+          ]} onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
           <Image
-            style={[
-              styles.image,
-              {
-                alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
-              },
-            ]}
+            style={{
+              width: 200,
+              height: 200,
+              borderRadius:10,
+            }}
             source={{ uri: item.imageUrl }}
           />
-          {isSentByCurrentUser && (
-            <View style={styles.statusIconContainer}>
-              {item.deleverd ? (
-                item.seen ? (
-                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
-                ) : (
-                  <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
-                )
-              ) : (
-                <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
-              )}
-            </View>
-          )}
+          <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
+
         </Pressable>
       )}
 
@@ -166,19 +147,6 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
 
           )}
           <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
-          {isSentByCurrentUser && (
-            <View style={styles.statusIconContainer}>
-              {item.deleverd ? (
-                item.seen ? (
-                  <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
-                ) : (
-                  <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
-                )
-              ) : (
-                <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
-              )}
-            </View>
-          )}
         </Pressable>
       )}
 
@@ -203,8 +171,6 @@ const styles = StyleSheet.create({
   },
   image: {
     borderRadius: 10,
-    width: 200,
-    height: 200,
     resizeMode: 'center',
     marginTop: 10, // Optional, add margin if needed
   },
@@ -275,7 +241,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     width: 260,
-    height:300,
+    height: 300,
   },
   sharedPostImage: {
     height: 30,
@@ -303,7 +269,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   time: {
-    position:'absolute',
+    position: 'absolute',
     fontSize: 10,
     color: '#FFFFFF',
     right: 10

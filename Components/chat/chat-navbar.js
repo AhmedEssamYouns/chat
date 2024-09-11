@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Image, Animated, Easing, Modal, TextInput
 import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from '../Buttons/animated-rotate-button';
 import { getUserById } from '../../firebase/getUser';
-import { subscribeToUserOnlineStatus } from '../../firebase/Real-Time-online';
 import ConfirmationModal from '../elements/alert';
 import { deleteChatDocument } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
@@ -14,7 +13,6 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null); // Initialize with null
-  const [isFriendOnline, setIsFriendOnline] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const searchAnim = useRef(new Animated.Value(-300)).current;
   const searchInputRef = useRef(null);
@@ -29,15 +27,6 @@ const currentUserId = FIREBASE_AUTH.currentUser.uid
     }
   }, [frindID]);
 
-  useEffect(() => {
-    if (frindID) {
-      const unsubscribe = subscribeToUserOnlineStatus(frindID, (onlineStatus) => {
-        setIsFriendOnline(onlineStatus);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [frindID]);
 
   useEffect(() => {
     Animated.timing(searchAnim, {
@@ -93,8 +82,6 @@ const currentUserId = FIREBASE_AUTH.currentUser.uid
               <View>
                 <Text style={styles.navbarTitle}>{user.username}</Text>
                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                  <Text style={{ color: '#bbb' }}>{isFriendOnline ? 'online' : 'offline'}</Text>
-                  <View style={{ backgroundColor: isFriendOnline ? 'green' : 'red', borderRadius: 10, width: 10, height: 10, top: 1 }}></View>
                 </View>
               </View>
             </TouchableOpacity>

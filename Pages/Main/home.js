@@ -4,10 +4,6 @@ import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndi
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import SearchBar from '../../Components/elements/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
-import { checkForNewMessages } from '../../firebase/manage-Chat-room';
-import { FIREBASE_AUTH } from '../../firebase/config';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebase/config';
 import { Feather } from '@expo/vector-icons';
 
 const formatTimestamp = (timestamp) => {
@@ -33,8 +29,6 @@ const ChatScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newMessageStatus, setNewMessageStatus] = useState({});
-  const [unseenMessagesCount, setUnseenMessagesCount] = useState({});
 
   useEffect(() => {
     const unsubscribe = subscribeToChats((data, error) => {
@@ -53,45 +47,6 @@ const ChatScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const checkNewMessagesForChats = async () => {
-      const status = {};
-      const unseenCounts = {};
-
-      for (const chat of chats) {
-        // Check for new messages
-        await checkForNewMessages(chat.friendId, (hasNewMessage) => {
-          status[chat.friendId] = hasNewMessage;
-        });
-
-        // Fetch unseen messages count for each chat
-        const userId = FIREBASE_AUTH.currentUser.uid;
-        const chatId = [userId, chat.friendId].sort().join('_');
-        const messagesRef = collection(db, 'chats', chatId, 'messages');
-        const q = query(messagesRef, where('seen', '==', false));
-
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-          const filteredMessages = querySnapshot.docs.filter(
-            (doc) => doc.data().receiverId == userId
-          );
-          unseenCounts[chat.friendId] = filteredMessages.length;
-          setUnseenMessagesCount((prevCounts) => ({
-            ...prevCounts,
-            [chat.friendId]: filteredMessages.length
-          }));
-        });
-
-        // Clean up the listener
-        return () => unsubscribe();
-      }
-
-      setNewMessageStatus(status);
-    };
-
-    if (chats.length > 0) {
-      checkNewMessagesForChats();
-    }
-  }, [chats]);
 
   const handleSearch = (text) => {
     setSearchQuery(text);
@@ -115,12 +70,7 @@ const ChatScreen = ({ navigation }) => {
         <View style={styles.chatMessageContainer}>
 
 
-          <Text style={[styles.chatMessage,
-          {
-            color: unseenMessagesCount[item.friendId] > 0 ? '#eeee' : '#bbbb'
-
-          }
-          ]}>
+          <Text style={styles.chatMessage}>
 
             {item.lastMessage == 'Messege Deleted' ?
               <Text>{item.lastMessage}</Text>
@@ -132,38 +82,6 @@ const ChatScreen = ({ navigation }) => {
 
             }
           </Text>
-          {unseenMessagesCount[item.friendId] > 0 && (
-            <View style={styles.newMessageIndicatorContainer}>
-              <Text style={styles.newMessageIndicator}>{unseenMessagesCount[item.friendId]}</Text>
-            </View>
-          )}
-          {item.lastMessage == 'Messege Deleted' ?
-            <MaterialIcons name="do-not-disturb" size={16} color="#BBBBBB" style={styles.statusIcon} />
-            : (
-              <>
-                {item.senderId == FIREBASE_AUTH.currentUser.uid && (
-
-                  <>
-                    {item.deleverd == true ? (
-                      <>
-                        {item.seen == true ? (
-                          <Ionicons name="checkmark-done" size={16} color="#00BFFF" /> // Delivered and Seen
-                        ) : (
-                          <Ionicons name="checkmark-done" size={16} color="#aaa" /> // Delivered but not Seen
-                        )
-                        }
-                      </>
-                    )
-                      : (
-                        <Ionicons name="checkmark" size={16} color="#eeee" /> // Not Delivered
-                      )
-                    }
-                  </>
-                )
-                }
-
-              </>
-            )}
         </View>
       </View>
     </TouchableOpacity >
@@ -255,6 +173,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     height: 20,
     marginRight: 5,
+    color: '#bbbb'
+
   },
   newMessageIndicatorContainer: {
     position: 'absolute',

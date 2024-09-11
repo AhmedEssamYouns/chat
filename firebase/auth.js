@@ -2,38 +2,23 @@ import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPasswo
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from './config';
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import { setOnlineStatus } from './onlineStutes';
 import { updatePassword } from 'firebase/auth';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { ToastAndroid } from 'react-native';
-import { getDatabase,ref,set } from 'firebase/database';
 
 export const handleLogout = async (navigation) => {
     try {
-        const dbs = getDatabase();
-        const user = FIREBASE_AUTH.currentUser;
-        if (user) {
-            const userStatusDatabaseRef = ref(dbs, `/status/${user.uid}`);
 
-            const isOfflineForDatabase = {
-                state: 'offline',
-                last_changed: Date.now(),
-            };
 
-            // Set the user's status to offline
-            await set(userStatusDatabaseRef, isOfflineForDatabase);
+        await FIREBASE_AUTH.signOut();
 
-            // Sign the user out
-            await FIREBASE_AUTH.signOut();
-
-            // Reset the navigation stack and navigate to the SignIn screen
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'SignIn' }],
-                })
-            );
-        }
+        // Reset the navigation stack and navigate to the SignIn screen
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'SignIn' }],
+            })
+        );
     } catch (error) {
         console.log('Error signing out:', error.message);
     }
@@ -144,7 +129,6 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
             uid: user.uid,
-            online: true,
             email: email,
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
@@ -183,7 +167,6 @@ export const handleSignIn = async (email, password, navigation, setEmailError, s
 
     try {
         await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
-        await setOnlineStatus(true);
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,

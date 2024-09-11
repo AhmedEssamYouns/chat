@@ -1,22 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Text, StyleSheet, Dimensions, View, TouchableOpacity, Animated } from 'react-native';
+import { FlatList, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
 import PostItem from './post-item';
 import { LogBox } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // You can choose a different icon set if preferred
 
 LogBox.ignoreAllLogs();
 
-const ITEM_HEIGHT = Dimensions.get('screen').height * 0.55; // Adjust this value based on the height of your PostItem component
+const ITEM_HEIGHT = 450;
 
 const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex, header }) => {
   const flatListRef = useRef(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
   const [showButton, setShowButton] = useState(false);
 
+  // Sort posts by newest first
   const sortedPosts = [...posts].sort((a, b) => {
     const timeA = new Date(a.time);
     const timeB = new Date(b.time);
-    return timeB - timeA; // Newest posts first
+    return timeB - timeA;
   });
 
   const renderItem = ({ item }) => (
@@ -29,24 +29,31 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
     />
   );
 
-  useEffect(() => {
-    if (initialPostindex != null) {
-      const offset = ITEM_HEIGHT * initialPostindex;
-      setScrollOffset(offset);
-    }
-  }, [initialPostindex, sortedPosts]);
-
-  useEffect(() => {
-    if (flatListRef.current && scrollOffset != null) {
-      flatListRef.current.scrollToOffset({ offset: scrollOffset, animated: true });
-    }
-  }, [scrollOffset]);
-
   const getItemLayout = (data, index) => ({
     length: ITEM_HEIGHT,
     offset: ITEM_HEIGHT * index,
     index,
   });
+
+  const scrollToIndex = () => {
+    if (flatListRef.current && initialPostindex != null) {
+      flatListRef.current.scrollToIndex({
+        index: initialPostindex,
+        animated: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Wait for the FlatList to be fully rendered before scrolling
+    if (sortedPosts.length > 0 && initialPostindex != null) {
+      const timeout = setTimeout(() => {
+        scrollToIndex();
+      }, 300); // Adding a delay to ensure all content is rendered
+
+      return () => clearTimeout(timeout); // Cleanup the timeout
+    }
+  }, [initialPostindex, sortedPosts]);
 
   const scrollToTop = () => {
     if (flatListRef.current) {
@@ -73,8 +80,13 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
         }
         getItemLayout={getItemLayout}
         onScroll={handleScroll}
+        onContentSizeChange={scrollToIndex} // Ensures scroll happens after content is laid out
         onScrollToIndexFailed={(info) => {
-          // Handle the case when scrolling to index fails
+          // Handle failure by scrolling to an approximate offset
+          flatListRef.current.scrollToOffset({
+            offset: info.averageItemLength * info.index,
+            animated: true,
+          });
         }}
       />
       {showButton && (

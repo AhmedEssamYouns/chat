@@ -5,19 +5,11 @@ import ChatScreen from '../Pages/Main/home';
 import StoriesScreen from '../Pages/Main/snaps';
 import ProfileScreen from '../Pages/Main/profile';
 import { AnimatedFloatingButton } from '../Components/Buttons/Floating-Button';
-import { trackUnseenMessages } from '../firebase/manage-Chat-room';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function TabNavigator() {
     const [isButtonExpanded, setIsButtonExpanded] = useState(false);
-    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-
-    useEffect(() => {
-        const unsubscribe = trackUnseenMessages(setUnreadMessagesCount);
-
-        return () => unsubscribe(); // Clean up the listener when the component unmounts
-    }, []);
 
     const handleOutsidePress = () => {
         if (isButtonExpanded) {
@@ -54,11 +46,6 @@ export default function TabNavigator() {
                         tabBarLabel: ({ color }) => (
                             <View style={styles.labelContainer}>
                                 <Text style={[styles.labelText, { color }]}>Chats</Text>
-                                {unreadMessagesCount > 0 && (
-                                    <View style={styles.badgeContainer}>
-                                        <Text style={styles.badgeText}>{unreadMessagesCount}</Text>
-                                    </View>
-                                )}
                             </View>
                         ),
                     }}
