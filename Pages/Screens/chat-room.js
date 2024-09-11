@@ -52,15 +52,12 @@ const ChatConversationScreen = ({ route, navigation }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    // Check and update the seen status when the screen loads
     const unsubscribe = fetchMessages(friendId, (data) => {
       setMessages(data);
     });
 
-    // Clean up function
     return () => {
       unsubscribe();
-      // Update offline status when the component unmounts
     };
   }, [friendId]);
 
