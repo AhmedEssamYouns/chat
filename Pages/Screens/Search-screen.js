@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH, db } from '../../firebase/config';
 import { doc, collection, query, where, getDocs } from 'firebase/firestore';
 import { monitorFriendStatuses, handleStatusChange } from '../../firebase/frinend-state';
-
+import { fetchUsers } from '../../firebase/getUser';
 const SearchScreen = () => {
     const [searchText, setSearchText] = useState('');
     const [users, setUsers] = useState([]);
@@ -13,27 +13,33 @@ const SearchScreen = () => {
     const navigation = useNavigation();
     const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
+    const searchAnim = useRef(new Animated.Value(-100)).current; // Initial value for the animated search bar
+
     useEffect(() => {
-        // Fetch all users except the current user
-        const fetchUsers = async () => {
-            const q = query(collection(db, 'users'), where('uid', '!=', currentUserId));
-            const querySnapshot = await getDocs(q);
-            const userList = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
-            setUsers(userList);
-        };
+        // Animate search bar from top
+        Animated.timing(searchAnim, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+        }).start();
 
-        fetchUsers();
+       
 
-        // Monitor real-time friend status updates
-        const unsubscribe = monitorFriendStatuses(currentUserId, setFriendStatuses);
-
-        return () => {
-            unsubscribe(); // Clean up listener when the component unmounts
-        };
-    }, [currentUserId]);
+            // Fetch users from backend
+            const loadUsers = async () => {
+                const userList = await fetchUsers(currentUserId);
+                setUsers(userList);
+            };
+    
+            loadUsers();
+    
+            // Monitor real-time friend status updates
+            const unsubscribe = monitorFriendStatuses(currentUserId, setFriendStatuses);
+    
+            return () => {
+                unsubscribe(); // Clean up listener when the component unmounts
+            };
+        }, [currentUserId]);
 
     const renderUserItem = ({ item }) => {
         const friendStatus = friendStatuses[item.uid] || 'Add Friend';
@@ -64,7 +70,7 @@ const SearchScreen = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.searchSection}>
+            <Animated.View style={[styles.searchSection, { transform: [{ translateY: searchAnim }] }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <Feather name="arrow-left" size={24} color="#FFFFFF" />
@@ -78,7 +84,7 @@ const SearchScreen = () => {
                         autoFocus
                     />
                 </View>
-            </View>
+            </Animated.View>
 
             <FlatList
                 data={filteredUsers}

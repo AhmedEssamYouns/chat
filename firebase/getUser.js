@@ -1,5 +1,6 @@
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './config';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 /**
  * Subscribes to real-time updates for a user's document.
@@ -26,3 +27,21 @@ export const getUserById = (userId, callback) => {
         throw error;
     }
 };
+
+
+export const fetchUsers = async (currentUserId) => {
+    try {
+        const q = query(collection(db, 'users'), where('uid', '!=', currentUserId));
+        const querySnapshot = await getDocs(q);
+        const userList = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+        return userList;
+    } catch (error) {
+        console.error("Error fetching users: ", error);
+        return [];
+    }
+};
+
+

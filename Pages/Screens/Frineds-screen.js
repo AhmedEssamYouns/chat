@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import useFriends from '../../firebase/ferchFriends';
+import useFriends from '../../firebase/frinend-state';
 
 const FriendsScreen = () => {
     const [searchText, setSearchText] = useState('');

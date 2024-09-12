@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Image, TouchableWithoutFeedback, FlatList } from 'react-native';
-import { doc, onSnapshot, updateDoc, arrayRemove, arrayUnion } from 'firebase/firestore';
-import { FIREBASE_AUTH, db } from '../../firebase/config';
+import { FIREBASE_AUTH } from '../../firebase/config';
+import { subscribeToFriendRequests,acceptFriendRequest,declineFriendRequest } from '../../firebase/frinend-state';
 
 export default function FriendRequestModal({ visible, onClose }) {
     const [friendRequests, setFriendRequests] = useState([]);
@@ -10,84 +10,27 @@ export default function FriendRequestModal({ visible, onClose }) {
     useEffect(() => {
         if (visible) {
             const currentUserId = FIREBASE_AUTH.currentUser.uid;
-            const userDocRef = doc(db, 'users', currentUserId);
 
-            // Subscribe to real-time updates
-            const unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    const data = docSnapshot.data();
-                    const requests = data.friendRequestsReceived || [];
-                    setFriendRequests(requests);
+            const unsubscribe = subscribeToFriendRequests(currentUserId, setFriendRequests, setUserDetails);
 
-                    // Fetch user details for each request
-                    const details = {};
-                    for (const requestId of requests) {
-                        // Use onSnapshot to get real-time updates for each requested user
-                        const userDocRef = doc(db, 'users', requestId);
-                        await new Promise((resolve) => {
-                            const unsubscribeUser = onSnapshot(userDocRef, (userSnapshot) => {
-                                if (userSnapshot.exists()) {
-                                    details[requestId] = userSnapshot.data();
-                                    setUserDetails(prevDetails => ({ ...prevDetails, ...details }));
-                                    resolve(); // Resolve the promise when data is fetched
-                                }
-                            });
-
-                            // Cleanup function for each listener
-                            return () => unsubscribeUser();
-                        });
-                    }
-                }
-            });
-
-            // Cleanup function for the main listener
-            return () => unsubscribe();
+            return () => unsubscribe(); // Clean up on unmount
         }
     }, [visible]);
 
     const handleAcceptRequest = async (requestId) => {
         const currentUserId = FIREBASE_AUTH.currentUser.uid;
-        const userDocRef = doc(db, 'users', currentUserId);
-        const targetUserDocRef = doc(db, 'users', requestId);
-
-        // Accept the request
-        await updateDoc(userDocRef, {
-            friends: arrayUnion(requestId),
-            friendRequestsReceived: arrayRemove(requestId),
-        });
-        await updateDoc(targetUserDocRef, {
-            friends: arrayUnion(currentUserId),
-            friendRequestsSent: arrayRemove(currentUserId),
-        });
-
-        // Close modal after accepting
+        await acceptFriendRequest(currentUserId, requestId);
         onClose();
     };
 
     const handleDeclineRequest = async (requestId) => {
         const currentUserId = FIREBASE_AUTH.currentUser.uid;
-        const userDocRef = doc(db, 'users', currentUserId);
-        const targetUserDocRef = doc(db, 'users', requestId);
-
-        // Decline the request
-        await updateDoc(userDocRef, {
-            friendRequestsReceived: arrayRemove(requestId),
-        });
-        await updateDoc(targetUserDocRef, {
-            friendRequestsSent: arrayRemove(currentUserId),
-        });
-
-        // Close modal after declining
+        await declineFriendRequest(currentUserId, requestId);
         onClose();
     };
 
     return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={onClose}
-        >
+        <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={styles.overlay} />
             </TouchableWithoutFeedback>
@@ -109,16 +52,10 @@ export default function FriendRequestModal({ visible, onClose }) {
                                     </View>
                                 </View>
                                 <View style={styles.requestActions}>
-                                    <TouchableOpacity
-                                        style={styles.declineButton}
-                                        onPress={() => handleDeclineRequest(requestId)}
-                                    >
+                                    <TouchableOpacity style={styles.declineButton} onPress={() => handleDeclineRequest(requestId)}>
                                         <Text style={styles.requestButtonText}>Decline</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.acceptButton}
-                                        onPress={() => handleAcceptRequest(requestId)}
-                                    >
+                                    <TouchableOpacity style={styles.acceptButton} onPress={() => handleAcceptRequest(requestId)}>
                                         <Text style={styles.requestButtonText}>Accept</Text>
                                     </TouchableOpacity>
                                 </View>

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, A
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import useFriends from '../../firebase/ferchFriends';
+import useFriends from '../../firebase/frinend-state';
 import { sendMessage } from '../../firebase/manage-Chat-room';
 
 const SharePost = () => {

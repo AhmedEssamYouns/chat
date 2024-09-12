@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, StyleSheet, View, Animated, BackHandler, Text } from 'react-native';
-import { Feather, Octicons, AntDesign ,MaterialCommunityIcons,MaterialIcons} from '@expo/vector-icons';
+import { Feather, Octicons, AntDesign, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import RotatingButton from './animated-rotate-button';
 import CreatePostModal from '../posts/manage posts/create-post-model';
@@ -57,7 +57,7 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
 
     const animatedHeight = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 240], // Adjust as needed
+        outputRange: [0, 200], // Adjust as needed
     });
 
     const rotation = rotate.interpolate({
@@ -96,18 +96,8 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
                         navigation.navigate('Friends');
                     }}
                 >
-                    <Octicons name="comment" size={24} color="white" />
-                    <Text style={styles.label}>messege</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.item}
-                    onPress={() => {
-                        setExpanded(false);
-                        navigation.navigate('Group');
-                    }}
-                >
                     <Octicons name="people" size={24} color="white" />
-                    <Text style={styles.label}>group</Text>
+                    <Text style={styles.label}>friends</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.item}
