@@ -1,21 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, ActivityIndicator, ToastAndroid } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH, db, storage } from '../../../firebase/config';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { updateProfile } from 'firebase/auth';
-import { checkUsernameAvailability } from '../../../firebase/auth';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { FIREBASE_AUTH } from '../../../firebase/config';
+import { loadUserProfile, updateUserProfile, uploadProfileImage, updateAuthProfile,checkUsernameAvailability} from '../../../firebase/auth';
+import ImagePickerComponent from '../../../Components/elements/image-picker';
 
 const EditProfileScreen = () => {
     const navigation = useNavigation();
     const [username, setUsername] = useState('');
     const [bio, setBio] = useState('');
-    const [wow, setwow] = useState('');
-
     const [profileImage, setProfileImage] = useState(null);
     const [initialUsername, setInitialUsername] = useState('');
     const [initialBio, setInitialBio] = useState('');
@@ -24,6 +18,7 @@ const EditProfileScreen = () => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [usernameStatus, setUsernameStatus] = useState(null);
     const [usernameError, setUsernameError] = useState('');
+    const [isPickerVisible, setIsPickerVisible] = useState(false);
 
     const currentUser = FIREBASE_AUTH.currentUser;
 
@@ -32,22 +27,16 @@ const EditProfileScreen = () => {
     }, [username]);
 
     useEffect(() => {
-        const loadUserProfile = async () => {
+        const fetchProfile = async () => {
             try {
-                const userDocRef = doc(db, 'users', currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
+                const userData = await loadUserProfile(currentUser.uid);
+                setUsername(userData.username || '');
+                setBio(userData.bio || '');
+                setProfileImage(userData.profileImage || null);
 
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    setUsername(userData.username || '');
-                    setBio(userData.bio || '');
-                    setProfileImage(userData.profileImage || null); // Default to null if no image is set
-
-                    // Set initial values
-                    setInitialUsername(userData.username || '');
-                    setInitialBio(userData.bio || '');
-                    setInitialProfileImage(userData.profileImage || null);
-                }
+                setInitialUsername(userData.username || '');
+                setInitialBio(userData.bio || '');
+                setInitialProfileImage(userData.profileImage || null);
             } catch (error) {
                 Alert.alert('Error', 'Failed to load profile data.');
             } finally {
@@ -55,31 +44,8 @@ const EditProfileScreen = () => {
             }
         };
 
-        loadUserProfile();
+        fetchProfile();
     }, []);
-
-    const compressImage = async (uri) => {
-        const manipResult = await ImageManipulator.manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }], // Resize to a smaller width
-            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Adjust quality
-        );
-        return manipResult.uri;
-    };
-
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            const compressedUri = await compressImage(result.assets[0].uri);
-            setProfileImage(compressedUri);
-        }
-    };
 
     const handleSaveProfile = async () => {
         const usernameRegex = /^[a-zA-Z0-9_]+$/;
@@ -99,26 +65,19 @@ const EditProfileScreen = () => {
         setIsUpdating(true);
 
         try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
-
             let updatedProfileImageUrl = profileImage;
 
             if (profileImage && !profileImage.startsWith('http')) {
-                const imageRef = ref(storage, `profileImages/${currentUser.uid}`);
-                const img = await fetch(profileImage);
-                const bytes = await img.blob();
-
-                await uploadBytes(imageRef, bytes);
-                updatedProfileImageUrl = await getDownloadURL(imageRef);
+                updatedProfileImageUrl = await uploadProfileImage(profileImage, currentUser.uid);
             }
 
-            await updateDoc(userDocRef, {
+            await updateUserProfile(currentUser.uid, {
                 username,
                 bio,
                 profileImage: updatedProfileImageUrl,
             });
 
-            await updateProfile(currentUser, {
+            await updateAuthProfile(currentUser, {
                 displayName: username,
                 photoURL: updatedProfileImageUrl,
             });
@@ -127,24 +86,22 @@ const EditProfileScreen = () => {
 
             navigation.goBack();
         } catch (error) {
-            Alert.alert('Error', 'Failed to update profile. Please try again later.');
+            console.log(error);
+            ToastAndroid.show('Failed to update profile.', ToastAndroid.LONG);
         } finally {
             setIsUpdating(false);
         }
     };
 
-
     const handleChangeText = (text) => {
-        const lines = text.split('\n').length
+        const lines = text.split('\n').length;
         if (lines <= 5) {
             setBio(text);
         } else {
-            ToastAndroid.show('can not add more than 5 lines.', ToastAndroid.LONG);
-
+            ToastAndroid.show('Cannot add more than 5 lines.', ToastAndroid.LONG);
         }
     };
 
-    // Determine if the save button should be enabled
     const isSaveButtonDisabled =
         username === initialUsername &&
         bio === initialBio &&
@@ -160,7 +117,7 @@ const EditProfileScreen = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.profileImageContainer} onPress={pickImage}>
+            <TouchableOpacity style={styles.profileImageContainer} onPress={() => setIsPickerVisible(true)}>
                 <Image
                     source={{ uri: profileImage || 'https://th.bing.com/th/id/OIP.iUYZm2KUP1mKVQ2qtXbnbQHaH_?rs=1&pid=ImgDetMain' }}
                     style={styles.profileImage}
@@ -173,7 +130,7 @@ const EditProfileScreen = () => {
             <View style={styles.usernameContainer}>
                 <TextInput
                     maxLength={20}
-                    style={{ color: "white", width: '85%' }}
+                    style={{ color: 'white', width: '85%' }}
                     placeholder="Username"
                     placeholderTextColor={'white'}
                     value={username}
@@ -199,7 +156,6 @@ const EditProfileScreen = () => {
                 maxLength={80}
                 onChangeText={handleChangeText}
                 multiline
-
             />
 
             <TouchableOpacity style={styles.button} onPress={handleSaveProfile} disabled={isSaveButtonDisabled || isUpdating}>
@@ -209,9 +165,16 @@ const EditProfileScreen = () => {
                     <Text style={styles.buttonText}>Save</Text>
                 )}
             </TouchableOpacity>
+
+            <ImagePickerComponent
+                isVisible={isPickerVisible}
+                onClose={() => setIsPickerVisible(false)}
+                onImagePicked={(uri) => setProfileImage(uri)}
+            />
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {

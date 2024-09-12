@@ -24,7 +24,7 @@ const AnimatedHeartIcon = ({ isLiked }) => {
     }, [isLiked]);
 
     return (
-        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+        <Animated.View style={{bottom:8, transform: [{ scale: scaleValue }] }}>
             <AntDesign
                 name={isLiked ? 'heart' : 'hearto'}
                 size={24}

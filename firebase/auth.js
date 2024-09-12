@@ -1,10 +1,83 @@
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { FIREBASE_AUTH, db } from './config';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { updatePassword } from 'firebase/auth';
-import { sendPasswordResetEmail } from 'firebase/auth';
+import { 
+    createUserWithEmailAndPassword, 
+    updateProfile, 
+    signInWithEmailAndPassword, 
+    updatePassword, 
+    sendPasswordResetEmail 
+} from 'firebase/auth';
+
+import { 
+    doc, 
+    setDoc, 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    getDoc, 
+    updateDoc 
+} from 'firebase/firestore';
+
+import { 
+    getDownloadURL, 
+    ref, 
+    uploadBytes 
+} from 'firebase/storage';
+
+import { FIREBASE_AUTH, db, storage } from './config';
 import { ToastAndroid } from 'react-native';
+import { CommonActions} from '@react-navigation/native';
+
+/**
+ * Fetches the user's profile data.
+ * @param {string} userId - The user's ID.
+ * @returns {Promise<Object>} - The user's profile data.
+ */
+export const loadUserProfile = async (userId) => {
+    const userDocRef = doc(db, 'users', userId);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+        return userDoc.data();
+    }
+    throw new Error('Failed to load profile data.');
+};
+
+/**
+ * Updates the user's profile data.
+ * @param {string} userId - The user's ID.
+ * @param {Object} profileData - The profile data to update.
+ * @returns {Promise<void>}
+ */
+export const updateUserProfile = async (userId, profileData) => {
+    const userDocRef = doc(db, 'users', userId);
+    await updateDoc(userDocRef, profileData);
+};
+
+/**
+ * Uploads a profile image and returns its URL.
+ * @param {string} imageUri - The URI of the image to upload.
+ * @param {string} userId - The user's ID.
+ * @returns {Promise<string>} - The URL of the uploaded image.
+ */
+export const uploadProfileImage = async (imageUri, userId) => {
+    const fileName = imageUri.split('/').pop(); // Extract file name from URI
+    const imageRef = ref(storage, `profileImages/${userId}/${fileName}`);
+    const img = await fetch(imageUri);
+    const bytes = await img.blob();
+
+    await uploadBytes(imageRef, bytes);
+    return await getDownloadURL(imageRef);
+};
+
+/**
+ * Updates the Firebase Authentication profile.
+ * @param {Object} user - The Firebase user object.
+ * @param {Object} profileData - The profile data to update.
+ * @returns {Promise<void>}
+ */
+export const updateAuthProfile = async (user, profileData) => {
+    await updateProfile(user, profileData);
+};
 
 export const handleLogout = async (navigation) => {
     try {

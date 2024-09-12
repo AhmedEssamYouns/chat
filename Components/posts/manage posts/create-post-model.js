@@ -1,105 +1,54 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView, ToastAndroid } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-import { storage, db } from '../../../firebase/config';
-import { FIREBASE_AUTH } from '../../../firebase/config';
-import { addDoc, doc, setDoc, collection } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { createPost, compressImage} from '../../../firebase/manage-posts';
 import { getUserById } from '../../../firebase/getUser';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { FIREBASE_AUTH } from '../../../firebase/config';
+
 
 const CreatePostModal = ({ visible, onClose }) => {
+    const navigation = useNavigation();
+    const [user, setUser] = useState('');
+    const [postText, setPostText] = useState('');
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [selectionLimit, setSelectionLimit] = useState(4);
+
     useEffect(() => {
         // Subscribe to real-time updates
         const unsubscribe = getUserById(FIREBASE_AUTH.currentUser.uid, (userData) => {
-            setuser(userData);
+            setUser(userData);
         });
 
         // Cleanup function to stop listening for updates
         return () => unsubscribe();
     }, [FIREBASE_AUTH.currentUser.uid]);
 
-    const navigation = useNavigation();
-    const [user, setuser] = useState('');
-    const [postText, setPostText] = useState('');
-    const [selectedImages, setSelectedImages] = useState([]);
-    const [uploading, setUploading] = useState(false);
-    const [selectionLimit, setSelectionLimit] = useState(4); // Default limit
     useEffect(() => {
-        if (selectedImages.length == 3) {
-            setSelectionLimit(1);
-        } else if (selectedImages.length == 2) {
-            setSelectionLimit(2);
-        } else if (selectedImages.length == 1) {
-            setSelectionLimit(3);
-        } else {
-            setSelectionLimit(4);
-        }
+        setSelectionLimit(4 - selectedImages.length);
+    }, [selectedImages.length]);
 
-    }, [selectedImages.length]); // Depend on selectedImages
     const handlePost = async () => {
-        
         if (selectedImages.length === 0) {
             alert('Please upload at least one image to post.');
             return;
         }
         setUploading(true);
-        try {
-            let imageUrls = [];
+        const result = await createPost(postText, selectedImages);
+        setUploading(false);
 
-            // Handle image uploads
-            if (selectedImages.length > 0) {
-                const uploadPromises = selectedImages.map(async (imageUri) => {
-                    const imageRef = ref(storage, `posts/${Date.now()}`);
-                    const response = await fetch(imageUri);
-                    const blob = await response.blob();
-                    await uploadBytes(imageRef, blob);
-                    return await getDownloadURL(imageRef);
-                });
-
-                imageUrls = await Promise.all(uploadPromises);
-            }
-
-            // Create a new document in Firestore to get the auto-generated ID
-            const postRef = await addDoc(collection(db, 'posts'), {
-                text: postText,
-                imageUrls,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString(),
-            });
-
-            // Update the document with the auto-generated ID as postId
-            await setDoc(doc(db, 'posts', postRef.id), {
-                postId: postRef.id,
-                text: postText,
-                imageUrls,
-                id: FIREBASE_AUTH.currentUser.uid,
-                time: new Date().toISOString(),
-            });
-
+        if (result.success) {
             setPostText('');
             setSelectedImages([]);
-        ToastAndroid.show('snap shared successfully.', ToastAndroid.LONG);
-
+            ToastAndroid.show('Snap shared successfully.', ToastAndroid.LONG);
             navigation.navigate("Tabs", { screen: "profile" });
-            onClose(); // Close the modal
-        } catch (error) {
-            console.error('Error creating post:', error);
+            onClose();
+        } else {
             alert('Failed to create post.');
-        } finally {
-            setUploading(false);
         }
-    };
-
-    const compressImage = async (uri) => {
-        const manipResult = await ImageManipulator.manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }], // Resize to a smaller width
-            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Adjust quality
-        );
-        return manipResult.uri;
     };
 
     const pickImages = async () => {
@@ -109,7 +58,7 @@ const CreatePostModal = ({ visible, onClose }) => {
             aspect: [4, 3],
             quality: 1,
             allowsMultipleSelection: true,
-            selectionLimit: selectionLimit
+            selectionLimit,
         });
 
         if (!result.canceled) {
@@ -118,19 +67,18 @@ const CreatePostModal = ({ visible, onClose }) => {
             );
             setSelectedImages((prevImages) => [
                 ...prevImages,
-                ...compressedUris.slice(0, 4 - prevImages.length) // Ensure total is not more than 4
+                ...compressedUris.slice(0, 4 - prevImages.length)
             ]);
         }
     };
 
     const cancelImage = (index) => {
-        setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
+        setSelectedImages((prevImages) => prevImages.filter((_, i) => i !== index));
     };
 
     return (
         <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
             <View style={styles.modalContainer}>
-                {/* Top Bar */}
                 <View style={styles.topBar}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <TouchableOpacity style={{ padding: 10 }} onPress={onClose}>
@@ -138,24 +86,19 @@ const CreatePostModal = ({ visible, onClose }) => {
                         </TouchableOpacity>
                         <View style={styles.userInfo}>
                             <Image
-                                source={{ uri: user.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0' }}
+                                source={{ uri: user.profileImage || 'https://defaultimage.com' }}
                                 style={styles.profileImage}
                             />
                             <Text style={styles.username}>{user.username}</Text>
                         </View>
                     </View>
-                    <TouchableOpacity
-                        onPress={handlePost}
-                        disabled={uploading || selectedImages.length === 0}
-                    >
+                    <TouchableOpacity onPress={handlePost} disabled={uploading || selectedImages.length === 0}>
                         <Text style={[styles.postButton, { opacity: uploading || selectedImages.length > 0 ? 1 : 0.5 }]}>
                             {uploading ? 'Posting...' : 'Post'}
                         </Text>
                     </TouchableOpacity>
-
                 </View>
 
-                {/* Text Input */}
                 <TextInput
                     style={styles.textInput}
                     placeholder="Share your story..."
@@ -165,7 +108,6 @@ const CreatePostModal = ({ visible, onClose }) => {
                     onChangeText={setPostText}
                 />
 
-                {/* Display Selected Images */}
                 {selectedImages.length > 0 && (
                     <ScrollView style={styles.imageContainer} horizontal>
                         {selectedImages.map((uri, index) => (

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { FIREBASE_AUTH } from '../../firebase/config';
 import { Ionicons } from '@expo/vector-icons';
 import ConfirmationModal from '../elements/alert';
 import { deleteMessage } from '../../firebase/manage-Chat-room'; // Ensure this function is available
 import { useNavigation } from '@react-navigation/native';
+import { fetchPostById } from '../../firebase/fetchPosts';
 
 const formatTimestamp = (timestamp) => {
   const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
@@ -35,6 +36,18 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const matchIndex = lowerCaseText ? lowerCaseText.indexOf(lowerCaseSearchQuery) : -1;
   const isSentByCurrentUser = item.senderId === FIREBASE_AUTH.currentUser.uid;
   const messageStyle = isSentByCurrentUser ? styles.sentMessage : styles.receivedMessage;
+  const [postData, setPostData] = useState(null);
+
+  useEffect(() => {
+    if (item.postShared?.postId) {
+      const unsubscribe = fetchPostById(item.postShared.postId, (data) => {
+        setPostData(data);
+      });
+  
+      // Clean up the listener on component unmount
+      return () => unsubscribe();
+    }
+  }, [item.postShared?.postId]);
 
   const handleLongPressImage = () => {
     setImageToDelete(item);
@@ -85,8 +98,6 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
             <View style={styles.messageInfo}>
               <Text style={styles.messageTime}>{formatTimestamp(item.timestamp)}</Text>
               {item.isEdited && <Text style={styles.editedTag}>Edited</Text>}
-              <View style={styles.statusIcons}>
-              </View>
             </View>
           </View>
         </Pressable>
@@ -99,22 +110,24 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
             {
               alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
             },
-          ]} onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} onLongPress={handleLongPressImage}>
+          ]} 
+          onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} 
+          onLongPress={handleLongPressImage}
+        >
           <Image
             style={{
               width: 200,
               height: 200,
-              borderRadius:10,
+              borderRadius: 10,
             }}
             source={{ uri: item.imageUrl }}
           />
           <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
-
         </Pressable>
       )}
 
       {/* Render Shared Post */}
-      {item.postShared && (
+      {item.postShared && postData && (
         <Pressable
           onLongPress={handleLongPressImage}
           onPress={() => navigation.navigate('PostScreen', { post: item.postShared })}
@@ -132,19 +145,17 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
             <Text style={styles.time}>{formatTimestamp2(item.postShared.time)}</Text>
           </View>
           <View style={styles.TextContainer}>
-
-            {item.postShared.text &&
-              <Text style={styles.sharedPostDescription}>{item.postShared.text}</Text>
-            }
+            {postData.text && (
+              <Text style={styles.sharedPostDescription}>{postData.text}</Text>
+            )}
           </View>
-          {item.postShared.imageUrls && item.postShared.imageUrls.length > 0 && (
+          {postData.imageUrls && postData.imageUrls.length > 0 && (
             <View style={{ backgroundColor: 'white' }}>
               <Image
                 style={{ height: 300, resizeMode: 'contain' }}
-                source={{ uri: item.postShared.imageUrls[0] }} // Access the first image URL
+                source={{ uri: postData.imageUrls[0] }} // Access the first image URL
               />
             </View>
-
           )}
           <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
         </Pressable>
@@ -155,12 +166,13 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         visible={modalVisible}
         onConfirm={handleDeleteImage}
         onCancel={() => setModalVisible(false)}
-        message="Do you want to delete this messege?"
+        message="Do you want to delete this message?"
         confirm="Delete"
       />
     </>
   );
 };
+
 
 const styles = StyleSheet.create({
   messageContainer: {

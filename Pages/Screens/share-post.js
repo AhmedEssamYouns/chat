@@ -4,13 +4,11 @@ import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import useFriends from '../../firebase/frinend-state';
-import { sendMessage } from '../../firebase/manage-Chat-room';
+import { sharePostWithFriends } from '../../firebase/manage-posts';
 
 const SharePost = () => {
     const route = useRoute();
     const { post, user } = route.params;
-    console.log(post)
-    console.log(user)
     const [searchText, setSearchText] = useState('');
     const [selectedFriends, setSelectedFriends] = useState([]);
     const [isSharingPost, setIsSharingPost] = useState(false);
@@ -25,42 +23,22 @@ const SharePost = () => {
         }
     };
 
-    const handleSharePost = async () => {
-        if (selectedFriends.length === 0) {
-            Toast.show({
-                type: 'error',
-                text1: 'No Friends Selected',
-                text2: 'Please select at least one friend to share the post with.',
-            });
-            return;
-        }
-
+    const handleSharePost = () => {
         setIsSharingPost(true);
-        try {
-            for (const friend of selectedFriends) {
-                await sendMessage(friend.uid, '', null, post, user); // Send the postId to each selected friend
-                console.log(friend.uid)
+        sharePostWithFriends(
+            selectedFriends, 
+            post, 
+            user,
+            () => {
+                setSelectedFriends([]);
+                navigation.goBack();
+            },
+            (title, message) => {
+                Toast.show({ type: 'error', text1: title, text2: message });
             }
-            setSelectedFriends([]);
-            console.log('post shared')
-            ToastAndroid.show('snap shared.', ToastAndroid.LONG);
-
-            Toast.show({
-                type: 'success',
-                text1: 'Post Shared',
-                text2: 'Your post has been shared successfully.',
-            });
-            navigation.goBack();
-        } catch (error) {
-            console.error('Error sharing post:', error);
-            Toast.show({
-                type: 'error',
-                text1: 'Share Failed',
-                text2: 'There was an error sharing the post. Please try again.',
-            });
-        } finally {
+        ).finally(() => {
             setIsSharingPost(false);
-        }
+        });
     };
 
     const renderFriendItem = ({ item }) => {

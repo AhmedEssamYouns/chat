@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FlatList, Text, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { FlatList, Text, StyleSheet, View, TouchableOpacity, Dimensions } from 'react-native';
 import PostItem from './post-item';
 import { LogBox } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // You can choose a different icon set if preferred
+import Icon from 'react-native-vector-icons/MaterialIcons'; 
 
 LogBox.ignoreAllLogs();
 
-const ITEM_HEIGHT = 450;
+const ITEM_HEIGHT = 550;
 
 const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex, header }) => {
   const flatListRef = useRef(null);

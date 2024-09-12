@@ -20,7 +20,6 @@ import FriendRequestModal from '../Components/elements/friends-requist-mode';
 import ImageScreen from '../Components/elements/image';
 import SharePost from '../Pages/Screens/share-post';
 import PostScreen from '../Components/posts/post-screen';
-
 const Stack = createStackNavigator();
 
 export default function MainTabNavigator() {

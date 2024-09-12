@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH, db } from '../../firebase/config';
-import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
 import PostsModal from '../../Components/posts/posts-list/PostsModel';
 import PostGrid from '../../Components/posts/posts-Thumbnail/postsGrid';
+import { FIREBASE_AUTH } from '../../firebase/config';
+import { fetchUserData,fetchUserPosts } from '../../firebase/getUser';
+
 const ProfileScreen = () => {
     const navigation = useNavigation();
     const [userProfile, setUserProfile] = useState({
@@ -22,30 +23,8 @@ const ProfileScreen = () => {
     useEffect(() => {
         const userId = FIREBASE_AUTH.currentUser.uid;
 
-        const userDocRef = doc(db, 'users', userId);
-        const unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
-            if (docSnapshot.exists()) {
-                const userData = docSnapshot.data();
-                setUserProfile((prevProfile) => ({
-                    ...prevProfile,
-                    id: userId,
-                    name: userData.username,
-                    avatar: userData.profileImage || 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0',
-                    bio: userData.bio,
-                    friends: userData.friends?.length
-                }));
-            }
-        });
-
-        const postsRef = collection(db, 'posts');
-        const postsQuery = query(postsRef, where('id', '==', userId));
-        const unsubscribePosts = onSnapshot(postsQuery, (querySnapshot) => {
-            const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setUserProfile(prevProfile => ({
-                ...prevProfile,
-                posts,
-            }));
-        });
+        const unsubscribeUser = fetchUserData(userId, setUserProfile);
+        const unsubscribePosts = fetchUserPosts(userId, setUserProfile);
 
         return () => {
             unsubscribeUser();
@@ -57,19 +36,21 @@ const ProfileScreen = () => {
     const handleModalClose = () => setModalVisible(false);
 
     const handlePostSelect = (index) => {
-        console.log('Selected post index:', index); // Logs the selected post index
+        console.log('Selected post index:', index); 
         setSelectedPost(index);
         handleModalOpen();
     };
+
     const cleanBio = (bio) => {
         if (!bio) {
-          return ''; // Return an empty string if bio is null or undefined
+            return ''; // Return an empty string if bio is null or undefined
         }
         return bio
-          .split('\n')
-          .filter(line => line.trim() !== '')
-          .join('\n');
-      };
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .join('\n');
+    };
+
     return (
         <View style={{ flex: 1, backgroundColor: '#121212' }}>
             <View style={styles.profileHeader}>
@@ -115,12 +96,12 @@ const ProfileScreen = () => {
                 transparent={false}
                 onRequestClose={handleModalClose}
             >
-                    <PostsModal
-                        posts={userProfile.posts}
-                        id={userProfile.id}
-                        initialPost={selectedPost} 
-                        onClose={handleModalClose}
-                    />
+                <PostsModal
+                    posts={userProfile.posts}
+                    id={userProfile.id}
+                    initialPost={selectedPost} 
+                    onClose={handleModalClose}
+                />
             </Modal>
         </View>
     );
