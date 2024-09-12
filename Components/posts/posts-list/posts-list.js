@@ -11,6 +11,7 @@ const ITEM_HEIGHT = 450;
 const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDeletePost, initialPostindex, header }) => {
   const flatListRef = useRef(null);
   const [showButton, setShowButton] = useState(false);
+  const hasMounted = useRef(false); 
 
   // Sort posts by newest first
   const sortedPosts = [...posts].sort((a, b) => {
@@ -44,16 +45,13 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
     }
   };
 
-  useEffect(() => {
-    // Wait for the FlatList to be fully rendered before scrolling
-    if (sortedPosts.length > 0 && initialPostindex != null) {
-      const timeout = setTimeout(() => {
-        scrollToIndex();
-      }, 300); // Adding a delay to ensure all content is rendered
-
-      return () => clearTimeout(timeout); // Cleanup the timeout
+  // Scroll to the initial index only on first content load
+  const handleContentChange = () => {
+    if (!hasMounted.current && sortedPosts.length > 0 && initialPostindex != null) {
+      scrollToIndex();
+      hasMounted.current = true; // Mark as mounted after first scroll
     }
-  }, [initialPostindex, sortedPosts]);
+  };
 
   const scrollToTop = () => {
     if (flatListRef.current) {
@@ -80,7 +78,7 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
         }
         getItemLayout={getItemLayout}
         onScroll={handleScroll}
-        onContentSizeChange={scrollToIndex} // Ensures scroll happens after content is laid out
+        onContentSizeChange={handleContentChange} // Trigger scroll when content is laid out
         onScrollToIndexFailed={(info) => {
           // Handle failure by scrolling to an approximate offset
           flatListRef.current.scrollToOffset({
