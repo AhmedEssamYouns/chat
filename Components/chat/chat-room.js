@@ -1,12 +1,12 @@
 
 import React, { useState, useRef, useEffect, } from 'react';
 import { View, Text, StyleSheet, Modal, Button, BackHandler, ImageBackground, TouchableOpacity } from 'react-native';
-import { FloatingButton } from '../../Components/Buttons/Floating-Button';
-import MessageInput from '../../Components/chat/Messege-Input';
-import Navbar from '../../Components/chat/chat-navbar';
-import MessageList from '../../Components/chat/Messege-list';
+import { FloatingButton } from '../Buttons/Floating-Button';
+import MessageInput from './Messege-Input';
+import Navbar from './chat-navbar';
+import MessageList from './Messege-list';
 import { Keyboard } from 'react-native';
-import DropdownMenu from '../../Components/chat/chat-menu-model';
+import DropdownMenu from './chat-menu-model';
 import { fetchMessages, deleteMessage, editMessage, sendMessage} from '../../firebase/manage-Chat-room';
 
 const ChatConversationScreen = ({ route, navigation }) => {
