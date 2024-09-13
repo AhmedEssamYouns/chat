@@ -216,7 +216,8 @@ const styles = StyleSheet.create({
     },
     storyPhoto: {
         marginTop: 10,
-        width: '100%',
+        width: 340,
+        alignSelf:"center",
         height: 400,
         borderRadius: 10,
     },

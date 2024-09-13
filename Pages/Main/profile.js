@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import PostsModal from '../../Components/posts/posts-list/PostsModel';
 import PostGrid from '../../Components/posts/posts-Thumbnail/postsGrid';
 import { FIREBASE_AUTH } from '../../firebase/config';
-import { fetchUserData,fetchUserPosts } from '../../firebase/getUser';
+import { fetchUserData, fetchUserPosts } from '../../firebase/getUser';
 
 const ProfileScreen = () => {
     const navigation = useNavigation();
@@ -36,7 +36,7 @@ const ProfileScreen = () => {
     const handleModalClose = () => setModalVisible(false);
 
     const handlePostSelect = (index) => {
-        console.log('Selected post index:', index); 
+        console.log('Selected post index:', index);
         setSelectedPost(index);
         handleModalOpen();
     };
@@ -53,39 +53,42 @@ const ProfileScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#121212' }}>
-            <View style={styles.profileHeader}>
-                <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: userProfile.avatar })}>
-                    <Image source={{ uri: userProfile.avatar }} style={styles.avatar} />
-                </Pressable>
-                <View style={{ padding: 15 }}>
-                    <Text style={styles.profileName}>{userProfile.name}</Text>
-                    <Text style={styles.profileBio}>{cleanBio(userProfile.bio) || 'no bio'}</Text>
-                </View>
-                <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => navigation.navigate('edit profile')}
-                >
-                    <Feather name="edit" size={18} color="tomato" />
-                </TouchableOpacity>
 
-                <View style={{ flexDirection: 'row', position: 'absolute', justifyContent: 'space-between', bottom: 0, width: '110%' }}>
-                    <TouchableOpacity
-                        style={styles.postsButton}
-                        onPress={handleModalOpen}
-                    >
-                        <Text style={styles.sectionTitle}>Snaps</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.friendsButton}
-                        onPress={() => navigation.navigate('Friends')}
-                    >
-                        <Text style={{ color: '#ccc', fontSize: 15 }}>
-                            Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>{userProfile.friends}</Text>
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
             <PostGrid
+                header={
+                    <View style={styles.profileHeader}>
+                        <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: userProfile.avatar })}>
+                            <Image source={{ uri: userProfile.avatar }} style={styles.avatar} />
+                        </Pressable>
+                        <View style={{ padding: 15 }}>
+                            <Text style={styles.profileName}>{userProfile.name}</Text>
+                            <Text style={styles.profileBio}>{cleanBio(userProfile.bio) || 'no bio'}</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate('edit profile')}
+                        >
+                            <Feather name="edit" size={18} color="tomato" />
+                        </TouchableOpacity>
+
+                        <View style={{ flexDirection: 'row', position: 'absolute', justifyContent: 'space-between', bottom: 0, width: '110%' }}>
+                            <TouchableOpacity
+                                style={styles.postsButton}
+                                onPress={handleModalOpen}
+                            >
+                                <Text style={styles.sectionTitle}>Snaps</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.friendsButton}
+                                onPress={() => navigation.navigate('Friends')}
+                            >
+                                <Text style={{ color: '#ccc', fontSize: 15 }}>
+                                    Friends <Text style={{ fontWeight: 'bold', color: 'white' }}>{userProfile.friends}</Text>
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                }
                 userId={userProfile.id}
                 onPostSelect={handlePostSelect}
             />
@@ -99,7 +102,7 @@ const ProfileScreen = () => {
                 <PostsModal
                     posts={userProfile.posts}
                     id={userProfile.id}
-                    initialPost={selectedPost} 
+                    initialPost={selectedPost}
                     onClose={handleModalClose}
                 />
             </Modal>

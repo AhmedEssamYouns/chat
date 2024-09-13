@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Modal, ScrollView, ToastAndroid } from 'react-native';
-import { Feather, AntDesign } from '@expo/vector-icons';
+import { Feather, AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { db } from '../../../firebase/config';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -100,19 +100,35 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
         }
     };
 
+    const editImage = async (index) => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [17, 20],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const compressedUri = await compressImage(result.assets[0].uri);
+            setSelectedImages((prevImages) => {
+                const updatedImages = [...prevImages];
+                updatedImages[index] = compressedUri;
+                return updatedImages;
+            });
+        }
+    };
+
     const cancelImage = (index) => {
         setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
- 
     return (
-        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={()=>{
-            onClose()
-            setPostText(existingText)
-            setSelectedImages(item.imageUrls)}
-        }>
+        <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={() => {
+            onClose();
+            setPostText(existingText);
+            setSelectedImages(item.imageUrls);
+        }}>
             <View style={styles.modalContainer}>
-                {/* Top Bar */}
                 <View style={styles.topBar}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <TouchableOpacity style={{ padding: 10 }} onPress={onClose}>
@@ -122,15 +138,14 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
                     </View>
                     <TouchableOpacity
                         onPress={handleUpdate}
-                        disabled={uploading || selectedImages.length === 0}
+                        disabled={uploading || (selectedImages.length === 0 && !postText)}
                     >
-                        <Text style={[styles.postButton, { opacity: uploading || selectedImages.length > 0 ? 1 : 0.5 }]}>
+                        <Text style={[styles.postButton, { opacity: uploading || (selectedImages.length > 0 || postText) ? 1 : 0.5 }]}>
                             {uploading ? 'Updating...' : 'Update'}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Text Input */}
                 <TextInput
                     style={styles.textInput}
                     placeholder="Update your story..."
@@ -140,12 +155,14 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
                     onChangeText={setPostText}
                 />
 
-                {/* Display Selected Images */}
                 {selectedImages.length > 0 && (
                     <ScrollView style={styles.imageContainer} horizontal>
                         {selectedImages.map((uri, index) => (
                             <View key={index} style={styles.imageWrapper}>
                                 <Image source={{ uri }} style={styles.selectedImage} />
+                                <TouchableOpacity style={styles.editImageButton} onPress={() => editImage(index)}>
+                                    <MaterialIcons name="edit" size={24} color="white" />
+                                </TouchableOpacity>
                                 <TouchableOpacity style={styles.cancelImageButton} onPress={() => cancelImage(index)}>
                                     <AntDesign name="closecircle" size={24} color="white" />
                                     <Text style={styles.cancelImageText}>Cancel</Text>
@@ -204,11 +221,20 @@ const styles = StyleSheet.create({
     },
     imageWrapper: {
         marginRight: 10,
+        position: 'relative',
     },
     selectedImage: {
-        width: 100,
-        height: 100,
+        width: 238,
+        height: 280,
         borderRadius: 10,
+    },
+    editImageButton: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: '#333',
+        padding: 5,
+        borderRadius: 20,
     },
     cancelImageButton: {
         flexDirection: 'row',

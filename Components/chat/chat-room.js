@@ -288,8 +288,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark transparent overlay
-    zIndex: 1, // Ensure it appears above other components but below the input
+    backgroundColor: 'rgba(0, 0, 0, 0.6)', 
+    zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 2, // Ensure the input is above the overlay
+    zIndex: 2, 
   },
 });
 

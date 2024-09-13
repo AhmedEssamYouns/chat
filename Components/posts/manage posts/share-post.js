@@ -3,8 +3,8 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, Image, A
 import { Feather } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
-import useFriends from '../../firebase/frinend-state';
-import { sharePostWithFriends } from '../../firebase/manage-posts';
+import useFriends from '../../../firebase/frinend-state';
+import { sharePostWithFriends } from '../../../firebase/manage-posts';
 
 const SharePost = () => {
     const route = useRoute();

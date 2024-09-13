@@ -18,7 +18,7 @@ import SignInScreen from '../Pages/Screens/auth screens/sign-in';
 import { FIREBASE_AUTH } from '../firebase/config';
 import FriendRequestModal from '../Components/elements/friends-requist-mode';
 import ImageScreen from '../Components/elements/image';
-import SharePost from '../Pages/menu-screens/share-post';
+import SharePost from '../Components/posts/manage posts/share-post';
 import PostScreen from '../Components/posts/post-screen';
 const Stack = createStackNavigator();
 

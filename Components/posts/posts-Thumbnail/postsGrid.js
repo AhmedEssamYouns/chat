@@ -3,7 +3,7 @@ import { View, StyleSheet, FlatList, Text } from 'react-native';
 import { fetchUserPostsRealtime } from '../../../firebase/fetchPosts';
 import PostCard from './postCard';
 
-const PostGrid = ({ userId, onPostSelect }) => {
+const PostGrid = ({ userId, onPostSelect, header }) => {
     const [postImages, setPostImages] = useState([]);
 
     useEffect(() => {
@@ -26,6 +26,7 @@ const PostGrid = ({ userId, onPostSelect }) => {
         <View style={styles.grid}>
             {postImages.length > 0 ? (
                 <FlatList
+                    ListHeaderComponent={header}
                     data={postImages}
                     renderItem={({ item, index }) => (
                         <PostCard
@@ -46,7 +47,7 @@ const PostGrid = ({ userId, onPostSelect }) => {
 
 const styles = StyleSheet.create({
     grid: {
-        flex:1,
+        flex: 1,
         top: 5,
         alignSelf: 'center',
     },
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     },
     noSnapsText: {
         color: '#bbb',
-        fontFamily:'title',
+        fontFamily: 'title',
         textAlign: 'center',
         marginTop: 20, // Adjust to position the text as needed
         fontSize: 16, // Adjust text size as needed
