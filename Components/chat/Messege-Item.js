@@ -43,15 +43,18 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
       const unsubscribe = fetchPostById(item.postShared.postId, (data) => {
         setPostData(data);
       });
-  
+
       // Clean up the listener on component unmount
       return () => unsubscribe();
     }
   }, [item.postShared?.postId]);
 
   const handleLongPressImage = () => {
-    setImageToDelete(item);
-    setModalVisible(true);
+    if (isSentByCurrentUser) {
+
+      setImageToDelete(item);
+      setModalVisible(true);
+    }
   };
 
   const handleDeleteImage = async () => {
@@ -110,8 +113,8 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
             {
               alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
             },
-          ]} 
-          onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })} 
+          ]}
+          onPress={() => navigation.navigate('ImageScreen', { imageUri: item.imageUrl })}
           onLongPress={handleLongPressImage}
         >
           <Image
@@ -150,9 +153,13 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
             )}
           </View>
           {postData.imageUrls && postData.imageUrls.length > 0 && (
-            <View style={{ backgroundColor: 'white' }}>
+            <View style={{ backgroundColor: 'white', }}>
               <Image
-                style={{ height: 300, resizeMode: 'contain' }}
+                style={{
+                  width: 240,
+                  height: 250,
+                  resizeMode: 'contain'
+                }}
                 source={{ uri: postData.imageUrls[0] }} // Access the first image URL
               />
             </View>
@@ -252,8 +259,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 10,
     overflow: 'hidden',
-    width: 260,
-    height: 300,
   },
   sharedPostImage: {
     height: 30,

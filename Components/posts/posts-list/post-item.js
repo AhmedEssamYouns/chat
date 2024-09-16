@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather,FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH } from '../../../firebase/config';
 import { getUserById } from '../../../firebase/getUser';
@@ -139,7 +139,7 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
                         <Text style={styles.likesCount}>{item.likesCount || null}</Text>
                     </View>
                     <TouchableOpacity style={{ paddingRight: 5 }} onPress={() => navigation.navigate('share', { post: item, user: userDetails })}>
-                        <Feather name='share-2' color={'grey'} size={24} />
+                        <FontAwesome name='send' color={'grey'} size={24} />
                     </TouchableOpacity>
                 </View>
             </View>

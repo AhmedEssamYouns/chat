@@ -1,7 +1,7 @@
 // PostCard.js
 import React from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Feather, MaterialIcons,MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialIcons,MaterialCommunityIcons, } from '@expo/vector-icons';
 
 const PostCard = ({ imageUrl, onPress }) => {
     const screenWidth = Dimensions.get('window').width;
