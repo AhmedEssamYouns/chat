@@ -8,7 +8,7 @@ import EditPostModal from '../manage posts/edit-post-model';
 import ConfirmationModal from '../../elements/alert';
 import getTimeDifference from '../manage posts/getTime';
 import deletePostById from '../../../firebase/manage-posts';
-import LikeButton from '../../../firebase/add-remove-like';
+import LikeButton from '../../Buttons/add-remove-like';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 import ImageViewer from 'react-native-image-zoom-viewer';
 

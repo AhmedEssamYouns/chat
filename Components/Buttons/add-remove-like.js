@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from './config';
-import AnimatedHeartIcon from '../Components/Buttons/like-button';
+import { db } from '../../firebase/config';
+import AnimatedHeartIcon from './like-button'
 
 const LikeButton = ({ post, isLiked, currentUserId }) => {
     const [liked, setLiked] = useState(isLiked);
@@ -13,6 +13,7 @@ const LikeButton = ({ post, isLiked, currentUserId }) => {
     }, [isLiked]);
 
     const handleLikePress = async () => {
+        setLiked(!isLiked)
         const postRef = doc(db, 'posts', post.postId);
 
         try {
