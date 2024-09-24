@@ -24,12 +24,12 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   // Function that handles the complete process
   const handleSetWallpaper = async () => {
     try {
-      setLoading(true); // Set loading to true
       const imageUri = await pickImage(); // Pick image
       if(!imageUri){
         setLoading(false)
       }
       if (imageUri) {
+      setLoading(true); // Set loading to true
         const uploadedWallpaperUrl = await uploadImageAsyncAndSetWallpaper(imageUri, frindID); // Upload and update Firestore
         setWallpaperUrl(uploadedWallpaperUrl);
         setLoading(false); // Set loading to true
