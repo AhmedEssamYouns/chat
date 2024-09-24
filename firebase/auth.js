@@ -147,6 +147,7 @@ export const checkUsernameAvailability = async (username, setUsernameStatus, set
 };
 
 // Function to handle user sign-up
+
 export const handleSignUp = async (email, password, username, confirmPassword, usernameStatus, navigation, setLoading, setEmailError, setPasswordError, setConfirmPasswordError, setUsernameError) => {
     setUsernameError('');
     setEmailError('');
@@ -206,24 +207,26 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
 
-    } catch (error) {
-        if (error.code.includes('auth/invalid-email')) {
-            setEmailError('Invalid email address.');
-        } else if (error.code.includes('auth/email-already-in-use')) {
-            setEmailError('Email is already in use.');
-        } else if (error.code.includes('auth/weak-password')) {
-            setPasswordError('Password is too weak.');
-        } else {
-            setEmailError('Failed to create account. Please try again.');
-        }
-    } finally {
-        setLoading(false);
         // Show success message
         ToastAndroid.show('You have successfully signed up!', ToastAndroid.LONG);
         // Navigate to Sign In screen after a delay to allow the toast to be visible
         setTimeout(() => {
             navigation.navigate('SignIn');
         }, 1000); // Adjust the delay to match the toast visibility time
+
+    } catch (error) {
+        // Handle errors based on the error code
+        if (error.code.includes('auth/invalid-email')) {
+            setEmailError('Invalid email address.');
+        } else if (error.code.includes('auth/email-already-in-use')) {
+            setEmailError('Email is already in use.'); // This error means the account already exists
+        } else if (error.code.includes('auth/weak-password')) {
+            setPasswordError('Password is too weak.');
+        } else {
+            setEmailError('Failed to create account. Please try again.');
+        }
+    } finally {
+        setLoading(false); // Always set loading to false when done
     }
 };
 

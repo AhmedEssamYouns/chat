@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#121212',
+    backgroundColor:'transparent',
     padding: 10,
     paddingHorizontal: 15,
   },

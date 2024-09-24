@@ -53,10 +53,7 @@ const ProfileScreen = () => {
 
     return (
         <View style={{ flex: 1, backgroundColor: '#121212' }}>
-
-            <PostGrid
-                header={
-                    <View style={styles.profileHeader}>
+ <View style={styles.profileHeader}>
                         <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: userProfile.avatar })}>
                             <Image source={{ uri: userProfile.avatar }} style={styles.avatar} />
                         </Pressable>
@@ -88,7 +85,7 @@ const ProfileScreen = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                }
+            <PostGrid
                 userId={userProfile.id}
                 onPostSelect={handlePostSelect}
             />

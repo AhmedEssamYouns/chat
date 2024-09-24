@@ -1,22 +1,46 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, Animated, Easing, Modal, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Animated, Easing, Modal, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import RotatingButton from '../Buttons/animated-rotate-button';
 import { getUserById } from '../../firebase/getUser';
 import ConfirmationModal from '../elements/alert';
 import { deleteChatDocument } from '../../firebase/manage-Chat-room';
 import { FIREBASE_AUTH } from '../../firebase/config';
-
+import { pickImage, uploadImageAsyncAndSetWallpaper } from '../../firebase/wallpaperChange';
 
 const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, currentSearchIndex,
-   searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
+  searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [user, setUser] = useState(null); // Initialize with null
   const [isModalVisible, setIsModalVisible] = useState(false);
   const searchAnim = useRef(new Animated.Value(-300)).current;
   const searchInputRef = useRef(null);
-const currentUserId = FIREBASE_AUTH.currentUser.uid
+  const currentUserId = FIREBASE_AUTH.currentUser.uid
+
+
+  const [wallpaperUrl, setWallpaperUrl] = useState(null); // Store wallpaper URL
+  const [loading, setLoading] = useState(false); // Loading state
+  // Function that handles the complete process
+  const handleSetWallpaper = async () => {
+    try {
+      setLoading(true); // Set loading to true
+      const imageUri = await pickImage(); // Pick image
+      if(!imageUri){
+        setLoading(false)
+      }
+      if (imageUri) {
+        const uploadedWallpaperUrl = await uploadImageAsyncAndSetWallpaper(imageUri, frindID); // Upload and update Firestore
+        setWallpaperUrl(uploadedWallpaperUrl);
+        setLoading(false); // Set loading to true
+      }
+    } catch (error) {
+      console.error("Error setting wallpaper: ", error);
+    }
+  };
+
+
+
   useEffect(() => {
     if (frindID) {
       const unsubscribe = getUserById(frindID, (userData) => {
@@ -158,6 +182,16 @@ const currentUserId = FIREBASE_AUTH.currentUser.uid
               </TouchableOpacity>
               <TouchableOpacity style={styles.menuItem} onPress={handleSearchMenuClick}>
                 <Text style={styles.menuItemText}>Search</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuItem} disabled={loading} onPress={handleSetWallpaper}>
+                <Text style={styles.menuItemText}>{loading ? (<View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ActivityIndicator color={'white'} />
+                  <Text style={{ color: 'white' }}> changing</Text>
+                </View>) : 'change wallpapaer'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.menuItem}

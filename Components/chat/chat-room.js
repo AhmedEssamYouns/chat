@@ -7,7 +7,10 @@ import Navbar from './chat-navbar';
 import MessageList from './Messege-list';
 import { Keyboard } from 'react-native';
 import DropdownMenu from './chat-menu-model';
-import { fetchMessages, deleteMessage, editMessage, sendMessage} from '../../firebase/manage-Chat-room';
+import { fetchMessages, deleteMessage, editMessage, sendMessage } from '../../firebase/manage-Chat-room';
+import { db, FIREBASE_AUTH } from '../../firebase/config';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { listenForChatWallpaper } from '../../firebase/wallpaperChange';
 
 const ChatConversationScreen = ({ route, navigation }) => {
 
@@ -25,8 +28,16 @@ const ChatConversationScreen = ({ route, navigation }) => {
   const [isButtonVisible, setIsButtonVisible] = useState(false);
   const inputRef = useRef(null);
   const flatListRef = useRef(null);
+  const [wallpaperUrl, setWallpaperUrl] = useState(null); // Store wallpaper URL
+  const chatId = [FIREBASE_AUTH.currentUser.uid, friendId].sort().join('_');
 
+  // Real-time listener for wallpaper changes
+  useEffect(() => {
+    const unsubscribe = listenForChatWallpaper(chatId, setWallpaperUrl);
 
+    // Clean up the listener on component unmount
+    return () => unsubscribe();
+}, [chatId]);
 
 
   useEffect(() => {
@@ -181,7 +192,7 @@ const ChatConversationScreen = ({ route, navigation }) => {
       />
       <ImageBackground
         source={{
-          uri: 'https://i.pinimg.com/736x/a6/a8/b6/a6a8b6eca9c2f1063ca457b143c2ac4f.jpg',
+          uri: wallpaperUrl ? wallpaperUrl : 'https://i.pinimg.com/736x/a6/a8/b6/a6a8b6eca9c2f1063ca457b143c2ac4f.jpg',
         }}
         style={{
           flex: 1,
@@ -288,7 +299,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', 
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     zIndex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -298,7 +309,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 2, 
+    zIndex: 2,
   },
 });
 

@@ -107,11 +107,7 @@ const UserAccountScreen = () => {
     };
     return (
         <View style={{ flex: 1, backgroundColor: '#121212', }}>
-    
-            <PostGrid
-                header={ 
-                    <>
-                    <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
+     <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
                     <Feather name='arrow-left' size={25} color={'#fff'} style={{ left: 15, padding: 10 }} onPress={() => navigation.goBack()} />
                     <Text style={styles.profileName}>{user.username}</Text>
                 </View>
@@ -143,8 +139,7 @@ const UserAccountScreen = () => {
                         <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
                     </View>
                 </View>
-                </>
-                }
+            <PostGrid
                 userId={friendId}
                 onPostSelect={handlePostSelect}
             />

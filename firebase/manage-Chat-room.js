@@ -38,6 +38,7 @@ const uploadImage = async (uri) => {
     await uploadBytes(imageRef, blob);
     return getDownloadURL(imageRef);
 };
+
 export const deleteChatDocument = async (currentUserId, friendId) => {
     try {
         // Create chatId by sorting the IDs and joining them with an underscore
