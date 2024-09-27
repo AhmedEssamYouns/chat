@@ -48,7 +48,7 @@ const SettingMenu = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
     menuContainer: {
         position: 'absolute',
-        top: 90,
+        top: 50,
         right: 30,
         backgroundColor: '#1F1F1F',
         borderRadius: 8,
