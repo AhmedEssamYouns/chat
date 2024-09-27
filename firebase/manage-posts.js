@@ -1,5 +1,5 @@
 import { deleteDoc, doc } from 'firebase/firestore';
-import { db,FIREBASE_AUTH,storage } from './config';
+import { db, FIREBASE_AUTH, storage } from './config';
 import { ToastAndroid } from 'react-native';
 import { sendMessage } from './manage-Chat-room';
 import { addDoc, setDoc, collection } from 'firebase/firestore';
@@ -88,7 +88,7 @@ export const sharePostWithFriends = async (selectedFriends, post, user, onSucces
 
     try {
         for (const friend of selectedFriends) {
-            await sendMessage(friend.uid, '', null, post, user); // Share the post with each selected friend
+            await sendMessage(friend.uid, '', null, null, post, user); // Share the post with each selected friend
         }
         ToastAndroid.show('Post shared successfully.', ToastAndroid.LONG);
         onSuccess();

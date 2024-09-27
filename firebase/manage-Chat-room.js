@@ -88,7 +88,6 @@ export const fetchMessages = (friendId, callback) => {
     }
 };
 
-
 export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUrl = null, postShared = null, user = null) => {
     // Check if message is empty and no media is included
     if (newMessage.trim() === '' && !imageUrl && !audioUrl && !postShared && !user) return;
@@ -142,9 +141,6 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUr
         console.error('Error sending message:', error);
     }
 };
-
-
-
 
 export const editMessage = async (friendId, messageId, newMessage) => {
     if (!messageId || newMessage.trim() === '') return;

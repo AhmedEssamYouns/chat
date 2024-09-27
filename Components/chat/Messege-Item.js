@@ -52,15 +52,19 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   }, [item.postShared?.postId]);
 
   const [playbackStatus, setPlaybackStatus] = useState(null); // New state for playback status
-  
-// Your playAudio function
+  const [duration, setDuration] = useState(0);
+
+// Your playAudio function// Your playAudio function
 const playAudio = async () => {
   if (sound) {
     // Check if the sound is currently playing
     const status = await sound.getStatusAsync();
     if (status.isPlaying) {
+      console.log("Stopping audio playback.");
       await sound.stopAsync(); // Stop the currently playing audio
       setIsPlaying(false); // Update the state
+      // Reset duration or other relevant state here if needed
+      setDuration(0); // Assuming you have a state to track duration
       return; // Exit the function if we stop the audio
     } else {
       await sound.unloadAsync(); // Stop any existing sound
@@ -79,11 +83,13 @@ const playAudio = async () => {
     setTimeout(() => {
       setIsPlaying(false); // Set playing state to false when the audio duration ends
       newSound.unloadAsync(); // Optionally unload sound after finishing
+      setDuration(0); // Reset duration after finishing
     }, duration); // Timeout for the audio duration
   } else {
     console.log("Failed to load new audio.");
   }
 };
+
 
 // useEffect to set up the playback status listener
 useEffect(() => {
