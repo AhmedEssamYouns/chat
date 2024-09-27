@@ -139,7 +139,7 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
                         <Text style={styles.likesCount}>{item.likesCount || null}</Text>
                     </View>
                     <TouchableOpacity style={{ paddingRight: 5 }} onPress={() => navigation.navigate('share', { post: item, user: userDetails })}>
-                        <FontAwesome name='send' color={'grey'} size={24} />
+                        <Feather name='send' color={'grey'} size={24} />
                     </TouchableOpacity>
                 </View>
             </View>

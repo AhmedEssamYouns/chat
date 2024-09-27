@@ -5,6 +5,7 @@ import { FIREBASE_AUTH, db, storage } from '../firebase/config';
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ref as w } from 'firebase/storage';
 import { ToastAndroid } from 'react-native';
+import { uploadAudio } from './upload_Audio';
 
 
 
@@ -87,48 +88,61 @@ export const fetchMessages = (friendId, callback) => {
     }
 };
 
-export const sendMessage = async (friendId, newMessage, imageUrl = null, postShared = null, user = null) => {
-    if (newMessage.trim() === '' && !imageUrl && !postShared && !user) return;
+
+export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUrl = null, postShared = null, user = null) => {
+    // Check if message is empty and no media is included
+    if (newMessage.trim() === '' && !imageUrl && !audioUrl && !postShared && !user) return;
 
     try {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
         const messagesRef = collection(db, 'chats', chatId, 'messages');
 
+        // Handle image upload if imageUrl exists
         let image = null;
         if (imageUrl) {
             image = await uploadImage(imageUrl);
         }
 
+        // Handle audio upload if audioUrl exists
+        let audio = null;
+        if (audioUrl) {
+            audio = await uploadAudio(audioUrl);
+        }
 
+        // Add the new message to the Firestore messages collection
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
             user: user,
             postShared: postShared,
             isEdited: false,
-            imageUrl: image,
-            text: newMessage,
-            timestamp: Timestamp.now(),
+            imageUrl: image,        // Include image if available
+            audioUrl: audio,        // Include audio if available
+            text: newMessage,       // Message text
+            timestamp: Timestamp.now(), // Timestamp
         });
 
+        // Update the message document with its ID (merge mode)
         await setDoc(messageDocRef, { id: messageDocRef.id }, { merge: true });
 
+        // Update the chat's last message and shared content
         const chatDocRef = doc(db, 'chats', chatId);
         await setDoc(chatDocRef, {
             receiverId: friendId,
             senderId: userId,
             imageUrl: image,
+            audioUrl: audio,
             postShared: postShared,
-            last: postShared != null ? 'shared a post' : newMessage,
+            last: audio != null ? 'shared an audio' : postShared != null ? 'shared a post' : newMessage,
         }, { merge: true });
 
-        // Cloud Function will handle the notification sending
-
+        // Cloud Function will handle notification sending
     } catch (error) {
         console.error('Error sending message:', error);
     }
 };
+
 
 
 

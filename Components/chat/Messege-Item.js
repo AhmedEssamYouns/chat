@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { FIREBASE_AUTH } from '../../firebase/config';
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import ConfirmationModal from '../elements/alert';
 import { deleteMessage } from '../../firebase/manage-Chat-room'; // Ensure this function is available
 import { useNavigation } from '@react-navigation/native';
@@ -30,6 +31,7 @@ const formatTimestamp2 = (timestamp) => {
 const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageToDelete, setImageToDelete] = useState(null);
+  const [sound, setSound] = useState(null); // To manage audio playback
   const navigation = useNavigation();
   const lowerCaseText = item.text?.toLowerCase();
   const lowerCaseSearchQuery = searchQuery.toLowerCase();
@@ -37,6 +39,7 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const isSentByCurrentUser = item.senderId === FIREBASE_AUTH.currentUser.uid;
   const messageStyle = isSentByCurrentUser ? styles.sentMessage : styles.receivedMessage;
   const [postData, setPostData] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     if (item.postShared?.postId) {
@@ -44,14 +47,69 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         setPostData(data);
       });
 
-      // Clean up the listener on component unmount
       return () => unsubscribe();
     }
   }, [item.postShared?.postId]);
 
+  const [playbackStatus, setPlaybackStatus] = useState(null); // New state for playback status
+  
+// Your playAudio function
+const playAudio = async () => {
+  if (sound) {
+    // Check if the sound is currently playing
+    const status = await sound.getStatusAsync();
+    if (status.isPlaying) {
+      await sound.stopAsync(); // Stop the currently playing audio
+      setIsPlaying(false); // Update the state
+      return; // Exit the function if we stop the audio
+    } else {
+      await sound.unloadAsync(); // Stop any existing sound
+    }
+  }
+
+  const { sound: newSound, status } = await Audio.Sound.createAsync({ uri: item.audioUrl });
+
+  if (status.isLoaded) {
+    setSound(newSound);
+    await newSound.playAsync();
+    setIsPlaying(true); // Set playing state to true
+
+    // Set timeout to update isPlaying state after audio duration
+    const duration = status.durationMillis; // Get the audio duration
+    setTimeout(() => {
+      setIsPlaying(false); // Set playing state to false when the audio duration ends
+      newSound.unloadAsync(); // Optionally unload sound after finishing
+    }, duration); // Timeout for the audio duration
+  } else {
+    console.log("Failed to load new audio.");
+  }
+};
+
+// useEffect to set up the playback status listener
+useEffect(() => {
+  if (sound) {
+
+    const playbackStatusUpdate = sound.setOnPlaybackStatusUpdate((status) => {
+      
+      if (status.isLoaded) {
+        // Log relevant playback properties
+      }
+
+      if (status.error) {
+      }
+    });
+
+    // Cleanup listener
+    return () => {
+      sound.setOnPlaybackStatusUpdate(null); // Remove the listener
+    };
+  }
+}, [sound]); // Dependency on `sound`
+
+
+
   const handleLongPressImage = () => {
     if (isSentByCurrentUser) {
-
       setImageToDelete(item);
       setModalVisible(true);
     }
@@ -129,6 +187,23 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
         </Pressable>
       )}
 
+      {item.audioUrl && (
+        <Pressable
+          onLongPress={handleLongPressImage}
+          onPress={playAudio}
+          style={[
+            {
+              alignSelf: isSentByCurrentUser ? 'flex-end' : 'flex-start',
+            },
+          ]}
+        >
+          <View style={styles.audioContainer}>
+            <Ionicons name= {isPlaying ? 'stop-circle': "play-circle"} size={32} color="tomato" />
+            <Text style={styles.audioText}>{isPlaying ? 'Playing..' : 'Play Audio'}</Text>
+          </View>
+          <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
+        </Pressable>
+      )}
       {/* Render Shared Post */}
       {item.postShared && postData && (
         <Pressable
@@ -137,30 +212,24 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
           style={[styles.sharedPostContainer, messageStyle]}
         >
           <View style={styles.sharedPostTextContainer}>
-            {/* Check if the profile image exists */}
             {item.user.profileImage && (
-              <Image
-                style={styles.sharedPostImage}
-                source={{ uri: item.user.profileImage }}
-              />
+              <Image style={styles.sharedPostImage} source={{ uri: item.user.profileImage }} />
             )}
             <Text style={styles.sharedPostTitle}>{item.user.username}</Text>
             <Text style={styles.time}>{formatTimestamp2(item.postShared.time)}</Text>
           </View>
           <View style={styles.TextContainer}>
-            {postData.text && (
-              <Text style={styles.sharedPostDescription}>{postData.text}</Text>
-            )}
+            {postData.text && <Text style={styles.sharedPostDescription}>{postData.text}</Text>}
           </View>
           {postData.imageUrls && postData.imageUrls.length > 0 && (
-            <View style={{ backgroundColor: 'white', }}>
+            <View style={{ backgroundColor: 'white' }}>
               <Image
                 style={{
                   width: 240,
                   height: 250,
-                  resizeMode: 'contain'
+                  resizeMode: 'contain',
                 }}
-                source={{ uri: postData.imageUrls[0] }} // Access the first image URL
+                source={{ uri: postData.imageUrls[0] }}
               />
             </View>
           )}
@@ -179,6 +248,8 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
     </>
   );
 };
+
+
 
 
 const styles = StyleSheet.create({
@@ -296,6 +367,17 @@ const styles = StyleSheet.create({
     color: '#DDDDDD',
     marginTop: 5,
   },
+  audioContainer: {
+    marginBottom: 35,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    width: 140,
+    alignItems: 'center',
+    borderRadius: 20,
+    padding: 10
+  },
+  audioText: { color: '#FFFFFF', marginLeft: 10 },
+  pressedMessage: { opacity: 0.5 },
 });
 
 export default MessageItem;
