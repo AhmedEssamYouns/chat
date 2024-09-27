@@ -11,9 +11,10 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
-
   // Function to start audio recording
   const startRecording = async () => {
+    setRecording(null)
+    setAudioUri(null)
     try {
       const permission = await Audio.requestPermissionsAsync();
       if (permission.status === 'granted') {
@@ -73,8 +74,8 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
         <View
           style={styles.input}
         >
-          {!newMessage && < FontAwesome  style={{
-            padding:5
+          {!newMessage && < FontAwesome style={{
+            padding: 5
           }} onPress={pickImage} name="image" size={20} color="tomato" />}
 
           <TextInput
@@ -86,9 +87,13 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
             placeholderTextColor="#999"
             multiline
           />
-          {!newMessage && <FontAwesome style={{
-            padding: 5
-          }} onPress={recording ? stopRecording : startRecording} name={recording ? "stop-circle" : "microphone"} size={24} color="tomato" />}
+          {!newMessage && <TouchableOpacity
+            onPress={recording ? stopRecording : startRecording}>
+            <FontAwesome style={{
+              padding: 5
+            }} name={recording ? "stop-circle" : "microphone"} size={24} color="tomato" />
+          </TouchableOpacity>
+          }
           {newMessage &&
             <TouchableOpacity>
               <Ionicons
