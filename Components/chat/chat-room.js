@@ -9,8 +9,9 @@ import { Keyboard } from 'react-native';
 import DropdownMenu from './chat-menu-model';
 import { fetchMessages, deleteMessage, editMessage, sendMessage } from '../../firebase/manage-Chat-room';
 import { db, FIREBASE_AUTH } from '../../firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, writeBatch } from 'firebase/firestore';
 import { listenForChatWallpaper } from '../../firebase/wallpaperChange';
+import { useIsFocused } from '@react-navigation/native';
 
 const ChatConversationScreen = ({ route, navigation }) => {
 
@@ -28,17 +29,63 @@ const ChatConversationScreen = ({ route, navigation }) => {
   const [isButtonVisible, setIsButtonVisible] = useState(false);
   const inputRef = useRef(null);
   const flatListRef = useRef(null);
-  const [wallpaperUrl, setWallpaperUrl] = useState(null); // Store wallpaper URL
-  const chatId = [FIREBASE_AUTH.currentUser.uid, friendId].sort().join('_');
+  const [wallpaperUrl, setWallpaperUrl] = useState(null); // Store wallpaper URL  const chatId = [userId, friendId].sort().join('_');
+  const isFocused = useIsFocused();  // Detect if the screen is focused
+  const userId = FIREBASE_AUTH.currentUser.uid;
+  const chatId = [userId, friendId].sort().join('_');
+  const [seen, setSeen] = useState(false);
+  const [isReceiver, setIsReceiver] = useState(false);
+  // Fetch wallpaper listener
 
-  // Real-time listener for wallpaper changes
+
   useEffect(() => {
-    const unsubscribe = listenForChatWallpaper(chatId, setWallpaperUrl);
+    const unsubscribe = fetchMessages(friendId, (data) => {
+      setMessages(data);
 
-    // Clean up the listener on component unmount
+      // Check if the current user is the receiver of the last message
+      if (data.length > 0) {
+        const lastMessage = data[data.length - 1]; // Get the last message
+        setIsReceiver(lastMessage.receiverId === userId); // Check if the receiver of the last message is the current user
+      } else {
+        setIsReceiver(false); // Reset receiver status if there are no messages
+      }
+    });
+
     return () => unsubscribe();
-}, [chatId]);
+  }, [friendId]);
 
+  // Listen for changes in the chat document for the seen status
+  useEffect(() => {
+    const chatDocRef = doc(db, 'chats', chatId);
+    const unsubscribe = onSnapshot(chatDocRef, (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        setSeen(data.seen || false); // Set seen status from Firestore
+      }
+    }, (error) => {
+      console.error('Error fetching seen status:', error);
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
+  }, [chatId]); // Run when chatId changes
+
+  useEffect(() => {
+    // Update seen status whenever messages change
+    if (isFocused && isReceiver) {
+      updateSeenStatus();
+    }
+  }, [messages, isFocused, isReceiver]); // Depend on messages to trigger updates
+
+  const updateSeenStatus = async () => {
+    try {
+      const chatDocRef = doc(db, 'chats', chatId);
+      await updateDoc(chatDocRef, { seen: true });
+      console.log('hi')
+      setSeen(true);
+    } catch (error) {
+      console.error('Error updating seen status:', error);
+    }
+  };
 
   useEffect(() => {
     if (searchQuery) {
@@ -62,15 +109,6 @@ const ChatConversationScreen = ({ route, navigation }) => {
     }
   }, [searchQuery]);
 
-  useEffect(() => {
-    const unsubscribe = fetchMessages(friendId, (data) => {
-      setMessages(data);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [friendId]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -84,7 +122,6 @@ const ChatConversationScreen = ({ route, navigation }) => {
         setNewMessage('')
         return true; // Indicates that the back press event has been handled
       }
-
       // If neither search mode nor editing mode is active, allow the default back action
       return false;
     };
@@ -204,7 +241,17 @@ const ChatConversationScreen = ({ route, navigation }) => {
           messages={[...messages].reverse()}
           handleScroll={handleScroll}
           searchQuery={searchQuery}
+          fotter={
+            <>
+              {seen && !isReceiver &&
+                <Text style={{ color: '#ddd', right: 5, }}>
+                  seen
+                </Text>
+              }
+            </>
+          }
           onLongPressMessage={handleLongPressMessage}
+
         />
         {isEditing && (
           <View style={styles.overlayContainer}>
@@ -216,6 +263,7 @@ const ChatConversationScreen = ({ route, navigation }) => {
         {(isButtonVisible && !isEditing) && (
           <FloatingButton icon={'arrow-down'} up={20} onPress={scrollToEnd} />
         )}
+
       </ImageBackground>
       {!isSearchMode &&
         <MessageInput

@@ -5,6 +5,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import SearchBar from '../../Components/elements/Search-Bar';
 import { subscribeToChats } from '../../firebase/getChatRooms';
 import { Feather } from '@expo/vector-icons';
+import { FIREBASE_AUTH } from '../../firebase/config';
 
 const formatTimestamp = (timestamp) => {
   const now = new Date();
@@ -82,6 +83,10 @@ const ChatScreen = ({ navigation }) => {
 
             }
           </Text>
+          {!item.seen && item.receiverId == FIREBASE_AUTH.currentUser.uid &&
+            <Text style={styles.new}>new message</Text>
+          }
+
         </View>
       </View>
     </TouchableOpacity >
@@ -163,13 +168,17 @@ const styles = StyleSheet.create({
     color: '#BBBBBB',
     fontSize: 12,
   },
+  new: {
+    color: 'white',
+    fontSize: 12,
+  },
   chatMessageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
   },
   chatMessage: {
-    width: '80%',
+    width: '70%',
     textAlign: 'left',
     height: 20,
     marginRight: 5,

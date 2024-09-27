@@ -132,6 +132,7 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUr
             senderId: userId,
             imageUrl: image,
             audioUrl: audio,
+            seen:false,
             postShared: postShared,
             last: audio != null ? 'shared an audio' : postShared != null ? 'shared a post' : newMessage,
         }, { merge: true });

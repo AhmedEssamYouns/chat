@@ -2,7 +2,7 @@ import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import MessageItem from './Messege-Item'
 
-const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onLongPressMessage }, ref) => (
+const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onLongPressMessage, fotter }, ref) => (
     <FlatList
         ref={ref}
         data={messages}
@@ -14,6 +14,8 @@ const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onL
         )}
         contentContainerStyle={styles.listContainer}
         onScroll={handleScroll}
+        ListHeaderComponent={fotter}
+        ListHeaderComponentStyle={{ alignSelf: 'flex-start' }}
         inverted
     />
 ));
@@ -21,8 +23,8 @@ const MessageList = React.forwardRef(({ messages, handleScroll, searchQuery, onL
 const styles = StyleSheet.create({
     listContainer: {
         paddingHorizontal: 20,
-        paddingTop:10,
-        paddingBottom:20,
+        paddingTop: 10,
+        paddingBottom: 20,
     },
 });
 
