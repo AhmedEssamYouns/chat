@@ -74,7 +74,7 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
         <View
           style={styles.input}
         >
-          {!newMessage && < FontAwesome style={{
+          {!newMessage && !isEditing && < FontAwesome style={{
             padding: 5
           }} onPress={pickImage} name="image" size={20} color="tomato" />}
 
@@ -87,7 +87,7 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
             placeholderTextColor="#999"
             multiline
           />
-          {!newMessage && <TouchableOpacity
+          {!newMessage && !isEditing &&  <TouchableOpacity
             onPress={recording ? stopRecording : startRecording}>
             <FontAwesome style={{
               padding: 5
@@ -99,7 +99,7 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
               <Ionicons
                 onPress={handleSend}
                 name={isEditing ? 'checkmark-circle' : 'send'}
-                size={isEditing ? 30 : 20}
+                size={isEditing ? 20 : 20}
                 style={styles.sendIcon}
                 color="tomato"
               />
