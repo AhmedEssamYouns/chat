@@ -51,7 +51,6 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
     }
   }, [item.postShared?.postId]);
 
-  const [playbackStatus, setPlaybackStatus] = useState(null); // New state for playback status
   const [duration, setDuration] = useState(0);
 
 // Your playAudio function// Your playAudio function

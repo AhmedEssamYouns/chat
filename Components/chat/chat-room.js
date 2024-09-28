@@ -39,6 +39,14 @@ const ChatConversationScreen = ({ route, navigation }) => {
 
 
   useEffect(() => {
+    // Start listening for wallpaper updates
+    const unsubscribe = listenForChatWallpaper(chatId, setWallpaperUrl);
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+}, [chatId]);
+
+  useEffect(() => {
     const unsubscribe = fetchMessages(friendId, (data) => {
       setMessages(data);
 

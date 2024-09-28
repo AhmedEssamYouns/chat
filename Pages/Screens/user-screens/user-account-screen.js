@@ -107,43 +107,42 @@ const UserAccountScreen = () => {
     };
     return (
         <View style={{ flex: 1, backgroundColor: '#121212', }}>
-     <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
-                    <Feather name='arrow-left' size={25} color={'#fff'} style={{ left: 15, padding: 10 }} onPress={() => navigation.goBack()} />
-                    <Text style={styles.profileName}>{user.username}</Text>
-                </View>
-                <View style={styles.profileHeader}>
-                    <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: user.profileImage })}>
-                        <Image source={{ uri: user.profileImage }} style={styles.avatar} />
-                    </Pressable>
-                    <View style={{ padding: 15 }}>
-                        <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
-    
-                        <Text style={styles.profileBio}>{cleanBio(user.bio) || 'no bio'}</Text>
-                    </View>
-    
-                </View>
-    
-                <View style={{ borderBottomColor: '#222', borderBottomWidth: 1 }}>
-                    <View style={styles.actionButtons}>
-                        <TouchableOpacity style={styles.actionButton} onPress={handleStatusAction}>
-                            <Text style={styles.actionButtonText}>
-                                {currentStatus === 'Friend' ? 'Unfriend' : currentStatus === 'Cancel Request' ? 'Cancel Request' : 'Add Friend'}
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.actionButton} onPress={handleSendMessage}>
-                            <Text style={styles.actionButtonText}>Send Message</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={styles.sectionTitle}>Snaps</Text>
-                        <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
-                    </View>
-                </View>
-            <PostGrid
-                userId={friendId}
-                onPostSelect={handlePostSelect}
-            />
+            <View style={{ flexDirection: "row", alignItems: 'center', gap: 20, paddingBottom: 10, borderBottomColor: '#333', borderBottomWidth: 1 }}>
+                <Feather name='arrow-left' size={25} color={'#fff'} style={{ left: 15, padding: 10 }} onPress={() => navigation.goBack()} />
+                <Text style={styles.profileName}>{user.username}</Text>
+            </View>
+            <View style={styles.profileHeader}>
+                <Pressable style={{ zIndex: 1 }} onPress={() => navigation.navigate('ImageScreen', { imageUri: user.profileImage })}>
+                    <Image source={{ uri: user.profileImage }} style={styles.avatar} />
+                </Pressable>
+                <View style={{ padding: 15 }}>
+                    <Text style={{ color: 'white', fontSize: 15 }}>@{user.username}</Text>
 
+                    <Text style={styles.profileBio}>{cleanBio(user.bio) || 'no bio'}</Text>
+                </View>
+
+            </View>
+
+            <View style={{ borderBottomColor: '#222', borderBottomWidth: 1 }}>
+                <View style={styles.actionButtons}>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleStatusAction}>
+                        <Text style={styles.actionButtonText}>
+                            {currentStatus === 'Friend' ? 'Unfriend' : currentStatus === 'Cancel Request' ? 'Cancel Request' : 'Add Friend'}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleSendMessage}>
+                        <Text style={styles.actionButtonText}>Send Message</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={styles.sectionTitle}>Snaps</Text>
+                    <Text style={styles.friendsCount}>Friends: {user.friends?.length || 0}</Text>
+                </View>
+            </View>
+                <PostGrid
+                    userId={friendId}
+                    onPostSelect={handlePostSelect}
+                />
             <Modal
                 visible={isModalVisible2}
                 animationType="slide"

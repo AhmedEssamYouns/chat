@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Modal, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import PostsList from './posts-list';
+import { useNavigation } from '@react-navigation/native';
 
 const PostsModal = ({ posts, onClose ,initialPost,id}) => {
+
+    const navigation = useNavigation(); // Getting navigation instance
+
+    useEffect(() => {
+        // Listen to navigation changes
+        const unsubscribe = navigation.addListener('blur', () => {
+            // Close the modal when the screen loses focus (navigates away)
+            onClose();
+        });
+
+        // Clean up the listener on unmount
+        return unsubscribe;
+    }, [navigation, onClose]);
     return (
         <View style={styles.container}>
             <View style={styles.header}>

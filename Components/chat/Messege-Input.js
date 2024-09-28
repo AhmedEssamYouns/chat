@@ -106,11 +106,9 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
             </TouchableOpacity>}
 
         </View>
-        {/* Send Message Button */}
 
       </View>
 
-      {/* Image Picker Modal */}
       <ImagePickerComponent
         isVisible={imagePickerVisible}
         onClose={() => setImagePickerVisible(false)}
