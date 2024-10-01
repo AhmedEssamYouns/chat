@@ -358,6 +358,7 @@ const styles = StyleSheet.create({
   },
   sharedPostTitle: {
     fontSize: 16,
+    width:110,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
