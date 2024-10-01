@@ -14,14 +14,13 @@ const UserAccountScreen = () => {
     const { friendId } = route.params;
     const [user, setUser] = useState({ posts: [] });
     const [friendStatuses, setFriendStatuses] = useState({});
-    const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
-    const [modalAction, setModalAction] = useState(null); // Track the action to be confirmed
-    const [isModalVisible2, setModalVisible2] = useState(false); // State to control modal visibility
+    const [isModalVisible, setIsModalVisible] = useState(false); 
+    const [modalAction, setModalAction] = useState(null);
+    const [isModalVisible2, setModalVisible2] = useState(false);
     const navigation = useNavigation();
     const currentUserId = FIREBASE_AUTH.currentUser.uid;
 
     useEffect(() => {
-        // Set up real-time listener for user data
         const userRef = doc(db, 'users', friendId);
         const unsubscribeUser = onSnapshot(userRef, (doc) => {
             if (doc.exists()) {
@@ -34,7 +33,6 @@ const UserAccountScreen = () => {
             console.error('Error fetching user details:', error);
         });
 
-        // Set up real-time listener for posts
 
         const postsRef = collection(db, 'posts');
         const postsQuery = query(postsRef, where('id', '==', friendId));
@@ -47,7 +45,6 @@ const UserAccountScreen = () => {
         });
 
 
-        // Clean up listeners on unmount
         return () => {
             unsubscribeUser();
             unsubscribePosts();
@@ -56,7 +53,7 @@ const UserAccountScreen = () => {
 
     useEffect(() => {
         const unsubscribe = monitorFriendStatuses(currentUserId, setFriendStatuses);
-        return () => unsubscribe(); // Cleanup subscription on unmount
+        return () => unsubscribe(); 
     }, [currentUserId]);
 
     const currentStatus = friendStatuses[friendId] || 'Add Friend';

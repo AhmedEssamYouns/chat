@@ -4,34 +4,34 @@ import { FIREBASE_AUTH } from '../../firebase/config';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import ConfirmationModal from '../elements/alert';
-import { deleteMessage } from '../../firebase/manage-Chat-room'; // Ensure this function is available
+import { deleteMessage } from '../../firebase/manage-Chat-room';
 import { useNavigation } from '@react-navigation/native';
 import { fetchPostById } from '../../firebase/fetchPosts';
 
 const formatTimestamp = (timestamp) => {
-  const date = new Date(timestamp.seconds * 1000); // Convert seconds to milliseconds
+  const date = new Date(timestamp.seconds * 1000);
   return date.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true, // 12-hour format
+    hour12: true, 
   });
 };
 
 const formatTimestamp2 = (timestamp) => {
-  const date = new Date(timestamp); // Parse ISO 8601 timestamp
+  const date = new Date(timestamp);
   return date.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
     day: '2-digit',
     month: '2-digit',
-    hour12: true, // 12-hour format
+    hour12: true, 
   });
 };
 
 const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [imageToDelete, setImageToDelete] = useState(null);
-  const [sound, setSound] = useState(null); // To manage audio playback
+  const [sound, setSound] = useState(null); 
   const navigation = useNavigation();
   const lowerCaseText = item.text?.toLowerCase();
   const lowerCaseSearchQuery = searchQuery.toLowerCase();
@@ -53,63 +53,39 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
 
   const [duration, setDuration] = useState(0);
 
-// Your playAudio function// Your playAudio function
-const playAudio = async () => {
-  if (sound) {
-    // Check if the sound is currently playing
-    const status = await sound.getStatusAsync();
-    if (status.isPlaying) {
-      console.log("Stopping audio playback.");
-      await sound.stopAsync(); // Stop the currently playing audio
-      setIsPlaying(false); // Update the state
-      // Reset duration or other relevant state here if needed
-      setDuration(0); // Assuming you have a state to track duration
-      return; // Exit the function if we stop the audio
-    } else {
-      await sound.unloadAsync(); // Stop any existing sound
+  const playAudio = async () => {
+    if (sound) {
+      // Check if the sound is currently playing
+      const status = await sound.getStatusAsync();
+      if (status.isPlaying) {
+        console.log("Stopping audio playback.");
+        await sound.stopAsync(); // Stop the currently playing audio
+        setIsPlaying(false);
+        setDuration(0);
+        return; // Exit the function if we stop the audio
+      } else {
+        await sound.unloadAsync(); // Stop any existing sound
+      }
     }
-  }
 
-  const { sound: newSound, status } = await Audio.Sound.createAsync({ uri: item.audioUrl });
+    const { sound: newSound, status } = await Audio.Sound.createAsync({ uri: item.audioUrl });
 
-  if (status.isLoaded) {
-    setSound(newSound);
-    await newSound.playAsync();
-    setIsPlaying(true); // Set playing state to true
+    if (status.isLoaded) {
+      setSound(newSound);
+      await newSound.playAsync();
+      setIsPlaying(true);
 
-    // Set timeout to update isPlaying state after audio duration
-    const duration = status.durationMillis; // Get the audio duration
-    setTimeout(() => {
-      setIsPlaying(false); // Set playing state to false when the audio duration ends
-      newSound.unloadAsync(); // Optionally unload sound after finishing
-      setDuration(0); // Reset duration after finishing
-    }, duration); // Timeout for the audio duration
-  } else {
-    console.log("Failed to load new audio.");
-  }
-};
+      const duration = status.durationMillis;
+      setTimeout(() => {
+        setIsPlaying(false);
+        newSound.unloadAsync();
+        setDuration(0);
+      }, duration);
+    } else {
+      console.log("Failed to load new audio.");
+    }
+  };
 
-
-// useEffect to set up the playback status listener
-useEffect(() => {
-  if (sound) {
-
-    const playbackStatusUpdate = sound.setOnPlaybackStatusUpdate((status) => {
-      
-      if (status.isLoaded) {
-        // Log relevant playback properties
-      }
-
-      if (status.error) {
-      }
-    });
-
-    // Cleanup listener
-    return () => {
-      sound.setOnPlaybackStatusUpdate(null); // Remove the listener
-    };
-  }
-}, [sound]); // Dependency on `sound`
 
 
 
@@ -123,7 +99,7 @@ useEffect(() => {
   const handleDeleteImage = async () => {
     try {
       if (imageToDelete) {
-        await deleteMessage(item.receiverId, imageToDelete.id); // Implement deleteMessage in your firebase utility
+        await deleteMessage(item.receiverId, imageToDelete.id);
         setModalVisible(false);
         setImageToDelete(null);
       }
@@ -146,7 +122,7 @@ useEffect(() => {
           style={({ pressed }) => [
             styles.messageContainer,
             messageStyle,
-            isSentByCurrentUser && pressed && styles.pressedMessage, // Apply pressed style only if message is sent by the current user
+            isSentByCurrentUser && pressed && styles.pressedMessage,
           ]}
         >
           <View>
@@ -203,7 +179,7 @@ useEffect(() => {
           ]}
         >
           <View style={styles.audioContainer}>
-            <Ionicons name= {isPlaying ? 'stop-circle': "play-circle"} size={32} color="tomato" />
+            <Ionicons name={isPlaying ? 'stop-circle' : "play-circle"} size={32} color="tomato" />
             <Text style={styles.audioText}>{isPlaying ? 'Playing..' : 'Play Audio'}</Text>
           </View>
           <Text style={styles.messageTime2}>{formatTimestamp(item.timestamp)}</Text>
@@ -267,7 +243,7 @@ const styles = StyleSheet.create({
   image: {
     borderRadius: 10,
     resizeMode: 'center',
-    marginTop: 10, // Optional, add margin if needed
+    marginTop: 10,
   },
   sentMessage: {
     backgroundColor: '#A8342A',
@@ -278,7 +254,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   pressedMessage: {
-    opacity: 0.7, // Example of style change when pressed
+    opacity: 0.7, 
   },
   messageText: {
     fontSize: 16,
@@ -358,7 +334,7 @@ const styles = StyleSheet.create({
   },
   sharedPostTitle: {
     fontSize: 16,
-    width:110,
+    width: 110,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },

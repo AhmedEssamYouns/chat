@@ -51,17 +51,17 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
             setTimeDifference(getTimeDifference(item.time));
         };
 
-        updateTimeDifference(); // Initial call
-        const intervalId = setInterval(updateTimeDifference, 60000); // Update every 60,000 ms (1 minute)
+        updateTimeDifference(); 
+        const intervalId = setInterval(updateTimeDifference, 60000); 
 
-        return () => clearInterval(intervalId); // Cleanup interval on component unmount
+        return () => clearInterval(intervalId)
     }, [item.time]);
 
     if (!userDetails) {
-        return <Text>Loading...</Text>; // Optionally handle loading state
+        return <Text>Loading...</Text>;
     }
     const postId = item.postId
-    const isLiked = item.likes && item.likes[currentUserId]; // Check if the post is liked by the current user
+    const isLiked = item.likes && item.likes[currentUserId]; 
     const imageUrls = item.imageUrls?.map(url => ({ url }));
 
     return (
