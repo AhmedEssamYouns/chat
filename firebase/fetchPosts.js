@@ -12,32 +12,27 @@ export const fetchUserPostsRealtime = (userId, callback) => {
         const q = query(
             postsRef,
             where('id', '==', userId),
-            orderBy('time', 'desc') // Order posts by time in descending order
+            orderBy('time', 'desc') 
         );
 
-        // Set up a real-time listener
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
             const posts = querySnapshot.docs.map(doc => doc.data());
 
-            // Extract the first image URL from each post
-            const postImages = posts.map(post => post.imageUrls); // Assuming `imageUrls` is an array
+            const postImages = posts.map(post => post.imageUrls);
             
-            // Call the callback function with the new posts data
             callback(postImages);
         });
 
-        // Return the unsubscribe function so that the listener can be removed when no longer needed
         return unsubscribe;
     } catch (error) {
         console.error('Error setting up real-time listener for user posts:', error);
-        return () => {}; // Return a no-op function as a fallback
+        return () => {}; 
     }
 };
 
 export const fetchPostById = (postId, callback) => {
     const postDocRef = doc(db, 'posts', postId);
   
-    // Use onSnapshot to listen for real-time updates
     const unsubscribe = onSnapshot(postDocRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
         const postData = docSnapshot.data();
@@ -47,6 +42,5 @@ export const fetchPostById = (postId, callback) => {
       }
     });
   
-    // Return the unsubscribe function to clean up the listener
     return unsubscribe;
   };

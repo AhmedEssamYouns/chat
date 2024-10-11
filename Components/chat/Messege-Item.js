@@ -55,16 +55,15 @@ const MessageItem = ({ item, searchQuery, onLongPressMessage }) => {
 
   const playAudio = async () => {
     if (sound) {
-      // Check if the sound is currently playing
       const status = await sound.getStatusAsync();
       if (status.isPlaying) {
         console.log("Stopping audio playback.");
-        await sound.stopAsync(); // Stop the currently playing audio
+        await sound.stopAsync(); 
         setIsPlaying(false);
         setDuration(0);
-        return; // Exit the function if we stop the audio
+        return; 
       } else {
-        await sound.unloadAsync(); // Stop any existing sound
+        await sound.unloadAsync();
       }
     }
 

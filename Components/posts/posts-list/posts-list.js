@@ -13,7 +13,6 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
   const [showButton, setShowButton] = useState(false);
   const hasMounted = useRef(false); 
 
-  // Sort posts by newest first
   const sortedPosts = [...posts].sort((a, b) => {
     const timeA = new Date(a.time);
     const timeB = new Date(b.time);
@@ -45,11 +44,10 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
     }
   };
 
-  // Scroll to the initial index only on first content load
   const handleContentChange = () => {
     if (!hasMounted.current && sortedPosts.length > 0 && initialPostindex != null) {
       scrollToIndex();
-      hasMounted.current = true; // Mark as mounted after first scroll
+      hasMounted.current = true; 
     }
   };
 
@@ -61,7 +59,7 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
 
   const handleScroll = (event) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    setShowButton(offsetY > 100); // Show button if scrolled more than 100 pixels from the top
+    setShowButton(offsetY > 100); 
   };
 
   return (
@@ -79,9 +77,8 @@ const PostsList = ({ posts, currentUserId, handleLovePress, onEditPost, onDelete
         }
         getItemLayout={getItemLayout}
         onScroll={handleScroll}
-        onContentSizeChange={handleContentChange} // Trigger scroll when content is laid out
+        onContentSizeChange={handleContentChange} 
         onScrollToIndexFailed={(info) => {
-          // Handle failure by scrolling to an approximate offset
           flatListRef.current.scrollToOffset({
             offset: info.averageItemLength * info.index,
             animated: true,
@@ -112,10 +109,10 @@ const styles = StyleSheet.create({
     top: 20,
     left: 25,
     backgroundColor: 'rgba(50, 50, 50, 0.9)',
-    borderRadius: 30, // Circular button
+    borderRadius: 30, 
     padding: 10,
-    elevation: 10, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
+    elevation: 10, 
+    shadowColor: '#000', 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,

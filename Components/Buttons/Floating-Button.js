@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import RotatingButton from './animated-rotate-button';
 import CreatePostModal from '../posts/manage posts/create-post-model';
 
-// Regular FloatingButton component
 export function FloatingButton({ onPress, icon, up }) {
     return (
         <View style={[styles.container, { bottom: up }]}>
@@ -27,12 +26,12 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
             Animated.timing(animation, {
                 toValue: expanded ? 1 : 0,
                 duration: 300,
-                useNativeDriver: false, // Height animations
+                useNativeDriver: false, 
             }),
             Animated.timing(rotate, {
                 toValue: expanded ? 1 : 0,
                 duration: 300,
-                useNativeDriver: true, // Rotation animations
+                useNativeDriver: true, 
             }),
         ]).start();
     }, [expanded]);
@@ -40,16 +39,14 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
     useEffect(() => {
         const handleBackPress = () => {
             if (expanded) {
-                setExpanded(false); // Close the bar if it's open
-                return true; // Prevent the default back action
+                setExpanded(false); 
+                return true; 
             }
-            return false; // Allow the default back action
+            return false; 
         };
 
-        // Add back button event listener
         BackHandler.addEventListener('hardwareBackPress', handleBackPress);
 
-        // Cleanup the event listener
         return () => {
             BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
         };
@@ -57,13 +54,10 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
 
     const animatedHeight = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 200], // Adjust as needed
+        outputRange: [0, 200], 
     });
 
-    const rotation = rotate.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '180deg'], // Rotate by 180 degrees
-    });
+
 
     const toggleBar = () => {
         setExpanded(prev => !prev);
@@ -119,7 +113,6 @@ export function AnimatedFloatingButton({ up, expanded, setExpanded }) {
     );
 }
 
-// Styles for both components
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
@@ -150,12 +143,12 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         padding: 7,
-        width: '100%', // Ensure full width for each item
+        width: '100%', 
     },
     label: {
         alignSelf: 'center',
         textAlign: 'center',
         color: 'white',
-        fontSize: 8, // Adjust label size
+        fontSize: 8, 
     },
 });

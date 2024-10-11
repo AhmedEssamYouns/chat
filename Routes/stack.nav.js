@@ -50,7 +50,7 @@ export default function MainTabNavigator() {
             setIsLoading(false);
 
             if (user) {
-                authenticateUser(); // Call the async function
+                authenticateUser(); 
             }
         });
 
@@ -117,7 +117,7 @@ export default function MainTabNavigator() {
                                         expanded={expanded}
                                         setMenuVisible={setMenuVisible}
                                         setExpanded={setExpanded}
-                                        setModalVisible={setModalVisible} // Pass setModalVisible
+                                        setModalVisible={setModalVisible}
                                     />
                                 ),
                             }}
@@ -127,7 +127,7 @@ export default function MainTabNavigator() {
                             ,
                             headerTitleStyle: {
                                 color: 'white',
-                                right:20
+                                right: 20
                             },
                             headerTintColor: "white"
 
@@ -184,7 +184,6 @@ export default function MainTabNavigator() {
                 )}
             </Stack.Navigator>
 
-            {/* Overlay to capture outside clicks */}
             {menuVisible && (
                 <TouchableWithoutFeedback onPress={handleOutsidePress}>
                     <View style={styles.overlay} />
@@ -215,7 +214,7 @@ const styles = StyleSheet.create({
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
     },
     loaderContainer: {
         flex: 1,

@@ -5,7 +5,7 @@ import { FIREBASE_AUTH } from '../../firebase/config';
 import { fetchPostById } from '../../firebase/fetchPosts';
 
 const PostScreen = ({ route }) => {
-    const { post } = route.params; // Get the postId from the navigation parameters
+    const { post } = route.params; 
     const currentUserId = FIREBASE_AUTH.currentUser.uid;
     const [postData, setPostData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,21 +13,20 @@ const PostScreen = ({ route }) => {
     useEffect(() => {
         const unsubscribe = fetchPostById(post.postId, (data) => {
             setPostData(data);
-            setLoading(false); // Set loading to false after fetching data
+            setLoading(false); 
         });
 
-        // Clean up the listener on component unmount
         return () => unsubscribe();
     }, [post.postId]);
 
     if (loading) {
-        return <View style={styles.container}><Text style={styles.loadingText}>Loading...</Text></View>; // Loading state
+        return <View style={styles.container}><Text style={styles.loadingText}>Loading...</Text></View>; 
     }
 
     return (
         <ScrollView style={styles.container}>
             {postData ? (
-                <PostItem item={postData} currentUserId={currentUserId} handleLovePress={() => { /* Handle like press */ }} />
+                <PostItem item={postData} currentUserId={currentUserId} handleLovePress={() => {  }} />
             ) : (
                 <View style={styles.container}><Text style={styles.noPostText}>Post not found</Text></View>
             )}

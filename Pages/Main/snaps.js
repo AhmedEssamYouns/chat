@@ -9,13 +9,13 @@ const StoriesScreen = () => {
   const [posts, setPosts] = useState([]);
   const [hasFriends, setHasFriends] = useState(false);
   const [friendsHavePosts, setFriendsHavePosts] = useState(true);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true); 
   const navigation = useNavigation();
 
   useEffect(() => {
     const userId = FIREBASE_AUTH.currentUser.uid;
 
-    // Fetch user data
+    
     const userDocRef = doc(db, 'users', userId);
     const unsubscribeUser = onSnapshot(userDocRef, (docSnapshot) => {
       if (docSnapshot.exists()) {
@@ -24,24 +24,24 @@ const StoriesScreen = () => {
         setHasFriends(friends.length > 0);
 
         if (friends.length > 0) {
-          // Fetch user and friends posts
+          
           const postsRef = collection(db, 'posts');
           const postsQuery = query(postsRef, where('id', 'in', [userId, ...friends]));
           const unsubscribePosts = onSnapshot(postsQuery, (querySnapshot) => {
             const posts = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setPosts(posts);
 
-            // Check if friends have posts
+            
             const friendsPosts = posts.filter(post => friends.includes(post.id));
             setFriendsHavePosts(friendsPosts.length > 0);
 
-            // Update loading state
-            setLoading(false); // Set loading to false after fetching posts
+            
+            setLoading(false); 
 
             return () => unsubscribePosts();
           });
         } else {
-          // If no friends, set loading to false
+          
           setLoading(false);
         }
       }
@@ -51,7 +51,7 @@ const StoriesScreen = () => {
   }, []);
 
   if (loading) {
-    // Show loading indicator while data is being fetched
+    
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#f44336" />

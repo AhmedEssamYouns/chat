@@ -1,23 +1,20 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCEGmSfNtYPxQrP5crC98FBXC62ihvVKt0",
-  authDomain: "chat-snap-talk.firebaseapp.com",
-  projectId: "chat-snap-talk",
-  storageBucket: "chat-snap-talk.appspot.com",
-  messagingSenderId: "129056838610",
-  appId: "1:129056838610:web:cdce5aeae0730b707c6e0b",
-  measurementId: "G-BVQ0WQENX6"
-};
+import { API_KEY, AUTH_DOMAIN, PROJECT_ID, STORAGE_BUCKET, MESSAGING_SENDER_ID, APP_ID } from '@env';
 
-// Initialize Firebase only if not already initialized
+const firebaseConfig = {
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,
+  appId: APP_ID
+};
 const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Firebase Auth with AsyncStorage for persistence
 export const FIREBASE_AUTH = initializeAuth(firebaseApp, {
   persistence: getReactNativePersistence(AsyncStorage)
 });

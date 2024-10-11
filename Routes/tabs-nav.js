@@ -13,7 +13,7 @@ export default function TabNavigator() {
 
     const handleOutsidePress = () => {
         if (isButtonExpanded) {
-            setIsButtonExpanded(false); // Collapse the button when clicking outside
+            setIsButtonExpanded(false); 
         }
     };
 
@@ -54,7 +54,6 @@ export default function TabNavigator() {
                 <Tab.Screen name="profile" component={ProfileScreen} />
             </Tab.Navigator>
 
-            {/* Overlay to capture outside clicks */}
             {isButtonExpanded && (
                 <TouchableWithoutFeedback onPress={handleOutsidePress}>
                     <View style={styles.overlay} />

@@ -60,7 +60,7 @@ export const updateUserProfile = async (userId, profileData) => {
  * @returns {Promise<string>} - The URL of the uploaded image.
  */
 export const uploadProfileImage = async (imageUri, userId) => {
-    const fileName = imageUri.split('/').pop(); // Extract file name from URI
+    const fileName = imageUri.split('/').pop(); 
     const imageRef = ref(storage, `profileImages/${userId}/${fileName}`);
     const img = await fetch(imageUri);
     const bytes = await img.blob();
@@ -85,7 +85,6 @@ export const handleLogout = async (navigation) => {
 
         await FIREBASE_AUTH.signOut();
 
-        // Reset the navigation stack and navigate to the SignIn screen
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
@@ -99,11 +98,11 @@ export const handleLogout = async (navigation) => {
 
 export const handleForgotPassword = async (email, setEmailError, setIsLoading) => {
     setEmailError('');
-    setIsLoading(true); // Show the loading indicator
+    setIsLoading(true);
 
     if (email === '') {
         setEmailError('Please enter your email address.');
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false);
         return;
     }
 
@@ -119,11 +118,10 @@ export const handleForgotPassword = async (email, setEmailError, setIsLoading) =
             setEmailError('Failed to send reset email. Please try again.');
         }
     } finally {
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false); 
     }
 };
 
-// Function to check username availability
 export const checkUsernameAvailability = async (username, setUsernameStatus, setUsernameError) => {
     if (username.length >= 3) {
         try {
@@ -146,7 +144,6 @@ export const checkUsernameAvailability = async (username, setUsernameStatus, set
     }
 };
 
-// Function to handle user sign-up
 
 export const handleSignUp = async (email, password, username, confirmPassword, usernameStatus, navigation, setLoading, setEmailError, setPasswordError, setConfirmPasswordError, setUsernameError) => {
     setUsernameError('');
@@ -186,20 +183,17 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
     }
 
     if (usernameStatus !== 'available') {
-        return; // Exit if username is not available
+        return; 
     }
 
     setLoading(true);
 
     try {
-        // Create user with email and password
         const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
         const user = userCredential.user;
 
-        // Update the displayName in Firebase Auth
         await updateProfile(user, { displayName: username });
 
-        // Save user data to Firestore
         await setDoc(doc(db, 'users', user.uid), {
             username: username,
             uid: user.uid,
@@ -207,37 +201,34 @@ export const handleSignUp = async (email, password, username, confirmPassword, u
             profileImage: 'https://th.bing.com/th/id/R.4491e84d823cc08ecfb45c4dcd65dbc0?rik=xKmsWMy9Rwkbxg&pid=ImgRaw&r=0', // Empty profile image field since we're not handling images
         });
 
-        // Show success message
         ToastAndroid.show('You have successfully signed up!', ToastAndroid.LONG);
-        // Navigate to Sign In screen after a delay to allow the toast to be visible
         setTimeout(() => {
             navigation.navigate('SignIn');
-        }, 1000); // Adjust the delay to match the toast visibility time
+        }, 1000); 
 
     } catch (error) {
-        // Handle errors based on the error code
         if (error.code.includes('auth/invalid-email')) {
             setEmailError('Invalid email address.');
         } else if (error.code.includes('auth/email-already-in-use')) {
-            setEmailError('Email is already in use.'); // This error means the account already exists
+            setEmailError('Email is already in use.'); 
         } else if (error.code.includes('auth/weak-password')) {
             setPasswordError('Password is too weak.');
         } else {
             setEmailError('Failed to create account. Please try again.');
         }
     } finally {
-        setLoading(false); // Always set loading to false when done
+        setLoading(false); 
     }
 };
 
 export const handleSignIn = async (email, password, navigation, setEmailError, setPasswordError, setIsLoading) => {
     setEmailError('');
     setPasswordError('');
-    setIsLoading(true); // Show the loading indicator
+    setIsLoading(true);
 
     if (email === '' || password === '') {
         setEmailError('Please fill in all fields.');
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false);
         return;
     }
 
@@ -261,23 +252,23 @@ export const handleSignIn = async (email, password, navigation, setEmailError, s
             setEmailError(`Sign in failed, ${generalError}`);
         }
     } finally {
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false);
     }
 };
 
 export const handleChangePassword = async (currentPassword, newPassword, setPasswordError, setIsLoading) => {
     setPasswordError('');
-    setIsLoading(true); // Show the loading indicator
+    setIsLoading(true);
 
     if (newPassword === '') {
         setPasswordError('Please enter your new password.');
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false); 
         return;
     }
 
     if (newPassword.length < 8) {
         setPasswordError('Password must be at least 8 characters long.');
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false); 
         return;
     }
 
@@ -292,6 +283,6 @@ export const handleChangePassword = async (currentPassword, newPassword, setPass
             setPasswordError('Failed to update password. Please try again.');
         }
     } finally {
-        setIsLoading(false); // Hide the loading indicator
+        setIsLoading(false);
     }
 };

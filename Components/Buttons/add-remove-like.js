@@ -1,4 +1,3 @@
-// LikeButton.js
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { doc, updateDoc, increment } from 'firebase/firestore';

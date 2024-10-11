@@ -37,12 +37,10 @@ const PostItem = ({ item, currentUserId, handleLovePress }) => {
         setModalVisible(false);
     };
     useEffect(() => {
-        // Subscribe to real-time updates
         const unsubscribe = getUserById(item.id, (userData) => {
             setUserDetails(userData);
         });
 
-        // Cleanup function to stop listening for updates
         return () => unsubscribe();
     }, [item.id]);
 

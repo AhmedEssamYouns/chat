@@ -11,13 +11,12 @@ import * as ImageManipulator from 'expo-image-manipulator';
 export const compressImage = async (uri) => {
     const manipResult = await ImageManipulator.manipulateAsync(
         uri,
-        [{ resize: { width: 800 } }], // Resize to a smaller width
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Adjust quality
+        [{ resize: { width: 800 } }], 
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } 
     );
     return manipResult.uri;
 };
 
-// Function to upload images and return their URLs
 export const uploadImages = async (selectedImages) => {
     const imageUrls = await Promise.all(
         selectedImages.map(async (imageUri) => {
@@ -31,7 +30,6 @@ export const uploadImages = async (selectedImages) => {
     return imageUrls;
 };
 
-// Function to create a new post
 export const createPost = async (postText, selectedImages) => {
     try {
         const imageUrls = await uploadImages(selectedImages);
@@ -58,13 +56,10 @@ export const createPost = async (postText, selectedImages) => {
     }
 };
 
-// Function to delete a post by its ID
 const deletePostById = async (postId) => {
     try {
-        // Create a reference to the document with the specified postId
         const postRef = doc(db, 'posts', postId);
 
-        // Delete the document
         await deleteDoc(postRef);
         ToastAndroid.show('Post deleted.', ToastAndroid.LONG);
 
@@ -88,7 +83,7 @@ export const sharePostWithFriends = async (selectedFriends, post, user, onSucces
 
     try {
         for (const friend of selectedFriends) {
-            await sendMessage(friend.uid, '', null, null, post, user); // Share the post with each selected friend
+            await sendMessage(friend.uid, '', null, null, post, user); 
         }
         ToastAndroid.show('Post shared successfully.', ToastAndroid.LONG);
         onSuccess();

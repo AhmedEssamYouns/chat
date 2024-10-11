@@ -6,16 +6,13 @@ import { useNavigation } from '@react-navigation/native';
 
 const PostsModal = ({ posts, onClose ,initialPost,id}) => {
 
-    const navigation = useNavigation(); // Getting navigation instance
+    const navigation = useNavigation(); 
 
     useEffect(() => {
-        // Listen to navigation changes
         const unsubscribe = navigation.addListener('blur', () => {
-            // Close the modal when the screen loses focus (navigates away)
             onClose();
         });
 
-        // Clean up the listener on unmount
         return unsubscribe;
     }, [navigation, onClose]);
     return (

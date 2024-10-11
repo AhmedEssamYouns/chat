@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Acti
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH } from '../../../firebase/config';
-import { loadUserProfile, updateUserProfile, uploadProfileImage, updateAuthProfile,checkUsernameAvailability} from '../../../firebase/auth';
+import { loadUserProfile, updateUserProfile, uploadProfileImage, updateAuthProfile, checkUsernameAvailability } from '../../../firebase/auth';
 import ImagePickerComponent from '../../../Components/elements/image-picker';
 
 const EditProfileScreen = () => {
@@ -19,7 +19,8 @@ const EditProfileScreen = () => {
     const [usernameStatus, setUsernameStatus] = useState(null);
     const [usernameError, setUsernameError] = useState('');
     const [isPickerVisible, setIsPickerVisible] = useState(false);
-
+    var ahmed = 'shrouq'
+    console.log(ahmed)
     const currentUser = FIREBASE_AUTH.currentUser;
 
     useEffect(() => {

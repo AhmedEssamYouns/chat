@@ -1,5 +1,3 @@
-// services/chatConversationService.js
-
 import { collection, query, onSnapshot, addDoc, Timestamp, doc, updateDoc, deleteDoc, setDoc, orderBy, getDoc, getDocs, where, writeBatch, limit, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { FIREBASE_AUTH, db, storage } from '../firebase/config';
 import { uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -42,21 +40,16 @@ const uploadImage = async (uri) => {
 
 export const deleteChatDocument = async (currentUserId, friendId) => {
     try {
-        // Create chatId by sorting the IDs and joining them with an underscore
         const chatId = [currentUserId, friendId].sort().join('_');
 
-        // Reference to the chat document and its messages subcollection
         const chatDocRef = doc(db, 'chats', chatId);
         const messagesRef = collection(db, 'chats', chatId, 'messages');
 
-        // Fetch all messages in the subcollection
         const messagesSnapshot = await getDocs(messagesRef);
 
-        // Delete each message document
         const deleteMessagesPromises = messagesSnapshot.docs.map(doc => deleteDoc(doc.ref));
         await Promise.all(deleteMessagesPromises);
 
-        // Delete the chat document
         await deleteDoc(chatDocRef);
         ToastAndroid.show('chat deleted.', ToastAndroid.LONG);
 
@@ -89,7 +82,6 @@ export const fetchMessages = (friendId, callback) => {
 };
 
 export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUrl = null, postShared = null, user = null) => {
-    // Check if message is empty and no media is included
     if (newMessage.trim() === '' && !imageUrl && !audioUrl && !postShared && !user) return;
 
     try {
@@ -97,35 +89,30 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUr
         const chatId = [userId, friendId].sort().join('_');
         const messagesRef = collection(db, 'chats', chatId, 'messages');
 
-        // Handle image upload if imageUrl exists
         let image = null;
         if (imageUrl) {
             image = await uploadImage(imageUrl);
         }
 
-        // Handle audio upload if audioUrl exists
         let audio = null;
         if (audioUrl) {
             audio = await uploadAudio(audioUrl);
         }
 
-        // Add the new message to the Firestore messages collection
         const messageDocRef = await addDoc(messagesRef, {
             senderId: userId,
             receiverId: friendId,
             user: user,
             postShared: postShared,
             isEdited: false,
-            imageUrl: image,        // Include image if available
-            audioUrl: audio,        // Include audio if available
-            text: newMessage,       // Message text
-            timestamp: Timestamp.now(), // Timestamp
+            imageUrl: image,        
+            audioUrl: audio,       
+            text: newMessage,      
+            timestamp: Timestamp.now(),
         });
 
-        // Update the message document with its ID (merge mode)
         await setDoc(messageDocRef, { id: messageDocRef.id }, { merge: true });
 
-        // Update the chat's last message and shared content
         const chatDocRef = doc(db, 'chats', chatId);
         await setDoc(chatDocRef, {
             receiverId: friendId,
@@ -137,7 +124,6 @@ export const sendMessage = async (friendId, newMessage, imageUrl = null, audioUr
             last: audio != null ? 'shared an audio' : postShared != null ? 'shared a post' : newMessage,
         }, { merge: true });
 
-        // Cloud Function will handle notification sending
     } catch (error) {
         console.error('Error sending message:', error);
     }
@@ -165,30 +151,23 @@ export const deleteMessage = async (friendId, messageId) => {
         const userId = FIREBASE_AUTH.currentUser.uid;
         const chatId = [userId, friendId].sort().join('_');
 
-        // Reference to the chat messages collection
         const messagesRef = collection(db, 'chats', chatId, 'messages');
 
-        // Reference to the chat document
         const chatDocRef = doc(db, 'chats', chatId);
 
-        // Fetch all messages to find the last one
         const messagesQuery = query(messagesRef, orderBy('timestamp', 'desc'), limit(1));
         const snapshot = await getDocs(messagesQuery);
 
         if (!snapshot.empty) {
-            // Get the last message
             const lastMessage = snapshot.docs[0].data();
 
-            // Check if the deleted message was the last message
             if (messageId === lastMessage.id) {
-                // If it was the last message, update the chat document
                 await updateDoc(chatDocRef, {
-                    last: 'Messege Deleted' // or any placeholder indicating no recent message
+                    last: 'Messege Deleted' 
                 });
             }
         }
 
-        // Delete the message
         await deleteDoc(doc(db, 'chats', chatId, 'messages', messageId));
         ToastAndroid.show('messege deleted.', ToastAndroid.LONG);
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import ConfirmationModal from '../elements/alert'; // Adjust the import path as needed
+import ConfirmationModal from '../elements/alert';
 
 const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, handleDeleteMessage }) => {
     const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
@@ -12,7 +12,7 @@ const DropdownMenu = ({ isMenuVisible, handleMenuToggle, handleEditMessage, hand
     const handleConfirmDelete = () => {
         handleDeleteMessage();
         setIsConfirmationVisible(false);
-        handleMenuToggle(); // Optionally close the dropdown menu after deletion
+        handleMenuToggle(); 
     };
 
     const handleCancelDelete = () => {

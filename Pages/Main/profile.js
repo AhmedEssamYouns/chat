@@ -1,4 +1,3 @@
-// ProfileScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Pressable, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -43,7 +42,7 @@ const ProfileScreen = () => {
 
     const cleanBio = (bio) => {
         if (!bio) {
-            return ''; // Return an empty string if bio is null or undefined
+            return ''; 
         }
         return bio
             .split('\n')

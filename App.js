@@ -36,7 +36,7 @@ const App = () => {
   }, []);
 
   if (!fontsLoaded) {
-    return null; // Optionally, return a loading indicator or placeholder
+    return null; 
   }
 
   return (

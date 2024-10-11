@@ -2,7 +2,6 @@ import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, getDocs, query, wh
 import { FIREBASE_AUTH,db } from './config';
 import { useState, useEffect } from 'react';
 
-// Function to handle friend requests and status changes
 
 const useFriends = () => {
     const [friends, setFriends] = useState([]);
@@ -28,13 +27,13 @@ const useFriends = () => {
                     const friendsData = querySnapshot.docs.map(doc => doc.data());
                     setFriends(friendsData);
                 } else {
-                    setFriends([]); // No friends
+                    setFriends([]); 
                 }
             }
             setLoading(false);
         });
 
-        return () => unsubscribe(); // Clean up listener on unmount
+        return () => unsubscribe(); 
     }, []);
 
     return { friends, loading };
@@ -90,7 +89,6 @@ export const handleStatusChange = async (targetUserId, currentUserId, friendStat
     }
 };
 
-// Function to get and monitor the friend status
 export const monitorFriendStatuses = (currentUserId, setFriendStatuses) => {
     const userDocRef = doc(db, 'users', currentUserId);
 
@@ -121,18 +119,14 @@ export const monitorFriendStatuses = (currentUserId, setFriendStatuses) => {
 
 export const removeFriend = async (friendId, currentUserId) => {
     try {
-        // Reference to the current user's document
         const currentUserRef = doc(db, 'users', currentUserId);
 
-        // Reference to the friend's document
         const friendRef = doc(db, 'users', friendId);
 
-        // Update the current user's document to remove the friend's ID
         await updateDoc(currentUserRef, {
             friends: arrayRemove(friendId),
         });
 
-        // Update the friend's document to remove the current user's ID
         await updateDoc(friendRef, {
             friends: arrayRemove(currentUserId),
         });
@@ -146,10 +140,6 @@ export const removeFriend = async (friendId, currentUserId) => {
 
 
 
-// friendsBackend.js
-
-
-// Fetch current user's friends
 export const subscribeToFriends = (userId, setFriends, setLoading) => {
     const userDocRef = doc(db, 'users', userId);
 
@@ -169,16 +159,15 @@ export const subscribeToFriends = (userId, setFriends, setLoading) => {
                 const friendsData = querySnapshot.docs.map(doc => doc.data());
                 setFriends(friendsData);
             } else {
-                setFriends([]); // No friends
+                setFriends([]); 
             }
         }
         setLoading(false);
     });
 
-    return unsubscribe; // Return the unsubscribe function
+    return unsubscribe; 
 };
 
-// Accept friend request
 export const acceptFriendRequest = async (currentUserId, requestId) => {
     const userDocRef = doc(db, 'users', currentUserId);
     const targetUserDocRef = doc(db, 'users', requestId);
@@ -194,7 +183,6 @@ export const acceptFriendRequest = async (currentUserId, requestId) => {
     });
 };
 
-// Decline friend request
 export const declineFriendRequest = async (currentUserId, requestId) => {
     const userDocRef = doc(db, 'users', currentUserId);
     const targetUserDocRef = doc(db, 'users', requestId);
@@ -208,7 +196,6 @@ export const declineFriendRequest = async (currentUserId, requestId) => {
     });
 };
 
-// Subscribe to real-time friend request updates
 export const subscribeToFriendRequests = (currentUserId, setFriendRequests, setUserDetails) => {
     const userDocRef = doc(db, 'users', currentUserId);
 
@@ -235,5 +222,5 @@ export const subscribeToFriendRequests = (currentUserId, setFriendRequests, setU
         }
     });
 
-    return unsubscribe; // Return the unsubscribe function
+    return unsubscribe; 
 };

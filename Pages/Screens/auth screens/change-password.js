@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { handleChangePassword } from '../../../firebase/auth'; // Import the handleChangePassword function
+import { handleChangePassword } from '../../../firebase/auth'; 
 
 const ChangePasswordScreen = ({ navigation }) => {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -27,7 +27,7 @@ const ChangePasswordScreen = ({ navigation }) => {
 
     if (passwordError === '') {
       Alert.alert('Success', 'Password changed successfully!');
-      navigation.navigate('SignIn'); // Navigate back to the sign-in screen after password change
+      navigation.navigate('SignIn'); 
     } else {
       Alert.alert('Error', passwordError);
     }

@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 20,
     alignItems: 'center',
-    marginBottom: 20, // Add margin for spacing
+    marginBottom: 20, 
   },
   buttonText: {
     color: '#FFFFFF',

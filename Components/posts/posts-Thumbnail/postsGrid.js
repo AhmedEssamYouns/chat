@@ -7,12 +7,10 @@ const PostGrid = ({ userId, onPostSelect, header }) => {
     const [postImages, setPostImages] = useState([]);
 
     useEffect(() => {
-        // Set up the real-time listener
         const unsubscribe = fetchUserPostsRealtime(userId, (images) => {
             setPostImages(images);
         });
 
-        // Clean up the listener on component unmount
         return () => unsubscribe();
     }, [userId]);
 
@@ -58,8 +56,8 @@ const styles = StyleSheet.create({
         color: '#bbb',
         fontFamily: 'title',
         textAlign: 'center',
-        marginTop: 20, // Adjust to position the text as needed
-        fontSize: 16, // Adjust text size as needed
+        marginTop: 20, 
+        fontSize: 16, 
     },
 });
 

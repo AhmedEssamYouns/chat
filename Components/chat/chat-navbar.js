@@ -12,27 +12,26 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
   searchResults, handleSearchSubmit, handleNextResult, handlePreviousResult, navigation, frindID }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [user, setUser] = useState(null); // Initialize with null
+  const [user, setUser] = useState(null); 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const searchAnim = useRef(new Animated.Value(-300)).current;
   const searchInputRef = useRef(null);
   const currentUserId = FIREBASE_AUTH.currentUser.uid
 
 
-  const [wallpaperUrl, setWallpaperUrl] = useState(null); // Store wallpaper URL
-  const [loading, setLoading] = useState(false); // Loading state
-  // Function that handles the complete process
+  const [wallpaperUrl, setWallpaperUrl] = useState(null); 
+  const [loading, setLoading] = useState(false);
   const handleSetWallpaper = async () => {
     try {
-      const imageUri = await pickImage(); // Pick image
+      const imageUri = await pickImage(); 
       if(!imageUri){
         setLoading(false)
       }
       if (imageUri) {
-      setLoading(true); // Set loading to true
-        const uploadedWallpaperUrl = await uploadImageAsyncAndSetWallpaper(imageUri, frindID); // Upload and update Firestore
+      setLoading(true); 
+        const uploadedWallpaperUrl = await uploadImageAsyncAndSetWallpaper(imageUri, frindID);
         setWallpaperUrl(uploadedWallpaperUrl);
-        setLoading(false); // Set loading to true
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error setting wallpaper: ", error);
@@ -62,7 +61,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
 
     if (isSearchMode) {
       setTimeout(() => {
-        searchInputRef.current?.focus(); // Optional chaining to avoid errors
+        searchInputRef.current?.focus(); 
       }, 300);
     }
   }, [isSearchMode]);
@@ -110,7 +109,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
               </View>
             </TouchableOpacity>
           ) : (
-            <Text style={styles.navbarTitle}>Loading...</Text> // Handle case when user is not available
+            <Text style={styles.navbarTitle}>Loading...</Text> 
           )}
         </View>
       ) : (
@@ -197,7 +196,7 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
                 style={styles.menuItem}
                 onPress={() => {
                   handleMenuToggle();
-                  setIsModalVisible(true);  // Show the confirmation modal
+                  setIsModalVisible(true); 
                 }}
               >
                 <Text style={styles.menuItemText}>Clear Chat</Text>
@@ -207,7 +206,6 @@ const Navbar = ({ isSearchMode, setIsSearchMode, searchQuery, setSearchQuery, cu
         </Modal>
       )}
 
-      {/* Confirmation Modal */}
       <ConfirmationModal
         visible={isModalVisible}
         onConfirm={handleClearChat}

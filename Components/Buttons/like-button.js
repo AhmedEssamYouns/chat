@@ -1,4 +1,3 @@
-// AnimatedHeartIcon.js
 import React, { useState, useEffect } from 'react';
 import { Animated } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';

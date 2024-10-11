@@ -38,7 +38,6 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
         try {
             let imageUrls = [...selectedImages];
 
-            // Handle image uploads
             if (selectedImages.length > 0) {
                 const uploadPromises = selectedImages.map(async (imageUri) => {
                     const imageRef = ref(storage, `posts/${Date.now()}`);
@@ -51,7 +50,6 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
                 imageUrls = await Promise.all(uploadPromises);
             }
 
-            // Update post in Firestore
             const postRef = doc(db, 'posts', postId);
             await updateDoc(postRef, {
                 text: postText,
@@ -61,7 +59,7 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
 
             setPostText('');
             setSelectedImages([]);
-            onClose(); // Close the modal
+            onClose(); 
         } catch (error) {
             console.error('Error updating post:', error);
             alert('Failed to update post.');
@@ -73,8 +71,8 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
     const compressImage = async (uri) => {
         const manipResult = await ImageManipulator.manipulateAsync(
             uri,
-            [{ resize: { width: 800 } }], // Resize to a smaller width
-            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Adjust quality
+            [{ resize: { width: 800 } }],
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
         );
         return manipResult.uri;
     };
@@ -95,7 +93,7 @@ const EditPostModal = ({ item, visible, onClose, postId, existingText, existingI
             );
             setSelectedImages((prevImages) => [
                 ...prevImages,
-                ...compressedUris.slice(0, 4 - prevImages.length) // Ensure total is not more than 4
+                ...compressedUris.slice(0, 4 - prevImages.length) 
             ]);
         }
     };

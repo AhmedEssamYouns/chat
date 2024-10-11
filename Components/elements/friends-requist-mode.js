@@ -13,7 +13,7 @@ export default function FriendRequestModal({ visible, onClose }) {
 
             const unsubscribe = subscribeToFriendRequests(currentUserId, setFriendRequests, setUserDetails);
 
-            return () => unsubscribe(); // Clean up on unmount
+            return () => unsubscribe(); 
         }
     }, [visible]);
 
@@ -75,7 +75,7 @@ export default function FriendRequestModal({ visible, onClose }) {
 const styles = StyleSheet.create({
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)', // Darker semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.8)', 
     },
     modalContainer: {
         flex: 1,

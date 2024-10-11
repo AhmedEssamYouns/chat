@@ -11,7 +11,6 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
   const [image, setImage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
-  // Function to start audio recording
   const startRecording = async () => {
     setRecording(null)
     setAudioUri(null)
@@ -35,14 +34,13 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
     }
   };
 
-  // Function to stop audio recording
   const stopRecording = async () => {
     try {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       setAudioUri(uri);
       setRecording(null);
-      setModalVisible(true); // Open modal to send or cancel
+      setModalVisible(true); 
     } catch (err) {
       console.error('Failed to stop recording', err);
     }
@@ -50,14 +48,14 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
 
   const handleSendWithAudio = () => {
     handleSend();
-    sendMessage(friendId, '', null, audioUri); // Sending audio message
+    sendMessage(friendId, '', null, audioUri); 
     setModalVisible(false);
     setAudioUri(null);
   };
 
   const handleSendWithImage = () => {
     handleSend();
-    sendMessage(friendId, '', image); // Sending image message
+    sendMessage(friendId, '', image);
     setModalVisible(false);
     setImage(null);
   };
@@ -69,7 +67,6 @@ const MessageInput = forwardRef(({ newMessage, setNewMessage, handleSend, isEdit
   return (
     <>
       <View style={styles.inputContainer}>
-        {/* Image Picker Button */}
 
         <View
           style={styles.input}

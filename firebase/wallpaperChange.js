@@ -1,11 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Firebase Storage
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; 
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db, FIREBASE_AUTH } from './config';
 
 
 
-// Function to listen for changes to the chat document
 export const listenForChatWallpaper = (chatId, setWallpaperUrl) => {
     const chatDocRef = doc(db, 'chats', chatId);
 
@@ -13,15 +12,13 @@ export const listenForChatWallpaper = (chatId, setWallpaperUrl) => {
         if (docSnapshot.exists()) {
             const data = docSnapshot.data();
             if (data.wallpaper) {
-                setWallpaperUrl(data.wallpaper); // Update wallpaper URL in state
+                setWallpaperUrl(data.wallpaper); 
             }
         }
     });
 
-    // Return the unsubscribe function to stop listening when needed
     return unsubscribe;
 };
-// Function to pick image from the device
 export const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -32,13 +29,12 @@ export const pickImage = async () => {
 
     if (!result.canceled) {
         const imageUri = result.assets[0].uri;
-        return imageUri; // Return selected image URI
+        return imageUri;
     } else {
         return null;
     }
 };
 
-// Function to upload image to Firebase Storage and set wallpaper in Firestore
 export const uploadImageAsyncAndSetWallpaper = async (imageUri, friendId) => {
     const chatId = [FIREBASE_AUTH.currentUser.uid, friendId].sort().join('_');
     const storage = getStorage();
@@ -47,25 +43,20 @@ export const uploadImageAsyncAndSetWallpaper = async (imageUri, friendId) => {
     const response = await fetch(imageUri);
     const blob = await response.blob();
 
-    // Upload image to Firebase Storage
     await uploadBytes(storageRef, blob);
     
-    // Get the download URL for the image
     const downloadURL = await getDownloadURL(storageRef);
     
-    // Update Firestore with the wallpaper URL
     await setChatWallpaper(chatId, downloadURL);
     return downloadURL;
 };
 
-// Function to update Firestore with the wallpaper URL
 const setChatWallpaper = async (chatId, wallpaperUrl) => {
     const chatDocRef = doc(db, 'chats', chatId);
 
     try {
-        // Update Firestore with the new wallpaper URL
         await updateDoc(chatDocRef, {
-            wallpaper: wallpaperUrl // New wallpaper property
+            wallpaper: wallpaperUrl
         });
         console.log('Wallpaper has been updated!');
     } catch (error) {

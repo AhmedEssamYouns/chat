@@ -1,5 +1,3 @@
-// services/chatService.js
-
 import { collection, doc, getDoc, query, orderBy, limit, getDocs, onSnapshot } from 'firebase/firestore';
 import { FIREBASE_AUTH, db } from './config';
 
