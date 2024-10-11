@@ -67,6 +67,6 @@ for image sharing, chatting, and connecting with friends.
 
 
 ##  Technology Stack
-Frontend: React Native with Expo
-Backend: Firebase
+- Frontend: React Native with Expo
+- Backend: Firebase
 vbnet
